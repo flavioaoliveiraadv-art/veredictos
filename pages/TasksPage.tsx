@@ -1,17 +1,17 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  CheckCircle2, 
-  Plus, 
-  Trash2, 
-  X, 
-  Activity, 
-  History, 
-  Edit, 
-  Clock, 
-  User, 
-  Scale, 
-  ChevronRight, 
+import {
+  CheckCircle2,
+  Plus,
+  Trash2,
+  X,
+  Activity,
+  History,
+  Edit,
+  Clock,
+  User,
+  Scale,
+  ChevronRight,
   AlertTriangle,
   Info,
   CheckSquare,
@@ -22,20 +22,20 @@ import {
   MessageSquare,
   FileMinus
 } from 'lucide-react';
-import { 
-  Prazo, 
-  Processo, 
-  Cliente, 
-  TipoPrazo, 
-  ModalidadeAudiencia, 
-  HistoricoAlteracao, 
-  Financeiro, 
-  StatusProcesso 
+import {
+  Prazo,
+  Processo,
+  Cliente,
+  TipoPrazo,
+  ModalidadeAudiencia,
+  HistoricoAlteracao,
+  Financeiro,
+  StatusProcesso
 } from '../types';
-import { 
-  formatCurrency, 
-  maskDate, 
-  getTodayBR, 
+import {
+  formatCurrency,
+  maskDate,
+  getTodayBR,
   compareDatesBR,
   getDaysDifference
 } from '../utils/formatters';
@@ -50,8 +50,8 @@ interface TasksPageProps {
   setHistorico: React.Dispatch<React.SetStateAction<HistoricoAlteracao[]>>;
 }
 
-const TasksPage: React.FC<TasksPageProps> = ({ 
-  prazos, setPrazos, processos, clientes, financeiro, historico, setHistorico 
+const TasksPage: React.FC<TasksPageProps> = ({
+  prazos, setPrazos, processos, clientes, financeiro, historico, setHistorico
 }) => {
   const [activeTab, setActiveTab] = useState<'PENDENTES' | 'REALIZADOS' | 'CANCELADOS'>('PENDENTES');
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -59,15 +59,15 @@ const TasksPage: React.FC<TasksPageProps> = ({
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [selectedPrazo, setSelectedPrazo] = useState<Prazo | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   const todayBR = getTodayBR();
 
-  const INITIAL_STATE: Partial<Prazo> = { 
-    tipo: TipoPrazo.PRAZO, 
-    descricao: '', 
-    processoId: '', 
-    clienteId: '', 
-    dataVencimento: todayBR, 
+  const INITIAL_STATE: Partial<Prazo> = {
+    tipo: TipoPrazo.PRAZO,
+    descricao: '',
+    processoId: '',
+    clienteId: '',
+    dataVencimento: todayBR,
     dataFatal: '',
     responsavel: 'Dr. Arthur',
     critico: false,
@@ -105,7 +105,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
     else if (activeTab === 'CANCELADOS') base = base.filter(p => p.cancelado);
 
     if (searchTerm) {
-      base = base.filter(p => 
+      base = base.filter(p =>
         p.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
         clientes.find(c => c.id === p.clienteId)?.nome.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -130,7 +130,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     const id = formData.id || `p-${Date.now()}`;
-    
+
     // Se não estiver vinculado, garantir que processoId seja vazio
     const finalProcessoId = isVincularProcesso ? formData.processoId : '';
 
@@ -156,11 +156,11 @@ const TasksPage: React.FC<TasksPageProps> = ({
   const handleRealizar = (prazo: Prazo) => {
     const obs = prompt('Observações da realização:');
     if (obs === null) return;
-    const update: Prazo = { 
-      ...prazo, 
-      concluido: true, 
-      dataConclusao: getTodayBR(), 
-      observacoesRealizacao: obs || '' 
+    const update: Prazo = {
+      ...prazo,
+      concluido: true,
+      dataConclusao: getTodayBR(),
+      observacoesRealizacao: obs || ''
     };
     setPrazos(prev => prev.map(p => p.id === prazo.id ? update : p));
     addHistorico(prazo.id, `Atividade marcada como realizada. Obs: ${obs}`);
@@ -171,11 +171,11 @@ const TasksPage: React.FC<TasksPageProps> = ({
     const jus = prompt('Justificativa obrigatória para o cancelamento:');
     if (jus === null) return;
     if (!jus.trim()) { alert('A justificativa é obrigatória.'); return; }
-    const update: Prazo = { 
-      ...prazo, 
-      cancelado: true, 
-      dataCancelamento: getTodayBR(), 
-      justificativaCancelamento: jus 
+    const update: Prazo = {
+      ...prazo,
+      cancelado: true,
+      dataCancelamento: getTodayBR(),
+      justificativaCancelamento: jus
     };
     setPrazos(prev => prev.map(p => p.id === prazo.id ? update : p));
     addHistorico(prazo.id, `Atividade cancelada. Justificativa: ${jus}`);
@@ -222,7 +222,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
           <h1 className="text-3xl font-black text-[#0b1726]">Gestão de Tarefas</h1>
           <p className="text-gray-500 font-medium">Controle central de todas as atividades e prazos do escritório.</p>
         </div>
-        <button 
+        <button
           onClick={() => { setFormData(INITIAL_STATE); setIsVincularProcesso(false); setIsFormModalOpen(true); }}
           className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-2 font-black shadow-xl shadow-indigo-100 transition-all"
         >
@@ -233,22 +233,24 @@ const TasksPage: React.FC<TasksPageProps> = ({
       <div className="flex flex-col md:flex-row items-center gap-4 bg-white p-4 rounded-[32px] shadow-sm border border-gray-100">
         <div className="flex items-center bg-gray-100 p-1 rounded-2xl w-full md:w-auto">
           {['PENDENTES', 'REALIZADOS', 'CANCELADOS'].map((tab) => (
-            <button 
+            <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
               className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}
             >
               {tab}
-              <span className="ml-2 px-1.5 py-0.5 rounded-md bg-gray-200 text-gray-500 text-[8px]">
-                {prazos.filter(p => (tab === 'PENDENTES' ? (!p.concluido && !p.cancelado) : tab === 'REALIZADOS' ? p.concluido : p.cancelado)).length}
-              </span>
+              {tab === 'PENDENTES' && (
+                <span className="ml-2 px-1.5 py-0.5 rounded-md bg-gray-200 text-gray-500 text-[8px]">
+                  {prazos.filter(p => !p.concluido && !p.cancelado).length}
+                </span>
+              )}
             </button>
           ))}
         </div>
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input 
-            type="text" placeholder="Buscar por descrição ou cliente..." 
+          <input
+            type="text" placeholder="Buscar por descrição ou cliente..."
             className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-2xl border-none outline-none font-medium text-sm"
             value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -260,19 +262,19 @@ const TasksPage: React.FC<TasksPageProps> = ({
           {filteredItems.length > 0 ? filteredItems.map(item => {
             const proc = processos.find(p => p.id === item.processoId);
             const cli = clientes.find(c => c.id === item.clienteId);
-            
+
             return (
-              <div 
-                key={item.id} 
+              <div
+                key={item.id}
                 onClick={() => { setSelectedPrazo(item); setIsDetailModalOpen(true); }}
                 className="p-6 px-10 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-all group"
               >
                 <div className="flex items-center gap-6 flex-1 min-w-0">
                   <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shadow-sm ${getTypeStyle(item.tipo)} transition-transform group-hover:scale-110`}>
-                    {item.tipo === TipoPrazo.AUDIENCIA ? <Scale className="w-6 h-6" /> : 
-                     item.tipo === TipoPrazo.PRAZO ? <Clock className="w-6 h-6" /> : 
-                     item.tipo === TipoPrazo.DILIGENCIA ? <AlertTriangle className="w-6 h-6" /> :
-                     <CheckSquare className="w-6 h-6" />}
+                    {item.tipo === TipoPrazo.AUDIENCIA ? <Scale className="w-6 h-6" /> :
+                      item.tipo === TipoPrazo.PRAZO ? <Clock className="w-6 h-6" /> :
+                        item.tipo === TipoPrazo.DILIGENCIA ? <AlertTriangle className="w-6 h-6" /> :
+                          <CheckSquare className="w-6 h-6" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -300,9 +302,9 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   <div>
                     <p className="text-sm font-black text-gray-700">{item.dataVencimento}</p>
                     <p className="text-[10px] font-black uppercase tracking-widest mt-1">
-                      {activeTab === 'PENDENTES' ? renderDaysCountdown(item.dataVencimento) : 
-                       activeTab === 'REALIZADOS' ? `Realizado em ${item.dataConclusao}` : 
-                       `Cancelado em ${item.dataCancelamento}`}
+                      {activeTab === 'PENDENTES' ? renderDaysCountdown(item.dataVencimento) :
+                        activeTab === 'REALIZADOS' ? `Realizado em ${item.dataConclusao}` :
+                          `Cancelado em ${item.dataCancelamento}`}
                     </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-200 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
@@ -328,20 +330,20 @@ const TasksPage: React.FC<TasksPageProps> = ({
               </h2>
               <button onClick={() => setIsFormModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X className="w-8 h-8" /></button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-10 space-y-6 custom-scroll">
               <form id="taskForm" onSubmit={handleSave} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
-                  <FormSelect label="Tipo de Atividade" required value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value as TipoPrazo})}>
+                  <FormSelect label="Tipo de Atividade" required value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value as TipoPrazo })}>
                     {Object.values(TipoPrazo).map(t => <option key={t} value={t}>{t}</option>)}
                   </FormSelect>
-                  <FormInput label="Responsável" required value={formData.responsavel} onChange={e => setFormData({...formData, responsavel: e.target.value})} />
+                  <FormInput label="Responsável" required value={formData.responsavel} onChange={e => setFormData({ ...formData, responsavel: e.target.value })} />
                 </div>
 
-                <FormInput label="Descrição" required placeholder="Descreva a atividade" value={formData.descricao} onChange={e => setFormData({...formData, descricao: e.target.value})} />
+                <FormInput label="Descrição" required placeholder="Descreva a atividade" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value })} />
 
                 <div className="grid grid-cols-2 gap-6">
-                  <FormSelect label="Cliente (Opcional)" value={formData.clienteId} onChange={e => setFormData({...formData, clienteId: e.target.value})}>
+                  <FormSelect label="Cliente (Opcional)" value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
                     <option value="">Nenhum cliente vinculado</option>
                     {activeClientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                   </FormSelect>
@@ -349,13 +351,13 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Vínculo com Processo</label>
                     <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-200">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         id="checkVincularProcesso"
-                        checked={isVincularProcesso} 
+                        checked={isVincularProcesso}
                         onChange={(e) => {
                           setIsVincularProcesso(e.target.checked);
-                          if (!e.target.checked) setFormData(prev => ({...prev, processoId: ''}));
+                          if (!e.target.checked) setFormData(prev => ({ ...prev, processoId: '' }));
                         }}
                         className="w-5 h-5 rounded border-gray-300 text-indigo-600"
                       />
@@ -366,7 +368,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
                 {isVincularProcesso ? (
                   <div className="animate-in slide-in-from-top-2 duration-300">
-                    <FormSelect label="Número do Processo" required={isVincularProcesso} value={formData.processoId} onChange={e => setFormData({...formData, processoId: e.target.value})}>
+                    <FormSelect label="Número do Processo" required={isVincularProcesso} value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
                       <option value="">Selecione o processo ativo...</option>
                       {activeProcessos.map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
                     </FormSelect>
@@ -379,19 +381,19 @@ const TasksPage: React.FC<TasksPageProps> = ({
                 )}
 
                 <div className="grid grid-cols-2 gap-6">
-                  <FormInput label="Data Interna (dd/mm/aaaa)" required placeholder="dd/mm/aaaa" value={formData.dataVencimento} onChange={e => setFormData({...formData, dataVencimento: maskDate(e.target.value)})} />
-                  <FormInput label="Data Fatal (dd/mm/aaaa)" placeholder="dd/mm/aaaa" value={formData.dataFatal} onChange={e => setFormData({...formData, dataFatal: maskDate(e.target.value)})} />
+                  <FormInput label="Data Interna (dd/mm/aaaa)" required placeholder="dd/mm/aaaa" value={formData.dataVencimento} onChange={e => setFormData({ ...formData, dataVencimento: maskDate(e.target.value) })} />
+                  <FormInput label="Data Fatal (dd/mm/aaaa)" placeholder="dd/mm/aaaa" value={formData.dataFatal} onChange={e => setFormData({ ...formData, dataFatal: maskDate(e.target.value) })} />
                 </div>
 
                 {formData.tipo === TipoPrazo.AUDIENCIA && (
-                  <FormSelect label="Modalidade" value={formData.modalidade} onChange={e => setFormData({...formData, modalidade: e.target.value as ModalidadeAudiencia})}>
+                  <FormSelect label="Modalidade" value={formData.modalidade} onChange={e => setFormData({ ...formData, modalidade: e.target.value as ModalidadeAudiencia })}>
                     <option value="">Selecione...</option>
                     {Object.values(ModalidadeAudiencia).map(m => <option key={m} value={m}>{m}</option>)}
                   </FormSelect>
                 )}
 
                 <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 transition-all">
-                  <input type="checkbox" checked={formData.critico} onChange={e => setFormData({...formData, critico: e.target.checked})} className="w-5 h-5 rounded border-gray-300 text-indigo-600" />
+                  <input type="checkbox" checked={formData.critico} onChange={e => setFormData({ ...formData, critico: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-indigo-600" />
                   <span className="text-xs font-black text-gray-700 uppercase tracking-widest">Marcar como Atividade Urgente</span>
                 </label>
               </form>
@@ -435,10 +437,10 @@ const TasksPage: React.FC<TasksPageProps> = ({
                     <DetailItem label="Data Fatal" value={selectedPrazo.dataFatal || '-'} icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} />
                     <DetailItem label="Responsável" value={selectedPrazo.responsavel} icon={<User className="w-4 h-4" />} />
                     <DetailItem label="Cliente" value={clientes.find(c => c.id === selectedPrazo.clienteId)?.nome || '-'} icon={<User className="w-4 h-4" />} />
-                    <DetailItem 
-                      label="Processo Judicial" 
-                      value={processos.find(p => p.id === selectedPrazo.processoId)?.numeros[0] || 'Sem processo vinculado'} 
-                      icon={selectedPrazo.processoId ? <Scale className="w-4 h-4" /> : <FileMinus className="w-4 h-4 text-gray-300" />} 
+                    <DetailItem
+                      label="Processo Judicial"
+                      value={processos.find(p => p.id === selectedPrazo.processoId)?.numeros[0] || 'Sem processo vinculado'}
+                      icon={selectedPrazo.processoId ? <Scale className="w-4 h-4" /> : <FileMinus className="w-4 h-4 text-gray-300" />}
                     />
                   </div>
 
