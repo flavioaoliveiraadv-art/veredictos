@@ -28,12 +28,13 @@
         }
 
         /* --- Global Input Visibility Improvements --- */
-        /* Estilo para todos os campos de entrada, exceto checkboxes e radios */
-        input:not([type="checkbox"]):not([type="radio"]), 
-        select, 
-        textarea {
+        /* Estilo para campos de entrada em páginas com fundo claro */
+        /* NOTA: Páginas com tema escuro (login) usam estilos inline específicos */
+        input:not([type="checkbox"]):not([type="radio"]):not([style*="background"]), 
+        select:not([style*="background"]), 
+        textarea:not([style*="background"]) {
             border: 1.5px solid #d1d5db !important; /* Gray-300: visível e discreto */
-            background-color: #ffffff !important;
+            background-color: #ffffff;
             transition: all 0.2s ease-in-out !important;
         }
 

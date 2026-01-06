@@ -17,7 +17,8 @@
 /* Reduz a fonte base do body para tornar 
    toda a interface mais compacta */
 html {
-    font-size: 14px; /* Base original: 16px - Redução de ~12% */
+    font-size: 14px;
+    /* Base original: 16px - Redução de ~12% */
 }
 
 /* ============================================
@@ -28,7 +29,8 @@ html {
 h1,
 .text-3xl,
 .text-4xl {
-    font-size: 1.75rem !important; /* Era ~2rem, agora mais compacto */
+    font-size: 1.75rem !important;
+    /* Era ~2rem, agora mais compacto */
 }
 
 /* ============================================
@@ -38,12 +40,14 @@ h1,
 
 h2,
 .text-2xl {
-    font-size: 1.35rem !important; /* Era 1.5rem */
+    font-size: 1.35rem !important;
+    /* Era 1.5rem */
 }
 
 h3,
 .text-xl {
-    font-size: 1.15rem !important; /* Era 1.25rem */
+    font-size: 1.15rem !important;
+    /* Era 1.25rem */
 }
 
 /* ============================================
@@ -53,7 +57,8 @@ h3,
 
 h4,
 .text-lg {
-    font-size: 1rem !important; /* Era 1.125rem */
+    font-size: 1rem !important;
+    /* Era 1.125rem */
 }
 
 h5,
@@ -68,7 +73,8 @@ h6 {
 
 label,
 .text-sm {
-    font-size: 0.8125rem !important; /* Era 0.875rem */
+    font-size: 0.8125rem !important;
+    /* Era 0.875rem */
 }
 
 /* ============================================
@@ -77,7 +83,8 @@ label,
    ============================================ */
 
 .text-xs {
-    font-size: 0.7rem !important; /* Era 0.75rem */
+    font-size: 0.7rem !important;
+    /* Era 0.75rem */
 }
 
 /* Textos de tabelas */
@@ -97,7 +104,8 @@ button,
 [type="submit"],
 [type="reset"],
 .btn {
-    font-size: 0.8125rem !important; /* Texto mais compacto */
+    font-size: 0.8125rem !important;
+    /* Texto mais compacto */
     /* Mantém altura e largura originais via padding do Tailwind */
 }
 
@@ -110,13 +118,20 @@ input,
 select,
 textarea {
     font-size: 0.875rem !important;
-    color: #ffffff !important; /* Texto branco para inputs */
-    caret-color: #ffffff; /* Cursor visível */
+    color: #ffffff !important;
+    /* Texto branco para inputs */
+    caret-color: #ffffff;
+    /* Cursor visível */
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    /* Fundo escuro semi-transparente */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 0.5rem;
 }
 
 input::placeholder,
 textarea::placeholder {
-    color: rgba(255, 255, 255, 0.5) !important; /* Placeholder visível */
+    color: rgba(255, 255, 255, 0.5) !important;
+    /* Placeholder visível */
 }
 
 /* Classes de cor de texto (Tailwind utilities) */
@@ -143,11 +158,13 @@ small,
 
 p,
 .text-base {
-    font-size: 0.875rem !important; /* Era 1rem */
+    font-size: 0.875rem !important;
+    /* Era 1rem */
 }
 
 span:not([class*="text-"]) {
-    font-size: inherit; /* Herda do pai para manter consistência */
+    font-size: inherit;
+    /* Herda do pai para manter consistência */
 }
 
 /* ============================================
