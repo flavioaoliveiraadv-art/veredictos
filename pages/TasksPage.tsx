@@ -53,7 +53,7 @@ interface TasksPageProps {
 const TasksPage: React.FC<TasksPageProps> = ({
   prazos, setPrazos, processos, clientes, financeiro, historico, setHistorico
 }) => {
-  const [activeTab, setActiveTab] = useState<'PENDENTES' | 'REALIZADOS' | 'CANCELADOS'>('PENDENTES');
+  const [activeTab, setActiveTab] = useState<'PENDENTES' | 'REALIZADAS' | 'CANCELADAS'>('PENDENTES');
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -101,8 +101,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
   const filteredItems = useMemo(() => {
     let base = prazos;
     if (activeTab === 'PENDENTES') base = base.filter(p => !p.concluido && !p.cancelado);
-    else if (activeTab === 'REALIZADOS') base = base.filter(p => p.concluido);
-    else if (activeTab === 'CANCELADOS') base = base.filter(p => p.cancelado);
+    else if (activeTab === 'REALIZADAS') base = base.filter(p => p.concluido);
+    else if (activeTab === 'CANCELADAS') base = base.filter(p => p.cancelado);
 
     if (searchTerm) {
       base = base.filter(p =>
@@ -120,7 +120,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
         if (diffB < 0 && diffA >= 0) return 1;
         return compareDatesBR(a.dataVencimento, b.dataVencimento);
       }
-      if (activeTab === 'REALIZADOS') {
+      if (activeTab === 'REALIZADAS') {
         return compareDatesBR(b.dataConclusao || '', a.dataConclusao || '');
       }
       return compareDatesBR(b.dataCancelamento || '', a.dataCancelamento || '');
@@ -232,7 +232,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
       <div className="flex flex-col md:flex-row items-center gap-4 bg-white p-4 rounded-[32px] shadow-sm border border-gray-100">
         <div className="flex items-center bg-gray-100 p-1 rounded-2xl w-full md:w-auto">
-          {['PENDENTES', 'REALIZADOS', 'CANCELADOS'].map((tab) => (
+          {['PENDENTES', 'REALIZADAS', 'CANCELADAS'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -303,8 +303,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
                     <p className="text-sm font-black text-gray-700">{item.dataVencimento}</p>
                     <p className="text-[10px] font-black uppercase tracking-widest mt-1">
                       {activeTab === 'PENDENTES' ? renderDaysCountdown(item.dataVencimento) :
-                        activeTab === 'REALIZADOS' ? `Realizado em ${item.dataConclusao}` :
-                          `Cancelado em ${item.dataCancelamento}`}
+                        activeTab === 'REALIZADAS' ? `Realizada em ${item.dataConclusao}` :
+                          `Cancelada em ${item.dataCancelamento}`}
                     </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-200 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />

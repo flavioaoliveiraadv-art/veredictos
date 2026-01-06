@@ -1,17 +1,17 @@
 
 import React, { useState, useMemo } from 'react';
-import { 
-  CheckCircle2, 
-  Plus, 
-  Trash2, 
-  X, 
-  Activity, 
-  History, 
-  Edit, 
-  Clock, 
-  User, 
-  Scale, 
-  ChevronRight, 
+import {
+  CheckCircle2,
+  Plus,
+  Trash2,
+  X,
+  Activity,
+  History,
+  Edit,
+  Clock,
+  User,
+  Scale,
+  ChevronRight,
   AlertTriangle,
   Info,
   Calendar,
@@ -21,21 +21,21 @@ import {
   DollarSign,
   ArrowRight
 } from 'lucide-react';
-import { 
-  Prazo, 
-  Processo, 
-  Cliente, 
-  TipoPrazo, 
-  ModalidadeAudiencia, 
-  HistoricoAlteracao, 
-  Financeiro, 
-  StatusProcesso 
+import {
+  Prazo,
+  Processo,
+  Cliente,
+  TipoPrazo,
+  ModalidadeAudiencia,
+  HistoricoAlteracao,
+  Financeiro,
+  StatusProcesso
 } from '../types';
-import { 
-  formatCurrency, 
-  maskDate, 
-  getTodayBR, 
-  compareDatesBR 
+import {
+  formatCurrency,
+  maskDate,
+  getTodayBR,
+  compareDatesBR
 } from '../utils/formatters';
 
 interface DeadlinesPageProps {
@@ -48,23 +48,23 @@ interface DeadlinesPageProps {
   setHistorico: React.Dispatch<React.SetStateAction<HistoricoAlteracao[]>>;
 }
 
-const DeadlinesPage: React.FC<DeadlinesPageProps> = ({ 
-  prazos, setPrazos, processos, clientes, financeiro, historico, setHistorico 
+const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
+  prazos, setPrazos, processos, clientes, financeiro, historico, setHistorico
 }) => {
-  const [activeTab, setActiveTab] = useState<'PENDENTES' | 'REALIZADOS' | 'CANCELADOS'>('PENDENTES');
+  const [activeTab, setActiveTab] = useState<'PENDENTES' | 'REALIZADAS' | 'CANCELADAS'>('PENDENTES');
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [selectedPrazo, setSelectedPrazo] = useState<Prazo | null>(null);
-  
+
   const todayBR = getTodayBR();
 
-  const INITIAL_STATE: Partial<Prazo> = { 
-    tipo: TipoPrazo.PRAZO, 
-    descricao: '', 
-    processoId: '', 
-    clienteId: '', 
-    dataVencimento: todayBR, 
+  const INITIAL_STATE: Partial<Prazo> = {
+    tipo: TipoPrazo.PRAZO,
+    descricao: '',
+    processoId: '',
+    clienteId: '',
+    dataVencimento: todayBR,
     dataFatal: '',
     responsavel: 'Dr. Arthur',
     critico: false,
@@ -91,8 +91,8 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
   const filteredPrazos = useMemo(() => {
     let base = prazos;
     if (activeTab === 'PENDENTES') base = prazos.filter(p => !p.concluido && !p.cancelado);
-    else if (activeTab === 'REALIZADOS') base = prazos.filter(p => p.concluido);
-    else if (activeTab === 'CANCELADOS') base = prazos.filter(p => p.cancelado);
+    else if (activeTab === 'REALIZADAS') base = prazos.filter(p => p.concluido);
+    else if (activeTab === 'CANCELADAS') base = prazos.filter(p => p.cancelado);
 
     return base.sort((a, b) => {
       if (activeTab === 'PENDENTES') {
@@ -197,7 +197,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
           <h1 className="text-3xl font-black text-[#0b1726]">Gestão de Prazos</h1>
           <p className="text-gray-500 font-medium">Acompanhamento centralizado de todas as atividades do escritório.</p>
         </div>
-        <button 
+        <button
           onClick={() => { setFormData(INITIAL_STATE); setIsFormModalOpen(true); }}
           className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-2 font-black shadow-xl shadow-indigo-100 transition-all"
         >
@@ -208,25 +208,25 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
       {/* Abas */}
       <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden">
         <div className="flex items-center bg-gray-50 p-2 gap-2">
-          <button 
+          <button
             onClick={() => setActiveTab('PENDENTES')}
             className={`flex-1 py-4 px-6 rounded-[28px] font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'PENDENTES' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Pendentes
             <span className="px-2 py-0.5 rounded-lg bg-gray-200 text-gray-500 text-[10px]">{prazos.filter(p => !p.concluido && !p.cancelado).length}</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('REALIZADOS')}
-            className={`flex-1 py-4 px-6 rounded-[28px] font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'REALIZADOS' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+          <button
+            onClick={() => setActiveTab('REALIZADAS')}
+            className={`flex-1 py-4 px-6 rounded-[28px] font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'REALIZADAS' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            Realizados
+            Realizadas
             <span className="px-2 py-0.5 rounded-lg bg-gray-200 text-gray-500 text-[10px]">{prazos.filter(p => p.concluido).length}</span>
           </button>
-          <button 
-            onClick={() => setActiveTab('CANCELADOS')}
-            className={`flex-1 py-4 px-6 rounded-[28px] font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'CANCELADOS' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+          <button
+            onClick={() => setActiveTab('CANCELADAS')}
+            className={`flex-1 py-4 px-6 rounded-[28px] font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'CANCELADAS' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
           >
-            Cancelados
+            Canceladas
             <span className="px-2 py-0.5 rounded-lg bg-gray-200 text-gray-500 text-[10px]">{prazos.filter(p => p.cancelado).length}</span>
           </button>
         </div>
@@ -236,18 +236,18 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
             const status = getDayLabel(prazo.dataVencimento);
             const proc = processos.find(p => p.id === prazo.processoId);
             const cli = clientes.find(c => c.id === prazo.clienteId);
-            
+
             return (
-              <div 
-                key={prazo.id} 
+              <div
+                key={prazo.id}
                 onClick={() => { setSelectedPrazo(prazo); setIsDetailModalOpen(true); }}
                 className="p-6 px-10 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-all group"
               >
                 <div className="flex items-center gap-6 flex-1 min-w-0">
                   <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shadow-sm ${getTypeStyle(prazo.tipo)} transition-transform group-hover:scale-110`}>
-                    {prazo.tipo === TipoPrazo.AUDIENCIA ? <Scale className="w-6 h-6" /> : 
-                     prazo.tipo === TipoPrazo.PRAZO ? <Clock className="w-6 h-6" /> : 
-                     <CheckSquare className="w-6 h-6" />}
+                    {prazo.tipo === TipoPrazo.AUDIENCIA ? <Scale className="w-6 h-6" /> :
+                      prazo.tipo === TipoPrazo.PRAZO ? <Clock className="w-6 h-6" /> :
+                        <CheckSquare className="w-6 h-6" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -270,7 +270,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
                       </p>
                     ) : (
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
-                        {activeTab === 'REALIZADOS' ? `Realizado em ${prazo.dataConclusao}` : `Cancelado em ${prazo.dataCancelamento}`}
+                        {activeTab === 'REALIZADAS' ? `Realizada em ${prazo.dataConclusao}` : `Cancelada em ${prazo.dataCancelamento}`}
                       </p>
                     )}
                   </div>
@@ -299,36 +299,36 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
               </h2>
               <button onClick={() => setIsFormModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X className="w-8 h-8" /></button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-10 custom-scroll space-y-6">
               <form id="prazoForm" onSubmit={handleSave} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
-                  <FormSelect label="Tipo de Atividade" required value={formData.tipo} onChange={e => setFormData({...formData, tipo: e.target.value as TipoPrazo})}>
+                  <FormSelect label="Tipo de Atividade" required value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value as TipoPrazo })}>
                     {Object.values(TipoPrazo).map(t => <option key={t} value={t}>{t}</option>)}
                   </FormSelect>
-                  <FormInput label="Responsável" required value={formData.responsavel} onChange={e => setFormData({...formData, responsavel: e.target.value})} />
+                  <FormInput label="Responsável" required value={formData.responsavel} onChange={e => setFormData({ ...formData, responsavel: e.target.value })} />
                 </div>
 
-                <FormInput label="Descrição" required placeholder="Ex: Protocolo de Réplica" value={formData.descricao} onChange={e => setFormData({...formData, descricao: e.target.value})} />
+                <FormInput label="Descrição" required placeholder="Ex: Protocolo de Réplica" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value })} />
 
                 <div className="grid grid-cols-2 gap-6">
-                  <FormSelect label="Cliente" required value={formData.clienteId} onChange={e => setFormData({...formData, clienteId: e.target.value})}>
+                  <FormSelect label="Cliente" required value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
                     <option value="">Selecione o Cliente...</option>
                     {activeClientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                   </FormSelect>
-                  <FormSelect label="Processo" required value={formData.processoId} onChange={e => setFormData({...formData, processoId: e.target.value})}>
+                  <FormSelect label="Processo" required value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
                     <option value="">Selecione o Processo...</option>
                     {activeProcessos.map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
                   </FormSelect>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
-                  <FormInput label="Data Interna (dd/mm/aaaa)" required placeholder="dd/mm/aaaa" value={formData.dataVencimento} onChange={e => setFormData({...formData, dataVencimento: maskDate(e.target.value)})} />
-                  <FormInput label="Data Fatal (dd/mm/aaaa)" placeholder="dd/mm/aaaa" value={formData.dataFatal} onChange={e => setFormData({...formData, dataFatal: maskDate(e.target.value)})} />
+                  <FormInput label="Data Interna (dd/mm/aaaa)" required placeholder="dd/mm/aaaa" value={formData.dataVencimento} onChange={e => setFormData({ ...formData, dataVencimento: maskDate(e.target.value) })} />
+                  <FormInput label="Data Fatal (dd/mm/aaaa)" placeholder="dd/mm/aaaa" value={formData.dataFatal} onChange={e => setFormData({ ...formData, dataFatal: maskDate(e.target.value) })} />
                 </div>
 
                 {formData.tipo === TipoPrazo.AUDIENCIA && (
-                  <FormSelect label="Modalidade da Audiência" required value={formData.modalidade} onChange={e => setFormData({...formData, modalidade: e.target.value as ModalidadeAudiencia})}>
+                  <FormSelect label="Modalidade da Audiência" required value={formData.modalidade} onChange={e => setFormData({ ...formData, modalidade: e.target.value as ModalidadeAudiencia })}>
                     <option value="">Selecione...</option>
                     {Object.values(ModalidadeAudiencia).map(m => <option key={m} value={m}>{m}</option>)}
                   </FormSelect>
@@ -336,7 +336,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
 
                 <div className="pt-4">
                   <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 transition-all">
-                    <input type="checkbox" checked={formData.critico} onChange={e => setFormData({...formData, critico: e.target.checked})} className="w-5 h-5 rounded border-gray-300 text-indigo-600" />
+                    <input type="checkbox" checked={formData.critico} onChange={e => setFormData({ ...formData, critico: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-indigo-600" />
                     <span className="text-xs font-black text-gray-700 uppercase tracking-widest">Marcar como Atividade Crítica / Urgente</span>
                   </label>
                 </div>
@@ -394,13 +394,13 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
                   {/* Fluxo de Realização / Cancelamento */}
                   {!selectedPrazo.concluido && !selectedPrazo.cancelado ? (
                     <div className="flex gap-4 pt-6 border-t border-gray-50">
-                      <button 
+                      <button
                         onClick={() => handleRealizar(selectedPrazo)}
                         className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-100 transition-all hover:bg-emerald-700"
                       >
                         <CheckCircle2 className="w-5 h-5" /> Marcar Realizada
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleCancelar(selectedPrazo)}
                         className="flex-1 py-4 bg-gray-100 text-gray-600 rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-all"
                       >
@@ -495,9 +495,9 @@ const DetailItem = ({ label, value, icon }: any) => (
 const FormInput = ({ label, ...props }: any) => (
   <div className="space-y-2">
     <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <input 
-      {...props} 
-      className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm" 
+    <input
+      {...props}
+      className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm"
     />
   </div>
 );
@@ -505,8 +505,8 @@ const FormInput = ({ label, ...props }: any) => (
 const FormSelect = ({ label, children, ...props }: any) => (
   <div className="space-y-2">
     <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <select 
-      {...props} 
+    <select
+      {...props}
       className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm appearance-none"
       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1.25rem center', backgroundSize: '1rem' }}
     >
