@@ -1,0 +1,194 @@
+/*
+ * ============================================
+ * LEGALIS PRO - TIPOGRAFIA GLOBAL COMPACTA
+ * ============================================
+ * Ajustes visuais de fonte para interface
+ * mais profissional e densa.
+ * 
+ * NÃO altera: layout, grid, espaçamentos,
+ * componentes, funcionalidades ou lógica.
+ * ============================================
+ */
+
+/* ============================================
+   BASE - TAMANHO DE FONTE PADRÃO
+   ============================================ */
+
+/* Reduz a fonte base do body para tornar 
+   toda a interface mais compacta */
+html {
+    font-size: 14px; /* Base original: 16px - Redução de ~12% */
+}
+
+/* ============================================
+   TÍTULOS PRINCIPAIS (H1)
+   Redução de 10-15%
+   ============================================ */
+
+h1,
+.text-3xl,
+.text-4xl {
+    font-size: 1.75rem !important; /* Era ~2rem, agora mais compacto */
+}
+
+/* ============================================
+   SUBTÍTULOS E SEÇÕES (H2, H3)
+   Redução de ~10%
+   ============================================ */
+
+h2,
+.text-2xl {
+    font-size: 1.35rem !important; /* Era 1.5rem */
+}
+
+h3,
+.text-xl {
+    font-size: 1.15rem !important; /* Era 1.25rem */
+}
+
+/* ============================================
+   TEXTOS DE CARDS E CONTEÚDO (H4, H5, H6)
+   Redução de ~10%
+   ============================================ */
+
+h4,
+.text-lg {
+    font-size: 1rem !important; /* Era 1.125rem */
+}
+
+h5,
+h6 {
+    font-size: 0.925rem !important;
+}
+
+/* ============================================
+   LABELS DE CAMPOS
+   Redução sutil de 5-10%
+   ============================================ */
+
+label,
+.text-sm {
+    font-size: 0.8125rem !important; /* Era 0.875rem */
+}
+
+/* ============================================
+   TEXTOS PEQUENOS (Listas, Tabelas, Cards)
+   Mais compactos
+   ============================================ */
+
+.text-xs {
+    font-size: 0.7rem !important; /* Era 0.75rem */
+}
+
+/* Textos de tabelas */
+table,
+th,
+td {
+    font-size: 0.8125rem !important;
+}
+
+/* ============================================
+   BOTÕES
+   Apenas reduz o texto, NÃO altera dimensões
+   ============================================ */
+
+button,
+[type="button"],
+[type="submit"],
+[type="reset"],
+.btn {
+    font-size: 0.8125rem !important; /* Texto mais compacto */
+    /* Mantém altura e largura originais via padding do Tailwind */
+}
+
+/* ============================================
+   INPUTS E SELECTS
+   Texto mais compacto
+   ============================================ */
+
+input,
+select,
+textarea {
+    font-size: 0.875rem !important;
+}
+
+/* ============================================
+   TEXTOS AUXILIARES E BADGES
+   ============================================ */
+
+small,
+.text-muted,
+.text-gray-500,
+.text-gray-400,
+.text-slate-500,
+.text-slate-400 {
+    font-size: 0.75rem !important;
+}
+
+/* ============================================
+   TEXTOS BASE (Parágrafos e spans genéricos)
+   ============================================ */
+
+p,
+.text-base {
+    font-size: 0.875rem !important; /* Era 1rem */
+}
+
+span:not([class*="text-"]) {
+    font-size: inherit; /* Herda do pai para manter consistência */
+}
+
+/* ============================================
+   SIDEBAR E NAVEGAÇÃO
+   ============================================ */
+
+nav,
+aside {
+    font-size: 0.8125rem !important;
+}
+
+nav a,
+aside a,
+nav button,
+aside button {
+    font-size: 0.8125rem !important;
+}
+
+/* ============================================
+   MODAIS E DIALOGS
+   ============================================ */
+
+[role="dialog"],
+[role="alertdialog"],
+.modal {
+    font-size: 0.875rem;
+}
+
+[role="dialog"] h2,
+[role="alertdialog"] h2,
+.modal h2 {
+    font-size: 1.25rem !important;
+}
+
+/* ============================================
+   TOOLTIPS E POPOVERS
+   ============================================ */
+
+[role="tooltip"],
+.tooltip {
+    font-size: 0.75rem !important;
+}
+
+/* ============================================
+   LISTAS
+   ============================================ */
+
+ul,
+ol,
+li {
+    font-size: 0.8125rem !important;
+}
+
+/* ============================================
+   FIM DOS AJUSTES TIPOGRÁFICOS
+   ============================================ */
