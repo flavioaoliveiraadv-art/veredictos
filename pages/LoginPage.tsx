@@ -41,10 +41,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Email Profissional</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   defaultValue="admin@escritorio.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10 transition-all"
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '1rem',
+                    padding: '1rem 1rem 1rem 3rem',
+                    color: '#ffffff',
+                    outline: 'none',
+                  }}
                   placeholder="Seu e-mail"
                 />
               </div>
@@ -54,10 +62,18 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Senha de Acesso</label>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   defaultValue="123456"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white/10 transition-all"
+                  style={{
+                    width: '100%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '1rem',
+                    padding: '1rem 1rem 1rem 3rem',
+                    color: '#ffffff',
+                    outline: 'none',
+                  }}
                   placeholder="Sua senha"
                 />
               </div>
@@ -71,8 +87,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               <a href="#" className="text-blue-500 font-bold hover:underline">Esqueceu a senha?</a>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={loading}
               className="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-600/20 transition-all flex items-center justify-center gap-2 group"
             >
