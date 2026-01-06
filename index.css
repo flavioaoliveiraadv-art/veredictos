@@ -103,13 +103,25 @@ button,
 
 /* ============================================
    INPUTS E SELECTS
-   Texto mais compacto
+   Texto mais compacto + Visibilidade no tema escuro
    ============================================ */
 
 input,
 select,
 textarea {
     font-size: 0.875rem !important;
+    color: #ffffff !important; /* Texto branco para inputs */
+    caret-color: #ffffff; /* Cursor visível */
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important; /* Placeholder visível */
+}
+
+/* Classes de cor de texto (Tailwind utilities) */
+.text-white {
+    color: #ffffff !important;
 }
 
 /* ============================================
