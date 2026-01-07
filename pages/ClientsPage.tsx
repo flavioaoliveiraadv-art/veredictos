@@ -30,6 +30,7 @@ const INITIAL_FORM_STATE: Partial<Cliente> = {
   profissao: '',
   endereco: '',
   processosIds: [''],
+  tipo: 'PF',
   status: 'Ativo'
 };
 
@@ -96,7 +97,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
     const newCliente: Cliente = {
       ...formData,
       id,
-      tipo: 'PF',
+      tipo: formData.tipo || 'PF',
       createdAt: formData.createdAt || new Date().toISOString().split('T')[0],
       processosIds: cleanProcessosIds
     } as Cliente;
@@ -397,10 +398,21 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                     <Filter className="w-3 h-3" /> Dados de Qualificação
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 ml-1">Tipo de Pessoa</label>
+                      <select
+                        className="w-full px-5 py-2.5 bg-white rounded-2xl border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-sm transition-all"
+                        value={formData.tipo}
+                        onChange={e => setFormData({ ...formData, tipo: e.target.value as 'PF' | 'PJ' })}
+                      >
+                        <option value="PF">Pessoa Física</option>
+                        <option value="PJ">Pessoa Jurídica</option>
+                      </select>
+                    </div>
                     <FormInput label="Estado Civil" value={formData.estadoCivil} onChange={e => setFormData({ ...formData, estadoCivil: e.target.value })} placeholder="Solteiro, Casado..." />
                     <FormInput label="Profissão" value={formData.profissao} onChange={e => setFormData({ ...formData, profissao: e.target.value })} placeholder="Ex: Advogado, Engenheiro" />
                     <FormInput label="RG" value={formData.rg} onChange={e => setFormData({ ...formData, rg: e.target.value })} placeholder="00.000.000-0" />
-                    <FormInput label="CPF" value={formData.documento} onChange={e => setFormData({ ...formData, documento: e.target.value })} placeholder="000.000.000-00" />
+                    <FormInput label="CPF/CNPJ" value={formData.documento} onChange={e => setFormData({ ...formData, documento: e.target.value })} placeholder="000.000.000-00" />
                     <FormInput label="Telefone" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: e.target.value })} placeholder="(00) 00000-0000" />
                     <FormInput label="E-mail" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="exemplo@email.com" />
                     <div className="md:col-span-3">
