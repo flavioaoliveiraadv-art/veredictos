@@ -16,7 +16,7 @@ import { supabase } from './lib/supabase';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem('legalpro_auth') === 'true';
+    return sessionStorage.getItem('legalpro_auth') === 'true';
   });
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -111,12 +111,13 @@ const App: React.FC = () => {
 
   const handleLogin = (status: boolean) => {
     setIsAuthenticated(status);
-    localStorage.setItem('legalpro_auth', status.toString());
+    sessionStorage.setItem('legalpro_auth', status.toString());
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('legalpro_auth');
+    sessionStorage.removeItem('legalpro_auth');
+    localStorage.removeItem('legalpro_auth'); // Final cleanup of legacy key
   };
 
   if (loading) {
