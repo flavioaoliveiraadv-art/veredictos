@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Briefcase, 
+import {
+  LayoutDashboard,
+  Users,
+  Briefcase,
   LogOut,
   Scale,
   Calendar,
@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         <div className="bg-[#4f46e5] p-2 rounded-xl shadow-lg shadow-indigo-500/20">
           <Scale className="w-6 h-6 text-white" />
         </div>
-        <span className="text-xl font-black tracking-tight">Legalis Pro</span>
+        <span className="text-xl font-black tracking-tight">VeredictOS</span>
       </div>
 
       {/* Navigation */}
@@ -42,11 +42,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
           <NavLink
             key={item.path + item.name}
             to={item.path}
-            className={({ isActive }) => 
-              `flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-200 group ${
-                isActive 
-                  ? 'bg-[#4f46e5] text-white shadow-xl shadow-indigo-900/40' 
-                  : 'text-gray-400 hover:bg-white/5 hover:text-white'
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-200 group ${isActive
+                ? 'bg-[#4f46e5] text-white shadow-xl shadow-indigo-900/40'
+                : 'text-gray-400 hover:bg-white/5 hover:text-white'
               }`
             }
           >
@@ -58,7 +57,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
       {/* Footer / Logout Only */}
       <div className="p-4 mt-auto border-t border-white/5 bg-white/[0.02]">
-        <button 
+        <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-5 py-3 text-gray-400 hover:text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all duration-200 group"
         >
