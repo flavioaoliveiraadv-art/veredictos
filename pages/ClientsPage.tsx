@@ -195,20 +195,23 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredClientes.map(cliente => (
-          <div key={cliente.id} onClick={() => setSelectedCliente(cliente)} className="bg-white p-6 rounded-[32px] border border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-xl group-hover:bg-indigo-600 group-hover:text-white transition-all">
+          <div key={cliente.id} onClick={() => setSelectedCliente(cliente)} className="bg-white p-4 rounded-[32px] border border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-lg group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
                 {cliente.nome.charAt(0)}
               </div>
-              <div>
-                <h3 className="text-lg font-black text-gray-800">{cliente.nome}</h3>
-                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${cliente.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
+              <div className="min-w-0">
+                <h3 className="text-[13px] font-black text-gray-800 truncate mb-0.5">{cliente.nome}</h3>
+                {cliente.representanteLegal && (
+                  <p className="text-[10px] font-bold text-gray-400 truncate mb-1 uppercase">Rep: {cliente.representanteLegal}</p>
+                )}
+                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${cliente.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
                   {cliente.status}
                 </span>
               </div>
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between text-indigo-600 font-black text-[10px] uppercase tracking-widest group-hover:translate-x-1 transition-transform">
-              Ver Ficha Completa <ChevronRight className="w-4 h-4" />
+            <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-indigo-600 font-black text-[9px] uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+              Ver Ficha Completa <ChevronRight className="w-3.5 h-3.5" />
             </div>
           </div>
         ))}
