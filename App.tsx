@@ -136,12 +136,16 @@ const App: React.FC = () => {
   const handleLogin = (status: boolean) => {
     setIsAuthenticated(status);
     sessionStorage.setItem('legalpro_auth', status.toString());
+    if (status) {
+      window.location.hash = '#/';
+    }
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem('legalpro_auth');
     localStorage.removeItem('legalpro_auth'); // Final cleanup of legacy key
+    window.location.hash = '#/';
   };
 
   const sortedClientes = React.useMemo(() => {
