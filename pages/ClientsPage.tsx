@@ -1,12 +1,12 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  Plus, Search, Mail, Phone, User, Trash2, Edit, History, X, 
+import {
+  Plus, Search, Mail, Phone, User, Trash2, Edit, History, X,
   CheckCircle2, ChevronRight, Save, DollarSign, Filter,
   MinusCircle, FileText
 } from 'lucide-react';
-import { 
-  Cliente, Processo, Financeiro, HistoricoAlteracao, StatusProcesso 
+import {
+  Cliente, Processo, Financeiro, HistoricoAlteracao, StatusProcesso
 } from '../types';
 
 interface ClientsPageProps {
@@ -29,13 +29,13 @@ const INITIAL_FORM_STATE: Partial<Cliente> = {
   estadoCivil: '',
   profissao: '',
   endereco: '',
-  processosIds: [''], 
+  processosIds: [''],
   status: 'Ativo'
 };
 
 // Fixed: Corrected typo 'procesos' to 'processos' in props destructuring
-const ClientsPage: React.FC<ClientsPageProps> = ({ 
-  clientes, setClientes, processos, setProcessos, financeiro, historico, setHistorico 
+const ClientsPage: React.FC<ClientsPageProps> = ({
+  clientes, setClientes, processos, setProcessos, financeiro, historico, setHistorico
 }) => {
   const [activeTab, setActiveTab] = useState<'ATIVO' | 'INATIVO'>('ATIVO');
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,8 +62,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
   const filteredClientes = useMemo(() => {
     return clientes.filter(c => {
       const matchesTab = c.status === (activeTab === 'ATIVO' ? 'Ativo' : 'Inativo');
-      const matchesSearch = c.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            c.documento.includes(searchTerm);
+      const matchesSearch = c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.documento.includes(searchTerm);
       return matchesTab && matchesSearch;
     });
   }, [clientes, activeTab, searchTerm]);
@@ -98,7 +98,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
       id,
       tipo: 'PF',
       createdAt: formData.createdAt || new Date().toISOString().split('T')[0],
-      processosIds: cleanProcessosIds 
+      processosIds: cleanProcessosIds
     } as Cliente;
 
     if (formData.id) {
@@ -160,13 +160,13 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
           <h1 className="text-3xl font-bold text-[#0b1726]">Clientes</h1>
           <p className="text-gray-500 font-medium">Gestão centralizada da sua base de clientes.</p>
         </div>
-        <button 
-          onClick={() => { 
+        <button
+          onClick={() => {
             const state = INITIAL_FORM_STATE;
-            setFormData(state); 
+            setFormData(state);
             setInitialFormValue(JSON.stringify(state));
-            setIsEditMode(false); 
-            setIsNewClientModalOpen(true); 
+            setIsEditMode(false);
+            setIsNewClientModalOpen(true);
           }}
           className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-2 font-black shadow-xl shadow-indigo-200 transition-all"
         >
@@ -181,8 +181,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
         </div>
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input 
-            type="text" placeholder="Buscar por nome ou CPF..." 
+          <input
+            type="text" placeholder="Buscar por nome ou CPF..."
             className="w-full pl-12 pr-4 py-3 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
             value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -223,11 +223,11 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
 
       {/* MODAL: DETALHES DO CLIENTE */}
       {selectedCliente && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-md z-40 flex items-center justify-center p-4 cursor-default"
           onClick={() => setSelectedCliente(null)}
         >
-          <div 
+          <div
             className="bg-white rounded-[40px] w-full max-w-5xl shadow-2xl animate-in zoom-in duration-300 max-h-[90vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
@@ -244,13 +244,13 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setIsHistoryModalOpen(true)} className="p-3 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all"><History className="w-6 h-6" /></button>
-                  <button onClick={() => { 
+                  <button onClick={() => {
                     const procsIds = getProcessosDoCliente(selectedCliente.id).map(p => p.id);
                     const state = { ...selectedCliente, processosIds: procsIds.length > 0 ? procsIds : [''] };
-                    setFormData(state); 
+                    setFormData(state);
                     setInitialFormValue(JSON.stringify(state));
-                    setIsEditMode(true); 
-                    setIsNewClientModalOpen(true); 
+                    setIsEditMode(true);
+                    setIsNewClientModalOpen(true);
                   }} className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-2xl transition-all"><Edit className="w-6 h-6" /></button>
                   <button onClick={() => handleDelete(selectedCliente.id)} className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all"><Trash2 className="w-6 h-6" /></button>
                   <button onClick={() => setSelectedCliente(null)} className="p-3 text-gray-400 hover:text-gray-800 rounded-2xl transition-all ml-4"><X className="w-8 h-8" /></button>
@@ -345,12 +345,12 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
 
       {/* MODAL: CADASTRO / EDIÇÃO */}
       {isNewClientModalOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 cursor-default"
           onClick={handleCloseNewClientModal}
         >
-          <div 
-            className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl animate-in zoom-in duration-300 max-h-[90vh] flex flex-col overflow-hidden"
+          <div
+            className="bg-white rounded-[40px] w-full max-w-4xl shadow-2xl animate-in zoom-in duration-300 max-h-[90vh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-8 pb-6 flex items-center justify-between border-b border-gray-100">
@@ -362,19 +362,22 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-8 custom-scroll">
-              <form id="clientForm" onSubmit={handleSaveCliente} className="space-y-8">
-                <div>
-                  <FormInput label="Cliente" required value={formData.nome} onChange={e => setFormData({...formData, nome: e.target.value})} placeholder="Nome Completo do Cliente" />
+              <form id="clientForm" onSubmit={handleSaveCliente} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-2">
+                    <FormInput label="Cliente" required value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value })} placeholder="Nome Completo do Cliente" />
+                  </div>
+                  <FormInput label="Representante Legal" value={formData.representanteLegal} onChange={e => setFormData({ ...formData, representanteLegal: e.target.value })} placeholder="Nome do Representante" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormInput label="Representante Legal" value={formData.representanteLegal} onChange={e => setFormData({...formData, representanteLegal: e.target.value})} placeholder="Nome do Representante" />
-                  <div className="space-y-4">
-                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Número do Processo</label>
+
+                <div className="space-y-3">
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Vínculo com Processo Judicial</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-3">
                       {(formData.processosIds || []).map((pid, idx) => (
                         <div key={idx} className="flex gap-2">
-                          <select 
-                            className="flex-1 px-5 py-3.5 bg-white rounded-2xl border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-sm transition-all"
+                          <select
+                            className="flex-1 px-5 py-2.5 bg-white rounded-2xl border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-sm transition-all"
                             value={pid}
                             onChange={e => updateProcessId(idx, e.target.value)}
                           >
@@ -390,25 +393,30 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                           )}
                         </div>
                       ))}
+                      <button type="button" onClick={addProcessField} className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase flex items-center gap-1 mt-1 ml-1 transition-colors">
+                        <Plus className="w-4 h-4" /> Adicionar outro processo
+                      </button>
                     </div>
-                    <button type="button" onClick={addProcessField} className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase flex items-center gap-1 mt-2 ml-1 transition-colors">
-                      <Plus className="w-4 h-4" /> Adicionar outro processo
-                    </button>
+                    <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-center gap-3 h-fit">
+                      <FileText className="w-5 h-5 text-indigo-500" />
+                      <p className="text-[10px] font-bold text-indigo-700 uppercase leading-tight tracking-wider">Selecione processos ativos para vinculação imediata à ficha do cliente.</p>
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-6 pt-8 border-t border-gray-50">
+
+                <div className="space-y-4 pt-6 border-t border-gray-50">
                   <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                     <Filter className="w-3 h-3" /> Dados de Qualificação
                   </h3>
-                  <div className="grid grid-cols-2 gap-6">
-                    <FormInput label="Estado Civil" value={formData.estadoCivil} onChange={e => setFormData({...formData, estadoCivil: e.target.value})} placeholder="Solteiro, Casado..." />
-                    <FormInput label="Profissão" value={formData.profissao} onChange={e => setFormData({...formData, profissao: e.target.value})} placeholder="Ex: Advogado, Engenheiro" />
-                    <FormInput label="RG" value={formData.rg} onChange={e => setFormData({...formData, rg: e.target.value})} placeholder="00.000.000-0" />
-                    <FormInput label="CPF" value={formData.documento} onChange={e => setFormData({...formData, documento: e.target.value})} placeholder="000.000.000-00" />
-                    <FormInput label="Telefone" value={formData.telefone} onChange={e => setFormData({...formData, telefone: e.target.value})} placeholder="(00) 00000-0000" />
-                    <FormInput label="E-mail" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="exemplo@email.com" />
-                    <div className="col-span-2">
-                      <FormInput label="Endereço com CEP" value={formData.endereco} onChange={e => setFormData({...formData, endereco: e.target.value})} placeholder="Rua, Número, Bairro, Cidade, Estado - CEP 00000-000" />
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+                    <FormInput label="Estado Civil" value={formData.estadoCivil} onChange={e => setFormData({ ...formData, estadoCivil: e.target.value })} placeholder="Solteiro, Casado..." />
+                    <FormInput label="Profissão" value={formData.profissao} onChange={e => setFormData({ ...formData, profissao: e.target.value })} placeholder="Ex: Advogado, Engenheiro" />
+                    <FormInput label="RG" value={formData.rg} onChange={e => setFormData({ ...formData, rg: e.target.value })} placeholder="00.000.000-0" />
+                    <FormInput label="CPF" value={formData.documento} onChange={e => setFormData({ ...formData, documento: e.target.value })} placeholder="000.000.000-00" />
+                    <FormInput label="Telefone" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: e.target.value })} placeholder="(00) 00000-0000" />
+                    <FormInput label="E-mail" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="exemplo@email.com" />
+                    <div className="md:col-span-3">
+                      <FormInput label="Endereço com CEP" value={formData.endereco} onChange={e => setFormData({ ...formData, endereco: e.target.value })} placeholder="Rua, Número, Bairro, Cidade, Estado - CEP 00000-000" />
                     </div>
                   </div>
                 </div>
@@ -424,11 +432,11 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
 
       {/* MODAL: HISTÓRICO */}
       {isHistoryModalOpen && selectedCliente && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4 cursor-default"
           onClick={() => setIsHistoryModalOpen(false)}
         >
-          <div 
+          <div
             className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300"
             onClick={(e) => e.stopPropagation()}
           >
@@ -466,9 +474,9 @@ const DetailField = ({ label, value, className = "" }: { label: string, value: s
 const FormInput = ({ label, ...props }: any) => (
   <div className="space-y-2">
     <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 ml-1">{label}</label>
-    <input 
-      {...props} 
-      className="w-full px-5 py-3.5 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-sm transition-all" 
+    <input
+      {...props}
+      className="w-full px-5 py-2.5 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-sm transition-all"
     />
   </div>
 );
