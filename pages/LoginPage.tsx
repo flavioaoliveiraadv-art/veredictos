@@ -43,7 +43,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
                 <input
                   type="email"
-                  defaultValue="oliveiraelinsadv@outlook.com"
                   style={{
                     width: '100%',
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -64,7 +63,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
                 <input
                   type="password"
-                  defaultValue="123456"
                   style={{
                     width: '100%',
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
