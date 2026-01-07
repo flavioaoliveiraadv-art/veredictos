@@ -19,7 +19,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1726] flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="login-container min-h-screen bg-[#0b1726] flex items-center justify-center p-6 relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-blue-600/10 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
       <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-blue-500/5 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
@@ -50,7 +50,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '1rem',
                     padding: '1rem 1rem 1rem 3rem',
-                    color: '#ffffff !important',
+                    color: '#ffffff',
                     outline: 'none',
                   }}
                   placeholder="Seu e-mail"
@@ -71,7 +71,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '1rem',
                     padding: '1rem 1rem 1rem 3rem',
-                    color: '#ffffff !important',
+                    color: '#ffffff',
                     outline: 'none',
                   }}
                   placeholder="Sua senha"

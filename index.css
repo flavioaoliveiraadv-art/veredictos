@@ -147,6 +147,17 @@ textarea::placeholder {
     font-weight: 400 !important;
 }
 
+/* Força visibilidade na tela de login (Dark Theme) */
+.login-container input:not([type="checkbox"]):not([type="radio"]) {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.login-container input::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
 /* Classes de cor de texto (Tailwind utilities) */
 .text-white {
     color: #ffffff !important;
