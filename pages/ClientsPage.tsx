@@ -200,7 +200,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                 {cliente.nome.charAt(0)}
               </div>
               <div>
-                <h3 className="text-lg font-black text-gray-800 truncate max-w-[180px]">{cliente.nome}</h3>
+                <h3 className="text-lg font-black text-gray-800">{cliente.nome}</h3>
                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${cliente.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
                   {cliente.status}
                 </span>
