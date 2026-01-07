@@ -73,7 +73,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
     horaVencimento: '',
     dataFatal: '',
     horaFatal: '',
-    responsavel: 'Dr. Arthur',
+    responsavel: '',
     critico: false,
     financeiroIds: [],
     concluido: false,
@@ -341,12 +341,12 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
               <form id="prazoForm" onSubmit={handleSave} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
                   <FormSelect label="Tipo de Atividade" required value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value as TipoPrazo })}>
-                    {Object.values(TipoPrazo).map(t => <option key={t} value={t}>{t}</option>)}
+                    {Object.values(TipoPrazo).filter(t => t !== TipoPrazo.TAREFA).map(t => <option key={t} value={t}>{t}</option>)}
                   </FormSelect>
                   <FormInput label="Responsável" required value={formData.responsavel} onChange={e => setFormData({ ...formData, responsavel: e.target.value })} />
                 </div>
 
-                <FormInput label="Descrição" required placeholder="Ex: Protocolo de Réplica" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value })} />
+                <FormInput label="Descrição" required placeholder="Ex: Protocolo de Réplica" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value.toUpperCase() })} />
 
                 <div className="grid grid-cols-2 gap-6">
                   <FormSelect label="Cliente" required value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>

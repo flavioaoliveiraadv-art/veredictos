@@ -76,7 +76,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
     horaVencimento: '',
     dataFatal: '',
     horaFatal: '',
-    responsavel: 'Dr. Arthur',
+    responsavel: '',
     critico: false,
     financeiroIds: [],
     concluido: false,
@@ -366,15 +366,15 @@ const TasksPage: React.FC<TasksPageProps> = ({
               <form id="taskForm" onSubmit={handleSave} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
                   <FormSelect label="Tipo de Atividade" required value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value as TipoPrazo })}>
-                    {Object.values(TipoPrazo).map(t => <option key={t} value={t}>{t}</option>)}
+                    {Object.values(TipoPrazo).filter(t => t !== TipoPrazo.TAREFA).map(t => <option key={t} value={t}>{t}</option>)}
                   </FormSelect>
                   <FormInput label="Responsável" required value={formData.responsavel} onChange={e => setFormData({ ...formData, responsavel: e.target.value })} />
                 </div>
 
-                <FormInput label="Descrição" required placeholder="Descreva a atividade" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value })} />
+                <FormInput label="Descrição" required placeholder="Descreva a atividade" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value.toUpperCase() })} />
 
                 <div className="grid grid-cols-2 gap-6">
-                  <FormSelect label="Cliente (Opcional)" value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
+                  <FormSelect label="Cliente" value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
                     <option value="">Nenhum cliente vinculado</option>
                     {activeClientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                   </FormSelect>
