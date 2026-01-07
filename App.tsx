@@ -152,3 +152,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+// Deployment: 2026-01-07 - Redeploy trigger
