@@ -548,32 +548,32 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
       {/* MODAL CADASTRO RECURSO */}
       {isRecModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4" onClick={() => setIsRecModalOpen(false)}>
-          <div className="bg-white rounded-[40px] w-full max-w-lg shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-[40px] w-full max-w-3xl shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="p-8 pb-6 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3"><Scale className="w-7 h-7 text-indigo-600" /> {recFormData.id ? 'Editar Recurso' : 'Novo Recurso'}</h2>
               <button onClick={() => setIsRecModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="w-8 h-8" /></button>
             </div>
             <div className="flex-1 overflow-y-auto p-10 custom-scroll">
-              <form id="recForm" onSubmit={handleSaveRecurso} className="space-y-5">
-                <FormInput label="Tipo de Recurso" required placeholder="Ex: Apelação, Agravo de Instrumento" value={recFormData.tipoRecurso} onChange={e => setRecFormData({ ...recFormData, tipoRecurso: e.target.value })} />
-                <FormSelect label="Processo Originário" required value={recFormData.processoOriginarioId} onChange={e => setRecFormData({ ...recFormData, processoOriginarioId: e.target.value })}>
-                  <option value="">Selecione o processo originário...</option>
-                  {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
-                </FormSelect>
-                <div className="space-y-2 opacity-80">
-                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente (Automático)</label>
-                  <input type="text" readOnly className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-gray-400 text-sm cursor-not-allowed" value={clientes.find(c => c.id === recFormData.clienteId)?.nome || 'Selecione o processo para vincular o cliente'} />
-                </div>
-                <FormInput label="Número do Recurso" placeholder="0000000-00.0000.0.00.0000" value={recFormData.numeroRecurso} onChange={e => setRecFormData({ ...recFormData, numeroRecurso: e.target.value })} />
-                <div className="grid grid-cols-2 gap-4">
+              <form id="recForm" onSubmit={handleSaveRecurso} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                  <FormInput label="Tipo de Recurso" required placeholder="Ex: Apelação, Agravo de Instrumento" value={recFormData.tipoRecurso} onChange={e => setRecFormData({ ...recFormData, tipoRecurso: e.target.value })} />
+                  <FormSelect label="Processo Originário" required value={recFormData.processoOriginarioId} onChange={e => setRecFormData({ ...recFormData, processoOriginarioId: e.target.value })}>
+                    <option value="">Selecione o processo originário...</option>
+                    {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
+                  </FormSelect>
+                  <div className="space-y-2 opacity-80">
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente (Automático)</label>
+                    <input type="text" readOnly className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-400 text-sm cursor-not-allowed" value={clientes.find(c => c.id === recFormData.clienteId)?.nome || 'Selecione o processo para vincular o cliente'} />
+                  </div>
+                  <FormInput label="Número do Recurso" placeholder="0000000-00.0000.0.00.0000" value={recFormData.numeroRecurso} onChange={e => setRecFormData({ ...recFormData, numeroRecurso: e.target.value })} />
                   <FormSelect label="Gratuidade" value={recFormData.gratuidade ? 'S' : 'N'} onChange={e => setRecFormData({ ...recFormData, gratuidade: e.target.value === 'S' })}>
                     <option value="N">Não</option>
                     <option value="S">Sim</option>
                   </FormSelect>
                   <FormInput label="Data Distribuição" type="date" value={toISODate(recFormData.dataDistribuicao || '')} onChange={e => setRecFormData({ ...recFormData, dataDistribuicao: toBRDate(e.target.value) })} />
+                  <FormInput label="Tribunal" placeholder="Ex: TJSP, STJ" value={recFormData.tribunal} onChange={e => setRecFormData({ ...recFormData, tribunal: e.target.value })} />
+                  <FormInput label="Local de Tramitação" placeholder="Ex: 1ª Câmara de Direito Privado" value={recFormData.localTramitacao} onChange={e => setRecFormData({ ...recFormData, localTramitacao: e.target.value })} />
                 </div>
-                <FormInput label="Tribunal" placeholder="Ex: TJSP, STJ" value={recFormData.tribunal} onChange={e => setRecFormData({ ...recFormData, tribunal: e.target.value })} />
-                <FormInput label="Local de Tramitação" placeholder="Ex: 1ª Câmara de Direito Privado" value={recFormData.localTramitacao} onChange={e => setRecFormData({ ...recFormData, localTramitacao: e.target.value })} />
               </form>
             </div>
             <div className="p-8 border-t border-gray-100 bg-gray-50 flex gap-4">
