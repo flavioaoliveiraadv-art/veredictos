@@ -1,16 +1,16 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  Plus, Search, FileText, Scale, Clock, AlertTriangle, 
+import {
+  Plus, Search, FileText, Scale, Clock, AlertTriangle,
   Trash2, Edit, History, X, CheckCircle2, ChevronRight, Save,
   Filter, Calendar, Activity, RotateCcw, ArrowUpRight, Briefcase,
   User, DollarSign, CheckSquare, XCircle
 } from 'lucide-react';
-import { 
-  Processo, Cliente, StatusProcesso, Prazo, Recurso, HistoricoAlteracao, 
-  AreaAtuacao, FaseProcessual, Financeiro 
+import {
+  Processo, Cliente, StatusProcesso, Prazo, Recurso, HistoricoAlteracao,
+  AreaAtuacao, FaseProcessual, Financeiro
 } from '../types';
-import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR } from '../utils/formatters';
+import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
 
 interface ProcessesPageProps {
   processos: Processo[];
@@ -28,7 +28,7 @@ interface ProcessesPageProps {
 const INITIAL_PROC_STATE: Partial<Processo> = { areaAtuacao: AreaAtuacao.CIVEL, faseProcessual: FaseProcessual.CONHECIMENTO, status: StatusProcesso.ATIVO, numeros: [''], valorCausa: 0, dataDistribuicao: getTodayBR() };
 const INITIAL_REC_STATE: Partial<Recurso> = { dataDistribuicao: getTodayBR(), gratuidade: false, status: StatusProcesso.ATIVO };
 
-const ProcessesPage: React.FC<ProcessesPageProps> = ({ 
+const ProcessesPage: React.FC<ProcessesPageProps> = ({
   processos, setProcessos, clientes, setPrazos, prazos, recursos, setRecursos, historico, setHistorico, financeiro
 }) => {
   const [activeTab, setActiveTab] = useState<'ATIVO' | 'ARQUIVADO'>('ATIVO');
@@ -56,13 +56,13 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   // Listagem Unificada de Processos e Recursos
   const unificadaList = useMemo(() => {
     const targetStatus = activeTab === 'ATIVO' ? StatusProcesso.ATIVO : StatusProcesso.ARQUIVADO;
-    
+
     // Processos filtrados
     const procs = processos.filter(p => {
       const matchesTab = p.status === targetStatus;
-      const matchesSearch = p.objeto.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            p.numeros.some(n => n.includes(searchTerm)) ||
-                            clientes.find(c => c.id === p.clienteId)?.nome.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = p.objeto.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.numeros.some(n => n.includes(searchTerm)) ||
+        clientes.find(c => c.id === p.clienteId)?.nome.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesTab && matchesSearch;
     }).map(p => ({ ...p, _tipoItem: 'PROCESSO' as const }));
 
@@ -70,10 +70,10 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     const recs = recursos.filter(r => {
       const matchesTab = (r.status || StatusProcesso.ATIVO) === targetStatus;
       const cli = clientes.find(c => c.id === r.clienteId);
-      const matchesSearch = r.tipoRecurso.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            r.numeroRecurso.includes(searchTerm) ||
-                            cli?.nome.toLowerCase().includes(searchTerm.toLowerCase());
-      
+      const matchesSearch = r.tipoRecurso.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        r.numeroRecurso.includes(searchTerm) ||
+        cli?.nome.toLowerCase().includes(searchTerm.toLowerCase());
+
       return matchesTab && matchesSearch;
     }).map(r => ({ ...r, _tipoItem: 'RECURSO' as const }));
 
@@ -109,8 +109,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   const handleSaveRecurso = (e: React.FormEvent) => {
     e.preventDefault();
     const id = recFormData.id || `rec-${Date.now()}`;
-    const newRec: Recurso = { 
-      ...recFormData, 
+    const newRec: Recurso = {
+      ...recFormData,
       id,
       status: recFormData.status || StatusProcesso.ATIVO,
       ultimaAtualizacao: getTodayBR()
@@ -170,14 +170,14 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
           <p className="text-gray-500 font-medium">Gestão unificada de acervo judicial e recursos de 2º grau.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
-          <button 
-            onClick={() => { setProcFormData(INITIAL_PROC_STATE); setIsProcModalOpen(true); }} 
+          <button
+            onClick={() => { setProcFormData(INITIAL_PROC_STATE); setIsProcModalOpen(true); }}
             className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-2 font-black shadow-xl shadow-indigo-200 transition-all"
           >
             <Plus className="w-5 h-5" /> Novo Processo
           </button>
-          <button 
-            onClick={() => { setRecFormData(INITIAL_REC_STATE); setIsRecModalOpen(true); }} 
+          <button
+            onClick={() => { setRecFormData(INITIAL_REC_STATE); setIsRecModalOpen(true); }}
             className="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all shadow-sm"
           >
             <ArrowUpRight className="w-5 h-5 text-indigo-500" /> Novo Recurso
@@ -202,9 +202,9 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             const proc = item as Processo;
             const cli = clientes.find(c => c.id === proc.clienteId);
             return (
-              <div 
-                key={proc.id} 
-                onClick={() => setSelectedProcess(proc)} 
+              <div
+                key={proc.id}
+                onClick={() => setSelectedProcess(proc)}
                 className="bg-white p-6 rounded-[32px] border border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer flex items-center justify-between group relative overflow-hidden"
               >
                 <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-indigo-500"></div>
@@ -227,7 +227,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   </div>
                 </div>
                 <div className="text-right flex flex-col items-end gap-2">
-                   <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-black uppercase tracking-tighter bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
+                  <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-black uppercase tracking-tighter bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
                     <Clock className="w-3.5 h-3.5 text-indigo-400" /> Atualizado em {proc.ultimaAtualizacao}
                   </div>
                   <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${proc.status === StatusProcesso.ATIVO ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>{proc.status}</span>
@@ -239,9 +239,9 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             const cli = clientes.find(c => c.id === rec.clienteId);
             const pai = processos.find(p => p.id === rec.processoOriginarioId);
             return (
-              <div 
-                key={rec.id} 
-                onClick={() => setSelectedRecurso(rec)} 
+              <div
+                key={rec.id}
+                onClick={() => setSelectedRecurso(rec)}
                 className="bg-white p-6 rounded-[32px] border border-orange-100 hover:border-orange-300 hover:shadow-xl hover:shadow-orange-500/5 transition-all cursor-pointer flex items-center justify-between group relative overflow-hidden"
               >
                 <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-orange-400"></div>
@@ -329,8 +329,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     <div className="space-y-3">
                       {recursos.filter(r => r.processoOriginarioId === selectedProcess.id).length > 0 ? (
                         recursos.filter(r => r.processoOriginarioId === selectedProcess.id).map(r => (
-                          <div 
-                            key={r.id} 
+                          <div
+                            key={r.id}
                             onClick={() => { setSelectedRecurso(r); setSelectedProcess(null); }}
                             className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100 flex items-center justify-between cursor-pointer hover:bg-orange-50 transition-all"
                           >
@@ -464,36 +464,36 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-12">
-                   <DetailField label="Número do Recurso" value={selectedRecurso.numeroRecurso} />
-                   <DetailField label="Local de Tramitação" value={selectedRecurso.localTramitacao} />
-                   <DetailField label="Tribunal" value={selectedRecurso.tribunal} />
-                   <DetailField label="Data de Distribuição" value={selectedRecurso.dataDistribuicao} />
-                   <DetailField label="Cliente Vinculado" value={clientes.find(c => c.id === selectedRecurso.clienteId)?.nome || '-'} />
-                   <DetailField label="Assistência Judiciária" value={selectedRecurso.gratuidade ? 'CONCEDIDA' : 'NEGADA / NÃO REQUERIDA'} />
-                 </div>
-                 
-                 <div className="space-y-6">
-                    <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
-                      <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Controle de Status</h4>
-                      <div className="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100 mb-4 shadow-sm">
-                        <div className="flex items-center gap-3">
-                          <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                          <span className="text-sm font-black text-gray-700">Arquivar</span>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                          <input type="checkbox" checked={selectedRecurso.status === StatusProcesso.ARQUIVADO} onChange={() => {
-                            const newStatus = selectedRecurso.status === StatusProcesso.ARQUIVADO ? StatusProcesso.ATIVO : StatusProcesso.ARQUIVADO;
-                            const today = getTodayBR();
-                            setRecursos(prev => prev.map(r => r.id === selectedRecurso.id ? { ...r, status: newStatus, ultimaAtualizacao: today } : r));
-                            addHistorico(selectedRecurso.processoOriginarioId, `Recurso ${selectedRecurso.tipoRecurso} alterado para ${newStatus}.`);
-                            setSelectedRecurso(null);
-                          }} className="sr-only peer" />
-                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                        </label>
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-12">
+                  <DetailField label="Número do Recurso" value={selectedRecurso.numeroRecurso} />
+                  <DetailField label="Local de Tramitação" value={selectedRecurso.localTramitacao} />
+                  <DetailField label="Tribunal" value={selectedRecurso.tribunal} />
+                  <DetailField label="Data de Distribuição" value={selectedRecurso.dataDistribuicao} />
+                  <DetailField label="Cliente Vinculado" value={clientes.find(c => c.id === selectedRecurso.clienteId)?.nome || '-'} />
+                  <DetailField label="Assistência Judiciária" value={selectedRecurso.gratuidade ? 'CONCEDIDA' : 'NEGADA / NÃO REQUERIDA'} />
+                </div>
+
+                <div className="space-y-6">
+                  <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Controle de Status</h4>
+                    <div className="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100 mb-4 shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                        <span className="text-sm font-black text-gray-700">Arquivar</span>
                       </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked={selectedRecurso.status === StatusProcesso.ARQUIVADO} onChange={() => {
+                          const newStatus = selectedRecurso.status === StatusProcesso.ARQUIVADO ? StatusProcesso.ATIVO : StatusProcesso.ARQUIVADO;
+                          const today = getTodayBR();
+                          setRecursos(prev => prev.map(r => r.id === selectedRecurso.id ? { ...r, status: newStatus, ultimaAtualizacao: today } : r));
+                          addHistorico(selectedRecurso.processoOriginarioId, `Recurso ${selectedRecurso.tipoRecurso} alterado para ${newStatus}.`);
+                          setSelectedRecurso(null);
+                        }} className="sr-only peer" />
+                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                      </label>
                     </div>
-                 </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -511,24 +511,24 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             <div className="flex-1 overflow-y-auto p-10 custom-scroll">
               <form id="procForm" onSubmit={handleSaveProcess} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <FormSelect label="Cliente" required value={procFormData.clienteId} onChange={e => setProcFormData({...procFormData, clienteId: e.target.value})}>
-                      <option value="">Selecione...</option>
-                      {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                   </FormSelect>
-                   <FormInput label="Número do Processo" required placeholder="0000000-00.0000.0.00.0000" value={procFormData.numeros?.[0] || ''} onChange={e => setProcFormData({...procFormData, numeros: [e.target.value]})} />
-                   <FormInput label="Parte Contrária" placeholder="Nome da Parte Contrária" value={procFormData.parteContraria} onChange={e => setProcFormData({...procFormData, parteContraria: e.target.value})} />
-                   <FormInput label="Valor da Causa" placeholder="R$ 0,00" value={formatCurrency(procFormData.valorCausa || 0)} onChange={e => setProcFormData({...procFormData, valorCausa: parseCurrency(e.target.value)})} />
-                   <div className="col-span-2"><FormInput label="Objeto do Processo" required placeholder="Descreva o objeto da ação" value={procFormData.objeto} onChange={e => setProcFormData({...procFormData, objeto: e.target.value})} /></div>
-                   <FormSelect label="Área de Atuação" value={procFormData.areaAtuacao} onChange={e => setProcFormData({...procFormData, areaAtuacao: e.target.value as AreaAtuacao})}>
-                      {Object.values(AreaAtuacao).map(v => <option key={v} value={v}>{v}</option>)}
-                   </FormSelect>
-                   <FormSelect label="Fase Processual" value={procFormData.faseProcessual} onChange={e => setProcFormData({...procFormData, faseProcessual: e.target.value as FaseProcessual})}>
-                      {Object.values(FaseProcessual).map(v => <option key={v} value={v}>{v}</option>)}
-                   </FormSelect>
-                   <FormInput label="Comarca" placeholder="Ex: São Paulo" value={procFormData.comarca} onChange={e => setProcFormData({...procFormData, comarca: e.target.value})} />
-                   <FormInput label="Tribunal" placeholder="Ex: TJSP" value={procFormData.tribunal} onChange={e => setProcFormData({...procFormData, tribunal: e.target.value})} />
-                   <FormInput label="Vara / Local" placeholder="Ex: 1ª Vara Cível" value={procFormData.localTramitacao} onChange={e => setProcFormData({...procFormData, localTramitacao: e.target.value})} />
-                   <div className="col-span-2"><FormInput label="Data de Distribuição" placeholder="dd/mm/aaaa" value={procFormData.dataDistribuicao} onChange={e => setProcFormData({...procFormData, dataDistribuicao: maskDate(e.target.value)})} /></div>
+                  <FormSelect label="Cliente" required value={procFormData.clienteId} onChange={e => setProcFormData({ ...procFormData, clienteId: e.target.value })}>
+                    <option value="">Selecione...</option>
+                    {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                  </FormSelect>
+                  <FormInput label="Número do Processo" required placeholder="0000000-00.0000.0.00.0000" value={procFormData.numeros?.[0] || ''} onChange={e => setProcFormData({ ...procFormData, numeros: [e.target.value] })} />
+                  <FormInput label="Parte Contrária" placeholder="Nome da Parte Contrária" value={procFormData.parteContraria} onChange={e => setProcFormData({ ...procFormData, parteContraria: e.target.value })} />
+                  <FormInput label="Valor da Causa" placeholder="R$ 0,00" value={formatCurrency(procFormData.valorCausa || 0)} onChange={e => setProcFormData({ ...procFormData, valorCausa: parseCurrency(e.target.value) })} />
+                  <div className="col-span-2"><FormInput label="Objeto do Processo" required placeholder="Descreva o objeto da ação" value={procFormData.objeto} onChange={e => setProcFormData({ ...procFormData, objeto: e.target.value })} /></div>
+                  <FormSelect label="Área de Atuação" value={procFormData.areaAtuacao} onChange={e => setProcFormData({ ...procFormData, areaAtuacao: e.target.value as AreaAtuacao })}>
+                    {Object.values(AreaAtuacao).map(v => <option key={v} value={v}>{v}</option>)}
+                  </FormSelect>
+                  <FormSelect label="Fase Processual" value={procFormData.faseProcessual} onChange={e => setProcFormData({ ...procFormData, faseProcessual: e.target.value as FaseProcessual })}>
+                    {Object.values(FaseProcessual).map(v => <option key={v} value={v}>{v}</option>)}
+                  </FormSelect>
+                  <FormInput label="Comarca" placeholder="Ex: São Paulo" value={procFormData.comarca} onChange={e => setProcFormData({ ...procFormData, comarca: e.target.value })} />
+                  <FormInput label="Tribunal" placeholder="Ex: TJSP" value={procFormData.tribunal} onChange={e => setProcFormData({ ...procFormData, tribunal: e.target.value })} />
+                  <FormInput label="Vara / Local" placeholder="Ex: 1ª Vara Cível" value={procFormData.localTramitacao} onChange={e => setProcFormData({ ...procFormData, localTramitacao: e.target.value })} />
+                  <div className="col-span-2"><FormInput label="Data de Distribuição" type="date" value={toISODate(procFormData.dataDistribuicao || '')} onChange={e => setProcFormData({ ...procFormData, dataDistribuicao: toBRDate(e.target.value) })} /></div>
                 </div>
               </form>
             </div>
@@ -550,30 +550,30 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             </div>
             <div className="flex-1 overflow-y-auto p-10 custom-scroll">
               <form id="recForm" onSubmit={handleSaveRecurso} className="space-y-5">
-                <FormInput label="Tipo de Recurso" required placeholder="Ex: Apelação, Agravo de Instrumento" value={recFormData.tipoRecurso} onChange={e => setRecFormData({...recFormData, tipoRecurso: e.target.value})} />
-                <FormSelect label="Processo Originário" required value={recFormData.processoOriginarioId} onChange={e => setRecFormData({...recFormData, processoOriginarioId: e.target.value})}>
-                   <option value="">Selecione o processo originário...</option>
-                   {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
+                <FormInput label="Tipo de Recurso" required placeholder="Ex: Apelação, Agravo de Instrumento" value={recFormData.tipoRecurso} onChange={e => setRecFormData({ ...recFormData, tipoRecurso: e.target.value })} />
+                <FormSelect label="Processo Originário" required value={recFormData.processoOriginarioId} onChange={e => setRecFormData({ ...recFormData, processoOriginarioId: e.target.value })}>
+                  <option value="">Selecione o processo originário...</option>
+                  {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
                 </FormSelect>
                 <div className="space-y-2 opacity-80">
                   <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente (Automático)</label>
                   <input type="text" readOnly className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-gray-400 text-sm cursor-not-allowed" value={clientes.find(c => c.id === recFormData.clienteId)?.nome || 'Selecione o processo para vincular o cliente'} />
                 </div>
-                <FormInput label="Número do Recurso" placeholder="0000000-00.0000.0.00.0000" value={recFormData.numeroRecurso} onChange={e => setRecFormData({...recFormData, numeroRecurso: e.target.value})} />
+                <FormInput label="Número do Recurso" placeholder="0000000-00.0000.0.00.0000" value={recFormData.numeroRecurso} onChange={e => setRecFormData({ ...recFormData, numeroRecurso: e.target.value })} />
                 <div className="grid grid-cols-2 gap-4">
-                  <FormSelect label="Gratuidade" value={recFormData.gratuidade ? 'S' : 'N'} onChange={e => setRecFormData({...recFormData, gratuidade: e.target.value === 'S'})}>
+                  <FormSelect label="Gratuidade" value={recFormData.gratuidade ? 'S' : 'N'} onChange={e => setRecFormData({ ...recFormData, gratuidade: e.target.value === 'S' })}>
                     <option value="N">Não</option>
                     <option value="S">Sim</option>
                   </FormSelect>
-                  <FormInput label="Data Distribuição" placeholder="dd/mm/aaaa" value={recFormData.dataDistribuicao} onChange={e => setRecFormData({...recFormData, dataDistribuicao: maskDate(e.target.value)})} />
+                  <FormInput label="Data Distribuição" type="date" value={toISODate(recFormData.dataDistribuicao || '')} onChange={e => setRecFormData({ ...recFormData, dataDistribuicao: toBRDate(e.target.value) })} />
                 </div>
-                <FormInput label="Tribunal" placeholder="Ex: TJSP, STJ" value={recFormData.tribunal} onChange={e => setRecFormData({...recFormData, tribunal: e.target.value})} />
-                <FormInput label="Local de Tramitação" placeholder="Ex: 1ª Câmara de Direito Privado" value={recFormData.localTramitacao} onChange={e => setRecFormData({...recFormData, localTramitacao: e.target.value})} />
+                <FormInput label="Tribunal" placeholder="Ex: TJSP, STJ" value={recFormData.tribunal} onChange={e => setRecFormData({ ...recFormData, tribunal: e.target.value })} />
+                <FormInput label="Local de Tramitação" placeholder="Ex: 1ª Câmara de Direito Privado" value={recFormData.localTramitacao} onChange={e => setRecFormData({ ...recFormData, localTramitacao: e.target.value })} />
               </form>
             </div>
             <div className="p-8 border-t border-gray-100 bg-gray-50 flex gap-4">
-               <button type="button" onClick={() => setIsRecModalOpen(false)} className="flex-1 py-4 bg-white border border-gray-300 text-gray-500 rounded-2xl font-black uppercase text-xs">Cancelar</button>
-               <button type="submit" form="recForm" className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-indigo-100">Salvar Recurso</button>
+              <button type="button" onClick={() => setIsRecModalOpen(false)} className="flex-1 py-4 bg-white border border-gray-300 text-gray-500 rounded-2xl font-black uppercase text-xs">Cancelar</button>
+              <button type="submit" form="recForm" className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-indigo-100">Salvar Recurso</button>
             </div>
           </div>
         </div>

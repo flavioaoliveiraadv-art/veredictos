@@ -35,7 +35,9 @@ import {
   formatCurrency,
   maskDate,
   getTodayBR,
-  compareDatesBR
+  compareDatesBR,
+  toBRDate,
+  toISODate
 } from '../utils/formatters';
 
 interface DeadlinesPageProps {
@@ -323,8 +325,8 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
-                  <FormInput label="Data Interna (dd/mm/aaaa)" required placeholder="dd/mm/aaaa" value={formData.dataVencimento} onChange={e => setFormData({ ...formData, dataVencimento: maskDate(e.target.value) })} />
-                  <FormInput label="Data Fatal (dd/mm/aaaa)" placeholder="dd/mm/aaaa" value={formData.dataFatal} onChange={e => setFormData({ ...formData, dataFatal: maskDate(e.target.value) })} />
+                  <FormInput label="Data Interna" type="date" required value={toISODate(formData.dataVencimento || '')} onChange={e => setFormData({ ...formData, dataVencimento: toBRDate(e.target.value) })} />
+                  <FormInput label="Data Fatal" type="date" value={toISODate(formData.dataFatal || '')} onChange={e => setFormData({ ...formData, dataFatal: toBRDate(e.target.value) })} />
                 </div>
 
                 {formData.tipo === TipoPrazo.AUDIENCIA && (

@@ -67,16 +67,27 @@ export const toBRDate = (isoDate: string): string => {
 };
 
 /**
+ * Converte data BR (dd/mm/aaaa) para ISO (yyyy-mm-dd)
+ */
+export const toISODate = (brDate: string): string => {
+  if (!brDate || !brDate.includes('/')) return brDate;
+  const parts = brDate.split('/');
+  if (parts.length !== 3) return brDate;
+  const [day, month, year] = parts;
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+/**
  * Compara duas datas no formato dd/mm/aaaa para ordenação cronológica correta
  */
 export const compareDatesBR = (a: string, b: string): number => {
   if (!a || !b) return 0;
   const [dayA, monthA, yearA] = a.split('/').map(Number);
   const [dayB, monthB, yearB] = b.split('/').map(Number);
-  
+
   const dateA = new Date(yearA, monthA - 1, dayA).getTime();
   const dateB = new Date(yearB, monthB - 1, dayB).getTime();
-  
+
   return dateA - dateB;
 };
 
@@ -87,11 +98,11 @@ export const getDaysDifference = (dateStr: string): number => {
   if (!dateStr) return 0;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const [day, month, year] = dateStr.split('/').map(Number);
   const targetDate = new Date(year, month - 1, day);
   targetDate.setHours(0, 0, 0, 0);
-  
+
   const diffTime = targetDate.getTime() - today.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 };

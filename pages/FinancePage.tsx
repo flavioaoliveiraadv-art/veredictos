@@ -1,15 +1,15 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { 
-  Plus, 
-  Search, 
-  TrendingUp, 
-  TrendingDown, 
-  Wallet, 
-  X, 
-  History, 
-  Edit, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  X,
+  History,
+  Edit,
+  Trash2,
   CheckCircle,
   Calendar,
   User,
@@ -24,7 +24,7 @@ import {
   ArrowDownLeft
 } from 'lucide-react';
 import { Financeiro, StatusFinanceiro, Cliente, Processo, Prazo, HistoricoAlteracao } from '../types';
-import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR } from '../utils/formatters';
+import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
 
 interface FinancePageProps {
   financeiro: Financeiro[];
@@ -41,7 +41,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   });
 
   const [activeSubTab, setActiveSubTab] = useState<'PENDENTES' | 'PAGOS'>('PENDENTES');
-  
+
   const now = new Date();
   const [viewMonth, setViewMonth] = useState(now.getMonth());
   const [viewYear, setViewYear] = useState(now.getFullYear());
@@ -49,9 +49,9 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  
+
   const [selectedEntry, setSelectedEntry] = useState<Financeiro | null>(null);
-  
+
   const [formData, setFormData] = useState<Partial<Financeiro>>({
     tipo: 'Receita',
     descricao: '',
@@ -98,7 +98,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
     e.preventDefault();
     const id = formData.id || `f-${Date.now()}`;
     const isNew = !formData.id;
-    
+
     const newEntry: Financeiro = {
       ...formData,
       id,
@@ -114,18 +114,18 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
       setFinanceiro(prev => prev.map(f => f.id === id ? newEntry : f));
       saveHistory(id, "Lançamento editado.");
     }
-    
+
     setIsModalOpen(false);
     resetForm();
   };
 
   const resetForm = () => {
-    setFormData({ 
-      tipo: 'Receita', 
+    setFormData({
+      tipo: 'Receita',
       descricao: '',
-      valor: 0, 
-      parcela: '1/1', 
-      dataVencimento: getTodayBR(), 
+      valor: 0,
+      parcela: '1/1',
+      dataVencimento: getTodayBR(),
       status: StatusFinanceiro.PENDENTE,
       processoId: '',
       clienteId: '',
@@ -167,7 +167,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
     const entradas = monthData.filter(f => f.tipo === 'Receita').reduce((s, f) => s + f.valor, 0);
     const saidas = monthData.filter(f => f.tipo === 'Despesa').reduce((s, f) => s + f.valor, 0);
     const saldo = entradas - saidas;
-    
+
     return { entradas, saidas, saldo, monthData };
   }, [financeiro, viewMonth, viewYear]);
 
@@ -218,7 +218,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
           <p className="text-gray-500 font-medium">Gerenciamento centralizado de financeiro.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={() => { resetForm(); setIsModalOpen(true); }}
             className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-2xl flex items-center gap-2 font-black shadow-lg shadow-indigo-100 transition-all"
           >
@@ -248,37 +248,37 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard label="Entradas do Mês" value={formatCurrency(monthlyStats.entradas)} icon={<TrendingUp className="w-6 h-6"/>} color="emerald" />
-            <StatCard label="Saídas do Mês" value={formatCurrency(monthlyStats.saidas)} icon={<TrendingDown className="w-6 h-6"/>} color="rose" />
-            <StatCard label="Saldo do Mês" value={formatCurrency(monthlyStats.saldo)} icon={<Wallet className="w-6 h-6"/>} color="blue" />
-            <StatCard label="Saldo Projetado Total" value={formatCurrency(totalProjetado)} icon={<DollarSign className="w-6 h-6"/>} color="indigo" />
+            <StatCard label="Entradas do Mês" value={formatCurrency(monthlyStats.entradas)} icon={<TrendingUp className="w-6 h-6" />} color="emerald" />
+            <StatCard label="Saídas do Mês" value={formatCurrency(monthlyStats.saidas)} icon={<TrendingDown className="w-6 h-6" />} color="rose" />
+            <StatCard label="Saldo do Mês" value={formatCurrency(monthlyStats.saldo)} icon={<Wallet className="w-6 h-6" />} color="blue" />
+            <StatCard label="Saldo Projetado Total" value={formatCurrency(totalProjetado)} icon={<DollarSign className="w-6 h-6" />} color="indigo" />
           </div>
 
           <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-             <div className="p-8 border-b border-gray-50">
-                <h3 className="font-black text-gray-800 text-sm uppercase tracking-widest">Movimentações do Mês</h3>
-             </div>
-             <div className="divide-y divide-gray-50">
-               {monthlyStats.monthData.length > 0 ? monthlyStats.monthData.map(f => (
-                 <div key={f.id} onClick={() => { setSelectedEntry(f); setIsDetailModalOpen(true); }} className="p-6 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors group">
-                    <div className="flex items-center gap-4">
-                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
-                         {f.tipo === 'Receita' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />}
-                       </div>
-                       <div>
-                         <p className="text-sm font-black text-gray-800">{f.descricao}</p>
-                         <p className="text-[10px] font-bold text-gray-400">Venc: {f.dataVencimento}</p>
-                       </div>
+            <div className="p-8 border-b border-gray-50">
+              <h3 className="font-black text-gray-800 text-sm uppercase tracking-widest">Movimentações do Mês</h3>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {monthlyStats.monthData.length > 0 ? monthlyStats.monthData.map(f => (
+                <div key={f.id} onClick={() => { setSelectedEntry(f); setIsDetailModalOpen(true); }} className="p-6 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors group">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                      {f.tipo === 'Receita' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />}
                     </div>
-                    <div className="text-right">
-                      <p className={`text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>{f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}</p>
-                      <span className="text-[10px] font-black uppercase text-gray-400">{f.status}</span>
+                    <div>
+                      <p className="text-sm font-black text-gray-800">{f.descricao}</p>
+                      <p className="text-[10px] font-bold text-gray-400">Venc: {f.dataVencimento}</p>
                     </div>
-                 </div>
-               )) : (
-                 <div className="p-20 text-center text-gray-300 font-black uppercase tracking-widest text-xs">Nenhum lançamento registrado neste período.</div>
-               )}
-             </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>{f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}</p>
+                    <span className="text-[10px] font-black uppercase text-gray-400">{f.status}</span>
+                  </div>
+                </div>
+              )) : (
+                <div className="p-20 text-center text-gray-300 font-black uppercase tracking-widest text-xs">Nenhum lançamento registrado neste período.</div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -292,13 +292,13 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
 
           <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-gray-50 flex items-center justify-between">
-               <h2 className="text-lg font-black text-gray-800">Histórico de Transações</h2>
-               <div className="flex gap-4">
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input type="text" placeholder="Filtrar por descrição..." className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500" />
-                  </div>
-               </div>
+              <h2 className="text-lg font-black text-gray-800">Histórico de Transações</h2>
+              <div className="flex gap-4">
+                <div className="relative">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input type="text" placeholder="Filtrar por descrição..." className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500" />
+                </div>
+              </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -353,39 +353,39 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
 
       {activeTab === 'FLUXO' && (
         <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-           <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-              <div className="p-8 border-b border-gray-50">
-                 <h2 className="text-xl font-black text-gray-800">Evolução do Fluxo de Caixa</h2>
-                 <p className="text-sm text-gray-500 font-medium">Histórico acumulado de entradas, saídas e evolução do saldo.</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 bg-gray-50/50">
-                      <th className="px-10 py-5">Data</th>
-                      <th className="px-10 py-5">Movimentação</th>
-                      <th className="px-10 py-5">Valor</th>
-                      <th className="px-10 py-5 text-right">Saldo Acumulado</th>
+          <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+            <div className="p-8 border-b border-gray-50">
+              <h2 className="text-xl font-black text-gray-800">Evolução do Fluxo de Caixa</h2>
+              <p className="text-sm text-gray-500 font-medium">Histórico acumulado de entradas, saídas e evolução do saldo.</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 bg-gray-50/50">
+                    <th className="px-10 py-5">Data</th>
+                    <th className="px-10 py-5">Movimentação</th>
+                    <th className="px-10 py-5">Valor</th>
+                    <th className="px-10 py-5 text-right">Saldo Acumulado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {cashFlowData.map(f => (
+                    <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-10 py-5 text-xs font-black text-gray-500">{f.dataVencimento}</td>
+                      <td className="px-10 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
+                      <td className={`px-10 py-5 text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                        {f.tipo === 'Receita' ? <ArrowUpRight className="inline w-4 h-4 mr-1" /> : <ArrowDownLeft className="inline w-4 h-4 mr-1" />}
+                        {formatCurrency(f.valor)}
+                      </td>
+                      <td className={`px-10 py-5 text-right font-black text-sm ${f.saldoAcumulado >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
+                        {formatCurrency(f.saldoAcumulado)}
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {cashFlowData.map(f => (
-                      <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-10 py-5 text-xs font-black text-gray-500">{f.dataVencimento}</td>
-                        <td className="px-10 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
-                        <td className={`px-10 py-5 text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                          {f.tipo === 'Receita' ? <ArrowUpRight className="inline w-4 h-4 mr-1" /> : <ArrowDownLeft className="inline w-4 h-4 mr-1" />}
-                          {formatCurrency(f.valor)}
-                        </td>
-                        <td className={`px-10 py-5 text-right font-black text-sm ${f.saldoAcumulado >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
-                          {formatCurrency(f.saldoAcumulado)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-           </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
@@ -398,37 +398,37 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
               </h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X className="w-8 h-8" /></button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-10 custom-scroll">
               <form id="financeForm" onSubmit={handleSaveTransaction} className="space-y-6">
                 <div className="flex p-1 bg-gray-100 rounded-2xl">
-                  <button type="button" onClick={() => setFormData({...formData, tipo: 'Receita'})} className={`flex-1 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${formData.tipo === 'Receita' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500'}`}>
+                  <button type="button" onClick={() => setFormData({ ...formData, tipo: 'Receita' })} className={`flex-1 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${formData.tipo === 'Receita' ? 'bg-white text-emerald-600 shadow-sm' : 'text-gray-500'}`}>
                     <TrendingUp className="w-4 h-4" /> Receita
                   </button>
-                  <button type="button" onClick={() => setFormData({...formData, tipo: 'Despesa'})} className={`flex-1 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${formData.tipo === 'Despesa' ? 'bg-white text-rose-500 shadow-sm' : 'text-gray-500'}`}>
+                  <button type="button" onClick={() => setFormData({ ...formData, tipo: 'Despesa' })} className={`flex-1 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all flex items-center justify-center gap-2 ${formData.tipo === 'Despesa' ? 'bg-white text-rose-500 shadow-sm' : 'text-gray-500'}`}>
                     <TrendingDown className="w-4 h-4" /> Despesa
                   </button>
                 </div>
 
                 <div className="space-y-4">
-                  <FormInput label="Descrição" required placeholder="Ex: Honorários Sucumbenciais" value={formData.descricao} onChange={e => setFormData({...formData, descricao: e.target.value})} />
-                  
-                  <FormSelect label="Número do Processo" value={formData.processoId} onChange={e => setFormData({...formData, processoId: e.target.value})}>
+                  <FormInput label="Descrição" required placeholder="Ex: Honorários Sucumbenciais" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value })} />
+
+                  <FormSelect label="Número do Processo" value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
                     <option value="">Não relacionado a processo</option>
                     {processos.map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
                   </FormSelect>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <FormInput label="Valor" required placeholder="R$ 0,00" value={formatCurrency(formData.valor || 0)} onChange={(e: any) => setFormData({...formData, valor: parseCurrency(e.target.value)})} />
-                    <FormInput label="Parcela" placeholder="1/1" value={formData.parcela} onChange={e => setFormData({...formData, parcela: e.target.value})} />
+                    <FormInput label="Valor" required placeholder="R$ 0,00" value={formatCurrency(formData.valor || 0)} onChange={(e: any) => setFormData({ ...formData, valor: parseCurrency(e.target.value) })} />
+                    <FormInput label="Parcela" placeholder="1/1" value={formData.parcela} onChange={e => setFormData({ ...formData, parcela: e.target.value })} />
                   </div>
 
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente / Fornecedor</label>
-                    <select 
+                    <select
                       disabled={!!formData.processoId && formData.processoId !== ''}
                       value={formData.clienteId}
-                      onChange={e => setFormData({...formData, clienteId: e.target.value})}
+                      onChange={e => setFormData({ ...formData, clienteId: e.target.value })}
                       className={`w-full px-5 py-4 rounded-2xl border outline-none font-bold text-sm transition-all shadow-sm appearance-none ${!!formData.processoId && formData.processoId !== '' ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white border-gray-300 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
                       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1.25rem center', backgroundSize: '1rem' }}
                     >
@@ -437,9 +437,9 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     </select>
                   </div>
 
-                  <FormInput label="Vencimento" placeholder="dd/mm/aaaa" required value={formData.dataVencimento} onChange={e => setFormData({...formData, dataVencimento: maskDate(e.target.value)})} />
-                  
-                  <FormSelect label="Vínculo com Tarefa" value={formData.tarefaVinculadaId} onChange={e => setFormData({...formData, tarefaVinculadaId: e.target.value})}>
+                  <FormInput label="Vencimento" type="date" required value={toISODate(formData.dataVencimento || '')} onChange={e => setFormData({ ...formData, dataVencimento: toBRDate(e.target.value) })} />
+
+                  <FormSelect label="Vínculo com Tarefa" value={formData.tarefaVinculadaId} onChange={e => setFormData({ ...formData, tarefaVinculadaId: e.target.value })}>
                     <option value="">Nenhuma tarefa vinculada</option>
                     {prazos.map(t => <option key={t.id} value={t.id}>{t.descricao}</option>)}
                   </FormSelect>
@@ -523,7 +523,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
               </div>
 
               {selectedEntry.status !== StatusFinanceiro.PAGO && (
-                <button 
+                <button
                   onClick={() => handleMarkAsPaid(selectedEntry)}
                   className="w-full py-5 bg-[#00a16b] hover:bg-[#008f5e] text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-100 transition-all"
                 >
@@ -584,9 +584,9 @@ const StatCard: React.FC<{ label: string, value: string, icon: React.ReactNode, 
 const FormInput = ({ label, ...props }: any) => (
   <div className="space-y-2">
     <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <input 
-      {...props} 
-      className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm" 
+    <input
+      {...props}
+      className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm"
     />
   </div>
 );
@@ -594,8 +594,8 @@ const FormInput = ({ label, ...props }: any) => (
 const FormSelect = ({ label, children, ...props }: any) => (
   <div className="space-y-2">
     <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <select 
-      {...props} 
+    <select
+      {...props}
       className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm appearance-none"
       style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1.25rem center', backgroundSize: '1rem' }}
     >
