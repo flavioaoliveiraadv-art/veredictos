@@ -206,14 +206,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                 </span>
               </div>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-xs font-bold text-gray-500">
-                <Mail className="w-4 h-4 text-gray-400" /> {cliente.email}
-              </div>
-              <div className="flex items-center gap-3 text-xs font-bold text-gray-500">
-                <Phone className="w-4 h-4 text-gray-400" /> {cliente.telefone}
-              </div>
-            </div>
             <div className="mt-6 pt-4 border-t border-gray-50 flex items-center justify-between text-indigo-600 font-black text-[10px] uppercase tracking-widest group-hover:translate-x-1 transition-transform">
               Ver Ficha Completa <ChevronRight className="w-4 h-4" />
             </div>
