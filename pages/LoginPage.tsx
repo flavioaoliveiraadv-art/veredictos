@@ -30,7 +30,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <div className="inline-flex p-4 bg-blue-600 rounded-2xl mb-6 shadow-2xl shadow-blue-500/20">
             <Scale className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tighter mb-2">LegalPro <span className="text-blue-500">CRM</span></h1>
+          <h1 className="text-4xl font-black text-white tracking-tighter mb-2">Veredict<span className="text-blue-500">OS</span></h1>
           <p className="text-gray-400">Gestão Jurídica Inteligente e Moderna</p>
         </div>
 
