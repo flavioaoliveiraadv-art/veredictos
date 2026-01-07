@@ -114,24 +114,37 @@ button,
    Texto mais compacto + Visibilidade no tema escuro
    ============================================ */
 
-input,
+input:not([type="checkbox"]):not([type="radio"]),
 select,
 textarea {
     font-size: 0.875rem !important;
-    color: #ffffff !important;
-    /* Texto branco para inputs */
-    caret-color: #ffffff;
-    /* Cursor visível */
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    /* Fundo escuro semi-transparente */
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #1e293b !important;
+    /* Força cor escura em fundos claros */
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
     border-radius: 0.5rem;
+    transition: all 0.2s ease-in-out !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):hover,
+select:hover,
+textarea:hover {
+    border-color: #9ca3af !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
+    outline: none !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-    color: rgba(255, 255, 255, 0.5) !important;
-    /* Placeholder visível */
+    color: #94a3b8 !important;
+    /* Placeholder visível em fundos claros */
+    font-weight: 400 !important;
 }
 
 /* Classes de cor de texto (Tailwind utilities) */

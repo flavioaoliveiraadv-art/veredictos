@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,55 +12,26 @@
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
         }
+
         /* Custom scrollbar for a premium look */
         ::-webkit-scrollbar {
             width: 6px;
         }
+
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
+
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 10px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
-
-        /* --- Global Input Visibility Improvements --- */
-        /* Estilo para campos de entrada em páginas com fundo claro */
-        /* NOTA: Páginas com tema escuro (login) usam estilos inline específicos */
-        input:not([type="checkbox"]):not([type="radio"]):not([style*="background"]), 
-        select:not([style*="background"]), 
-        textarea:not([style*="background"]) {
-            border: 1.5px solid #d1d5db !important; /* Gray-300: visível e discreto */
-            background-color: #ffffff;
-            transition: all 0.2s ease-in-out !important;
-        }
-
-        /* Estado de Hover */
-        input:not([type="checkbox"]):not([type="radio"]):hover, 
-        select:hover, 
-        textarea:hover {
-            border-color: #9ca3af !important; /* Gray-400: realce sutil */
-        }
-
-        /* Estado de Focus */
-        input:not([type="checkbox"]):not([type="radio"]):focus, 
-        select:focus, 
-        textarea:focus {
-            border-color: #4f46e5 !important; /* Indigo-600 */
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15) !important;
-            outline: none !important;
-        }
-
-        /* Ajuste específico para placeholders */
-        ::placeholder {
-            color: #94a3b8 !important;
-            font-weight: 400 !important;
-        }
     </style>
-<script type="importmap">
+    <script type="importmap">
 {
   "imports": {
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
@@ -72,10 +43,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+    <link rel="stylesheet" href="/index.css">
 </head>
+
 <body>
     <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

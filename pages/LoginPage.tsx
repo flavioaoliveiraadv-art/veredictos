@@ -50,7 +50,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '1rem',
                     padding: '1rem 1rem 1rem 3rem',
-                    color: '#ffffff',
+                    color: '#ffffff !important',
                     outline: 'none',
                   }}
                   placeholder="Seu e-mail"
@@ -71,7 +71,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     borderRadius: '1rem',
                     padding: '1rem 1rem 1rem 3rem',
-                    color: '#ffffff',
+                    color: '#ffffff !important',
                     outline: 'none',
                   }}
                   placeholder="Sua senha"
