@@ -189,6 +189,15 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
     }
   };
 
+  const getTypeTextColor = (tipo: TipoPrazo) => {
+    switch (tipo) {
+      case TipoPrazo.PRAZO: return 'text-rose-600';
+      case TipoPrazo.AUDIENCIA: return 'text-orange-600';
+      case TipoPrazo.TAREFA: return 'text-blue-600';
+      default: return 'text-gray-400';
+    }
+  };
+
   const linkedFinances = useMemo(() => {
     if (!selectedPrazo) return [];
     return financeiro.filter(f => f.tarefaVinculadaId === selectedPrazo.id);
@@ -388,7 +397,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
                       <span className="text-sm font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1">
                         <Scale className="w-4 h-4" /> {processos.find(p => p.id === selectedPrazo.processoId)?.numeros[0] || 'Vínculo Avulso'}
                       </span>
-                      <span className="text-xs font-bold text-gray-400">Tipo: {selectedPrazo.tipo}</span>
+                      <span className={`text-xs font-bold uppercase tracking-widest ${getTypeTextColor(selectedPrazo.tipo)}`}>Tipo: {selectedPrazo.tipo}</span>
                     </div>
                   </div>
                 </div>

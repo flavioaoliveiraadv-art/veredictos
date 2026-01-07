@@ -214,6 +214,18 @@ const TasksPage: React.FC<TasksPageProps> = ({
     }
   };
 
+  const getTypeTextColor = (tipo: TipoPrazo) => {
+    switch (tipo) {
+      case TipoPrazo.PRAZO: return 'text-rose-600';
+      case TipoPrazo.AUDIENCIA: return 'text-orange-600';
+      case TipoPrazo.DILIGENCIA: return 'text-blue-600';
+      case TipoPrazo.REUNIAO: return 'text-indigo-600';
+      case TipoPrazo.ATENDIMENTO: return 'text-emerald-600';
+      case TipoPrazo.ADMINISTRATIVO: return 'text-gray-600';
+      default: return 'text-gray-400';
+    }
+  };
+
   const linkedFinances = useMemo(() => {
     if (!selectedPrazo) return [];
     return financeiro.filter(f => f.tarefaVinculadaId === selectedPrazo.id);
@@ -289,7 +301,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
                       )}
                     </div>
                     <div className="flex items-center gap-4 text-[10px] font-bold text-gray-400">
-                      <span className="flex items-center gap-1 uppercase tracking-widest">{item.tipo}</span>
+                      <span className={`flex items-center gap-1 uppercase tracking-widest ${getTypeTextColor(item.tipo)}`}>{item.tipo}</span>
                       <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
                       <span className="flex items-center gap-1 truncate"><User className="w-3 h-3" /> {cli?.nome || 'Sem Cliente'}</span>
                       <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
