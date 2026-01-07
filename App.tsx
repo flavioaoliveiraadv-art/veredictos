@@ -12,49 +12,102 @@ import LoginPage from './pages/LoginPage';
 import { Cliente, Processo, Prazo, Financeiro, Recurso, HistoricoAlteracao } from './types';
 import { INITIAL_CLIENTES, INITIAL_PROCESSOS, INITIAL_HISTORICO, INITIAL_PRAZOS } from './data/mockData';
 
+import { supabase } from './lib/supabase';
+
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     return localStorage.getItem('legalpro_auth') === 'true';
   });
 
-  const [clientes, setClientes] = useState<Cliente[]>(() => {
-    const saved = localStorage.getItem('legalpro_clientes');
-    return saved ? JSON.parse(saved) : INITIAL_CLIENTES;
-  });
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [processos, setProcessos] = useState<Processo[]>([]);
+  const [prazos, setPrazos] = useState<Prazo[]>([]);
+  const [financeiro, setFinanceiro] = useState<Financeiro[]>([]);
+  const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const [historico, setHistorico] = useState<HistoricoAlteracao[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [processos, setProcessos] = useState<Processo[]>(() => {
-    const saved = localStorage.getItem('legalpro_processos');
-    return saved ? JSON.parse(saved) : INITIAL_PROCESSOS;
-  });
-
-  const [prazos, setPrazos] = useState<Prazo[]>(() => {
-    const saved = localStorage.getItem('legalpro_prazos');
-    return saved ? JSON.parse(saved) : INITIAL_PRAZOS;
-  });
-
-  const [financeiro, setFinanceiro] = useState<Financeiro[]>(() => {
-    const saved = localStorage.getItem('legalpro_financeiro');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [recursos, setRecursos] = useState<Recurso[]>(() => {
-    const saved = localStorage.getItem('legalpro_recursos');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [historico, setHistorico] = useState<HistoricoAlteracao[]>(() => {
-    const saved = localStorage.getItem('legalpro_historico');
-    return saved ? JSON.parse(saved) : INITIAL_HISTORICO;
-  });
-
+  // Load Initial Data
   useEffect(() => {
-    localStorage.setItem('legalpro_clientes', JSON.stringify(clientes));
-    localStorage.setItem('legalpro_processos', JSON.stringify(processos));
-    localStorage.setItem('legalpro_prazos', JSON.stringify(prazos));
-    localStorage.setItem('legalpro_financeiro', JSON.stringify(financeiro));
-    localStorage.setItem('legalpro_recursos', JSON.stringify(recursos));
-    localStorage.setItem('legalpro_historico', JSON.stringify(historico));
-  }, [clientes, processos, prazos, financeiro, recursos, historico]);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+
+        // Try to load from Supabase
+        const { data: dbData, error } = await supabase
+          .from('system_data')
+          .select('*')
+          .single();
+
+        if (dbData && !error) {
+          setClientes(dbData.clientes || []);
+          setProcessos(dbData.processos || []);
+          setPrazos(dbData.prazos || []);
+          setFinanceiro(dbData.financeiro || []);
+          setRecursos(dbData.recursos || []);
+          setHistorico(dbData.historico || []);
+        } else {
+          // Fallback to LocalStorage (Migration)
+          const savedClientes = localStorage.getItem('legalpro_clientes');
+          const savedProcessos = localStorage.getItem('legalpro_processos');
+          const savedPrazos = localStorage.getItem('legalpro_prazos');
+          const savedFinanceiro = localStorage.getItem('legalpro_financeiro');
+          const savedRecursos = localStorage.getItem('legalpro_recursos');
+          const savedHistorico = localStorage.getItem('legalpro_historico');
+
+          setClientes(savedClientes ? JSON.parse(savedClientes) : INITIAL_CLIENTES);
+          setProcessos(savedProcessos ? JSON.parse(savedProcessos) : INITIAL_PROCESSOS);
+          setPrazos(savedPrazos ? JSON.parse(savedPrazos) : INITIAL_PRAZOS);
+          setFinanceiro(savedFinanceiro ? JSON.parse(savedFinanceiro) : []);
+          setRecursos(savedRecursos ? JSON.parse(savedRecursos) : []);
+          setHistorico(savedHistorico ? JSON.parse(savedHistorico) : INITIAL_HISTORICO);
+        }
+      } catch (err) {
+        console.error('Error loading data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Sync with Supabase on any change
+  useEffect(() => {
+    if (loading) return;
+
+    const saveData = async () => {
+      const payload = {
+        clientes,
+        processos,
+        prazos,
+        financeiro,
+        recursos,
+        historico,
+        last_updated: new Date().toISOString()
+      };
+
+      // Save to LocalStorage for fallback
+      localStorage.setItem('legalpro_clientes', JSON.stringify(clientes));
+      localStorage.setItem('legalpro_processos', JSON.stringify(processos));
+      localStorage.setItem('legalpro_prazos', JSON.stringify(prazos));
+      localStorage.setItem('legalpro_financeiro', JSON.stringify(financeiro));
+      localStorage.setItem('legalpro_recursos', JSON.stringify(recursos));
+      localStorage.setItem('legalpro_historico', JSON.stringify(historico));
+
+      // Save to Supabase (Upsert)
+      try {
+        await supabase
+          .from('system_data')
+          .upsert({ id: 'global_state', ...payload });
+      } catch (err) {
+        console.error('Error syncing with Supabase:', err);
+      }
+    };
+
+    const timeout = setTimeout(saveData, 1000); // Debounce
+    return () => clearTimeout(timeout);
+  }, [clientes, processos, prazos, financeiro, recursos, historico, loading]);
 
   const handleLogin = (status: boolean) => {
     setIsAuthenticated(status);
@@ -65,6 +118,14 @@ const App: React.FC = () => {
     setIsAuthenticated(false);
     localStorage.removeItem('legalpro_auth');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0b1726] flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <LoginPage onLogin={() => handleLogin(true)} />;
