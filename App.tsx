@@ -30,6 +30,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [hasCheckedNotifications, setHasCheckedNotifications] = useState(false);
+  const [lastSync, setLastSync] = useState<string>(new Date().toISOString());
 
   // Load Initial Data
   useEffect(() => {
@@ -50,6 +51,7 @@ const App: React.FC = () => {
           setFinanceiro(dbData.financeiro || []);
           setRecursos(dbData.recursos || []);
           setHistorico(dbData.historico || []);
+          setLastSync(dbData.last_updated || new Date().toISOString());
         } else {
           // Fallback to LocalStorage (Migration)
           const savedClientes = localStorage.getItem('legalpro_clientes');
@@ -74,6 +76,42 @@ const App: React.FC = () => {
     };
 
     loadData();
+
+    // Subscribe to Realtime Changes
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'system_data',
+          filter: 'id=eq.global_state'
+        },
+        (payload: any) => {
+          const newData = payload.new;
+          if (newData && newData.last_updated) {
+            // Only update if the remote data is newer than our last known sync
+            setLastSync(current => {
+              if (new Date(newData.last_updated).getTime() > new Date(current).getTime()) {
+                setClientes(newData.clientes || []);
+                setProcessos(newData.processos || []);
+                setPrazos(newData.prazos || []);
+                setFinanceiro(newData.financeiro || []);
+                setRecursos(newData.recursos || []);
+                setHistorico(newData.historico || []);
+                return newData.last_updated;
+              }
+              return current;
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Sync with Supabase on any change
@@ -81,6 +119,7 @@ const App: React.FC = () => {
     if (loading) return;
 
     const saveData = async () => {
+      const timestamp = new Date().toISOString();
       const payload = {
         clientes,
         processos,
@@ -88,7 +127,7 @@ const App: React.FC = () => {
         financeiro,
         recursos,
         historico,
-        last_updated: new Date().toISOString()
+        last_updated: timestamp
       };
 
       // Save to LocalStorage for fallback
@@ -104,6 +143,9 @@ const App: React.FC = () => {
         await supabase
           .from('system_data')
           .upsert({ id: 'global_state', ...payload });
+
+        // Update our local sync tracking to avoid re-pulling what we just sent
+        setLastSync(timestamp);
       } catch (err) {
         console.error('Error syncing with Supabase:', err);
       }
