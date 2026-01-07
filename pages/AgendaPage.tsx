@@ -110,11 +110,11 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
         </div>
       </header>
 
-      <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[700px]">
+      <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[500px]">
         {/* Weekday Header */}
         <div className="grid grid-cols-7 bg-gray-50/50 border-b border-gray-100">
           {weekdaysBr.map(day => (
-            <div key={day} className="py-4 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
+            <div key={day} className="py-3 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
               {day}
             </div>
           ))}
@@ -125,7 +125,7 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
           {calendarDays.map((day, idx) => (
             <div
               key={idx}
-              className={`min-h-[120px] p-3 border-r border-b border-gray-50 transition-colors ${day.dayNum ? 'hover:bg-gray-50/30' : 'bg-gray-50/10'}`}
+              className={`min-h-[90px] p-2 border-r border-b border-gray-50 transition-colors ${day.dayNum ? 'hover:bg-gray-50/30' : 'bg-gray-50/10'}`}
             >
               {day.dayNum && (
                 <>
@@ -134,7 +134,7 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
                       {day.dayNum}
                     </span>
                   </div>
-                  <div className="space-y-1 overflow-y-auto max-h-[100px] custom-scroll pr-1">
+                  <div className="space-y-1 overflow-y-auto max-h-[60px] custom-scroll pr-1">
                     {day.events.map((ev: any, evIdx: number) => (
                       <div
                         key={evIdx}
