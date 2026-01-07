@@ -52,6 +52,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     color: '#ffffff',
                     outline: 'none',
                   }}
+                  autoComplete="off"
                   placeholder="Seu e-mail"
                 />
               </div>
@@ -72,6 +73,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                     color: '#ffffff',
                     outline: 'none',
                   }}
+                  autoComplete="new-password"
                   placeholder="Sua senha"
                 />
               </div>
