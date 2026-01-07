@@ -357,9 +357,9 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
               <form id="clientForm" onSubmit={handleSaveCliente} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2">
-                    <FormInput label="Cliente" required value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value })} placeholder="Nome Completo do Cliente" />
+                    <FormInput label="Cliente" required value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value.toUpperCase() })} placeholder="Nome Completo do Cliente" />
                   </div>
-                  <FormInput label="Representante Legal" value={formData.representanteLegal} onChange={e => setFormData({ ...formData, representanteLegal: e.target.value })} placeholder="Nome do Representante" />
+                  <FormInput label="Representante Legal" value={formData.representanteLegal} onChange={e => setFormData({ ...formData, representanteLegal: e.target.value.toUpperCase() })} placeholder="Nome do Representante" />
                 </div>
 
                 <div className="space-y-3">
