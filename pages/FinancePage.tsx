@@ -411,7 +411,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                 </div>
 
                 <div className="space-y-4">
-                  <FormInput label="Descrição" required placeholder="Ex: Honorários Sucumbenciais" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value })} />
+                  <FormInput label="Descrição" required placeholder="Ex: Honorários Sucumbenciais" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value.toUpperCase() })} />
 
                   <FormSelect label="Número do Processo" value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
                     <option value="">Não relacionado a processo</option>
