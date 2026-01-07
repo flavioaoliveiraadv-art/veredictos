@@ -278,7 +278,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-black text-gray-800 truncate">{item.descricao}</h3>
+                      <h3 className="text-lg font-black text-gray-800 truncate">{item.descricao}</h3>
                       {item.critico && <span className="bg-rose-50 text-rose-500 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-rose-100">Urgente</span>}
                       {item.tipo === TipoPrazo.AUDIENCIA && item.modalidade && (
                         <span className="bg-orange-50 text-orange-600 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-orange-100">{item.modalidade}</span>
