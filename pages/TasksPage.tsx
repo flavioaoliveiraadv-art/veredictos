@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
+import { GavelWithBase } from '../components/CustomIcons';
 import {
   CheckCircle2,
   Plus,

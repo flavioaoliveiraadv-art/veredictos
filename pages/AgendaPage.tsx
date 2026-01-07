@@ -9,9 +9,15 @@ import {
   Scale,
   DollarSign,
   X,
-  Activity,
-  AlertTriangle
+  FilePenLine,
+  ScrollText,
+  AlertTriangle,
+  Users as UsersIcon,
+  MessageSquare,
+  Activity as ActivityIcon,
+  CheckSquare
 } from 'lucide-react';
+import { GavelWithBase } from '../components/CustomIcons';
 import {
   Prazo,
   Processo,
@@ -23,8 +29,6 @@ import {
   formatCurrency,
   getTodayBR
 } from '../utils/formatters';
-import { GavelWithBase } from '../components/CustomIcons';
-import { FilePenLine, ScrollText, AlertTriangle, Users as UsersIcon, MessageSquare, Activity as ActivityIcon, CheckSquare } from 'lucide-react';
 
 interface AgendaPageProps {
   prazos: Prazo[];

@@ -1,5 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
+import { GavelWithBase } from '../components/CustomIcons';
 import {
   Clock,
   CheckSquare,
