@@ -9,8 +9,10 @@ import AgendaPage from './pages/AgendaPage';
 import TasksPage from './pages/TasksPage';
 import FinancePage from './pages/FinancePage';
 import LoginPage from './pages/LoginPage';
+import NotificationModal from './components/NotificationModal';
 import { Cliente, Processo, Prazo, Financeiro, Recurso, HistoricoAlteracao } from './types';
 import { INITIAL_CLIENTES, INITIAL_PROCESSOS, INITIAL_HISTORICO, INITIAL_PRAZOS } from './data/mockData';
+import { getTodayBR, compareDatesBR } from './utils/formatters';
 
 import { supabase } from './lib/supabase';
 
@@ -26,6 +28,8 @@ const App: React.FC = () => {
   const [recursos, setRecursos] = useState<Recurso[]>([]);
   const [historico, setHistorico] = useState<HistoricoAlteracao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [hasCheckedNotifications, setHasCheckedNotifications] = useState(false);
 
   // Load Initial Data
   useEffect(() => {
@@ -109,6 +113,26 @@ const App: React.FC = () => {
     return () => clearTimeout(timeout);
   }, [clientes, processos, prazos, financeiro, recursos, historico, loading]);
 
+  // Handle Notifications on Login
+  useEffect(() => {
+    if (isAuthenticated && !loading && !hasCheckedNotifications && prazos.length > 0) {
+      const todayBR = getTodayBR();
+      const hasAlerts = prazos.filter(p =>
+        !p.concluido &&
+        !p.cancelado &&
+        compareDatesBR(p.dataVencimento, todayBR) <= 0
+      ).length > 0;
+
+      if (hasAlerts) {
+        setShowNotificationModal(true);
+      }
+      setHasCheckedNotifications(true);
+    }
+  }, [isAuthenticated, loading, prazos, hasCheckedNotifications]);
+
+  const overdueAlerts = prazos.filter(p => !p.concluido && !p.cancelado && compareDatesBR(p.dataVencimento, getTodayBR()) < 0);
+  const todayAlerts = prazos.filter(p => !p.concluido && !p.cancelado && p.dataVencimento === getTodayBR());
+
   const handleLogin = (status: boolean) => {
     setIsAuthenticated(status);
     sessionStorage.setItem('legalpro_auth', status.toString());
@@ -148,6 +172,20 @@ const App: React.FC = () => {
           </Routes>
         </main>
       </div>
+
+      {showNotificationModal && (
+        <NotificationModal
+          overdue={overdueAlerts}
+          today={todayAlerts}
+          clientes={clientes}
+          processos={processos}
+          onClose={() => setShowNotificationModal(false)}
+          onViewTasks={() => {
+            setShowNotificationModal(false);
+            window.location.hash = '#/tarefas';
+          }}
+        />
+      )}
     </Router>
   );
 };
