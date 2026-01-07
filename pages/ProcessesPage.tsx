@@ -312,11 +312,16 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                 <div className="lg:col-span-2 space-y-12">
                   <section>
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Informações Gerais</h3>
-                    <div className="grid grid-cols-2 gap-8">
+                    <div className="grid grid-cols-2 gap-8 text-balance">
                       <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
                       <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
-                      <DetailField label="Valor da Causa" value={formatCurrency(selectedProcess.valorCausa)} className="text-emerald-600 font-black" />
+                      <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
                       <DetailField label="Área de Atuação" value={selectedProcess.areaAtuacao} />
+                      <DetailField label="Comarca" value={selectedProcess.comarca || '-'} />
+                      <DetailField label="Tribunal" value={selectedProcess.tribunal || '-'} />
+                      <DetailField label="Vara / Local" value={selectedProcess.localTramitacao || '-'} />
+                      <DetailField label="Distribuição" value={selectedProcess.dataDistribuicao || '-'} />
+                      <DetailField label="Valor da Causa" value={formatCurrency(selectedProcess.valorCausa)} className="text-emerald-600 font-black" />
                       <DetailField label="Última Atualização" value={selectedProcess.ultimaAtualizacao} icon={<Clock className="w-3.5 h-3.5" />} />
                     </div>
                   </section>
