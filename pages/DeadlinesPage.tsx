@@ -19,7 +19,10 @@ import {
   XCircle,
   FileText,
   DollarSign,
-  ArrowRight
+  ArrowRight,
+  ScrollText,
+  Gavel,
+  Users as UsersIcon
 } from 'lucide-react';
 import {
   Prazo,
@@ -182,19 +185,39 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
 
   const getTypeStyle = (tipo: TipoPrazo) => {
     switch (tipo) {
-      case TipoPrazo.PRAZO: return 'bg-rose-50 text-rose-600 border-rose-100';
+      case TipoPrazo.PRAZO: return 'bg-blue-50 text-blue-600 border-blue-100';
       case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
-      case TipoPrazo.TAREFA: return 'bg-blue-50 text-blue-600 border-blue-100';
+      case TipoPrazo.TAREFA: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case TipoPrazo.REUNIAO: return 'bg-rose-50 text-rose-600 border-rose-100';
+      case TipoPrazo.DILIGENCIA: return 'bg-blue-50 text-blue-600 border-blue-100';
+      case TipoPrazo.ATENDIMENTO: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case TipoPrazo.ADMINISTRATIVO: return 'bg-gray-100 text-gray-900 border-gray-200';
       default: return 'bg-gray-50 text-gray-600 border-gray-100';
     }
   };
 
   const getTypeTextColor = (tipo: TipoPrazo) => {
     switch (tipo) {
-      case TipoPrazo.PRAZO: return 'text-rose-600';
+      case TipoPrazo.PRAZO: return 'text-blue-600';
       case TipoPrazo.AUDIENCIA: return 'text-orange-600';
-      case TipoPrazo.TAREFA: return 'text-blue-600';
+      case TipoPrazo.TAREFA: return 'text-emerald-600';
+      case TipoPrazo.REUNIAO: return 'text-rose-600';
+      case TipoPrazo.DILIGENCIA: return 'text-blue-600';
+      case TipoPrazo.ATENDIMENTO: return 'text-emerald-600';
+      case TipoPrazo.ADMINISTRATIVO: return 'text-gray-900';
       default: return 'text-gray-400';
+    }
+  };
+
+  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => {
+    switch (tipo) {
+      case TipoPrazo.AUDIENCIA: return <Gavel className={className} />;
+      case TipoPrazo.PRAZO: return <ScrollText className={className} />;
+      case TipoPrazo.DILIGENCIA: return <AlertTriangle className={className} />;
+      case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
+      case TipoPrazo.ATENDIMENTO: return <Activity className={className} />;
+      case TipoPrazo.ADMINISTRATIVO: return <Activity className={className} />;
+      default: return <CheckSquare className={className} />;
     }
   };
 
@@ -258,9 +281,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
               >
                 <div className="flex items-center gap-6 flex-1 min-w-0">
                   <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shadow-sm ${getTypeStyle(prazo.tipo)} transition-transform group-hover:scale-110`}>
-                    {prazo.tipo === TipoPrazo.AUDIENCIA ? <Scale className="w-6 h-6" /> :
-                      prazo.tipo === TipoPrazo.PRAZO ? <Clock className="w-6 h-6" /> :
-                        <CheckSquare className="w-6 h-6" />}
+                    {getActivityIcon(prazo.tipo)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -389,7 +410,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
               <div className="flex items-start justify-between mb-10">
                 <div className="flex items-center gap-5">
                   <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center shadow-lg ${getTypeStyle(selectedPrazo.tipo)}`}>
-                    <Activity className="w-9 h-9" />
+                    {getActivityIcon(selectedPrazo.tipo, "w-9 h-9")}
                   </div>
                   <div>
                     <h2 className="text-3xl font-black text-gray-800 tracking-tighter">{selectedPrazo.descricao}</h2>

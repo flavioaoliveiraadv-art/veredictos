@@ -8,7 +8,10 @@ import {
   ChevronLeft,
   Bell,
   Scale,
-  AlertTriangle
+  AlertTriangle,
+  ScrollText,
+  Gavel,
+  Users as UsersIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Cliente, Processo, Prazo, TipoPrazo } from '../types';
@@ -103,7 +106,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
         />
         <StatCard
           title="Audiências"
-          icon={<CalendarIcon className="w-5 h-5" />}
+          icon={<Gavel className="w-5 h-5" />}
           iconColor="text-orange-500 bg-orange-50"
           stats={statsAudiencias}
           isFeminine={true}
@@ -111,8 +114,8 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
         />
         <StatCard
           title="Prazos"
-          icon={<Clock className="w-5 h-5" />}
-          iconColor="text-rose-500 bg-rose-50"
+          icon={<ScrollText className="w-5 h-5" />}
+          iconColor="text-blue-500 bg-blue-50"
           stats={statsPrazos}
           onClick={() => navigate('/tarefas')}
         />
