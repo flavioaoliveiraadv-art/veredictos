@@ -105,7 +105,9 @@ export interface Prazo {
   clienteId: string;
   descricao: string;
   dataVencimento: string; // Data Interna (dd/mm/aaaa)
+  horaVencimento?: string; // Hora Interna (hh:mm)
   dataFatal?: string;      // Data Fatal (dd/mm/aaaa)
+  horaFatal?: string;      // Hora Fatal (hh:mm)
   dataConclusao?: string; // Data de Realização
   dataCancelamento?: string;
   tipo: TipoPrazo;

@@ -70,7 +70,9 @@ const TasksPage: React.FC<TasksPageProps> = ({
     processoId: '',
     clienteId: '',
     dataVencimento: todayBR,
+    horaVencimento: '',
     dataFatal: '',
+    horaFatal: '',
     responsavel: 'Dr. Arthur',
     critico: false,
     financeiroIds: [],
@@ -302,7 +304,10 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
                 <div className="text-right flex items-center gap-10">
                   <div>
-                    <p className="text-sm font-black text-gray-700">{item.dataVencimento}</p>
+                    <p className="text-sm font-black text-gray-700">
+                      {item.dataVencimento}
+                      {item.horaVencimento && <span className="text-gray-400 font-bold ml-1">às {item.horaVencimento}</span>}
+                    </p>
                     <p className="text-[10px] font-black uppercase tracking-widest mt-1">
                       {activeTab === 'PENDENTES' ? renderDaysCountdown(item.dataVencimento) :
                         activeTab === 'REALIZADAS' ? `Realizada em ${item.dataConclusao}` :
@@ -383,8 +388,22 @@ const TasksPage: React.FC<TasksPageProps> = ({
                 )}
 
                 <div className="grid grid-cols-2 gap-6">
-                  <FormInput label="Data Interna" type="date" required value={toISODate(formData.dataVencimento || '')} onChange={e => setFormData({ ...formData, dataVencimento: toBRDate(e.target.value) })} />
-                  <FormInput label="Data Fatal" type="date" value={toISODate(formData.dataFatal || '')} onChange={e => setFormData({ ...formData, dataFatal: toBRDate(e.target.value) })} />
+                  <div className="grid grid-cols-3 gap-2 col-span-1">
+                    <div className="col-span-2">
+                      <FormInput label="Data Interna" type="date" required value={toISODate(formData.dataVencimento || '')} onChange={e => setFormData({ ...formData, dataVencimento: toBRDate(e.target.value) })} />
+                    </div>
+                    <div className="col-span-1">
+                      <FormInput label="Hora" type="time" value={formData.horaVencimento} onChange={e => setFormData({ ...formData, horaVencimento: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 col-span-1">
+                    <div className="col-span-2">
+                      <FormInput label="Data Fatal" type="date" value={toISODate(formData.dataFatal || '')} onChange={e => setFormData({ ...formData, dataFatal: toBRDate(e.target.value) })} />
+                    </div>
+                    <div className="col-span-1">
+                      <FormInput label="Hora" type="time" value={formData.horaFatal} onChange={e => setFormData({ ...formData, horaFatal: e.target.value })} />
+                    </div>
+                  </div>
                 </div>
 
                 {formData.tipo === TipoPrazo.AUDIENCIA && (
@@ -435,8 +454,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-8">
                   <div className="grid grid-cols-2 gap-8">
-                    <DetailItem label="Data Interna" value={selectedPrazo.dataVencimento} icon={<Clock className="w-4 h-4" />} />
-                    <DetailItem label="Data Fatal" value={selectedPrazo.dataFatal || '-'} icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} />
+                    <DetailItem label="Data Interna" value={`${selectedPrazo.dataVencimento}${selectedPrazo.horaVencimento ? ` às ${selectedPrazo.horaVencimento}` : ''}`} icon={<Clock className="w-4 h-4" />} />
+                    <DetailItem label="Data Fatal" value={`${selectedPrazo.dataFatal || '-'}${selectedPrazo.horaFatal ? ` às ${selectedPrazo.horaFatal}` : ''}`} icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} />
                     <DetailItem label="Responsável" value={selectedPrazo.responsavel} icon={<User className="w-4 h-4" />} />
                     <DetailItem label="Cliente" value={clientes.find(c => c.id === selectedPrazo.clienteId)?.nome || '-'} icon={<User className="w-4 h-4" />} />
                     <DetailItem

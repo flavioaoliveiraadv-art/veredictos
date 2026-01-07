@@ -1,27 +1,27 @@
 
 import React, { useState, useMemo } from 'react';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Calendar as CalendarIcon, 
-  Clock, 
-  User, 
-  Scale, 
-  DollarSign, 
-  X, 
-  Activity, 
-  AlertTriangle 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  Clock,
+  User,
+  Scale,
+  DollarSign,
+  X,
+  Activity,
+  AlertTriangle
 } from 'lucide-react';
-import { 
-  Prazo, 
-  Processo, 
-  Cliente, 
-  TipoPrazo, 
-  Financeiro 
+import {
+  Prazo,
+  Processo,
+  Cliente,
+  TipoPrazo,
+  Financeiro
 } from '../types';
-import { 
-  formatCurrency, 
-  getTodayBR 
+import {
+  formatCurrency,
+  getTodayBR
 } from '../utils/formatters';
 
 interface AgendaPageProps {
@@ -31,39 +31,39 @@ interface AgendaPageProps {
   financeiro: Financeiro[];
 }
 
-const AgendaPage: React.FC<AgendaPageProps> = ({ 
-  prazos, processos, clientes, financeiro 
+const AgendaPage: React.FC<AgendaPageProps> = ({
+  prazos, processos, clientes, financeiro
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  
+
   const todayBR = getTodayBR();
 
   // --- Lógica do Calendário ---
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
+
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
+
     const daysInMonth = lastDay.getDate();
     const startOffset = firstDay.getDay(); // 0 (Sun) to 6 (Sat)
-    
+
     const totalSlots = Math.ceil((daysInMonth + startOffset) / 7) * 7;
-    
+
     return Array.from({ length: totalSlots }).map((_, i) => {
       const dayNum = i - startOffset + 1;
       if (dayNum > 0 && dayNum <= daysInMonth) {
         const dateObj = new Date(year, month, dayNum);
         const dateStr = dateObj.toLocaleDateString('pt-BR');
-        
+
         // Coletar Tarefas/Prazos
         const taskEvents = prazos.filter(p => p.dataVencimento === dateStr);
-        
+
         // Coletar Financeiro
         const financialEvents = financeiro.filter(f => f.dataVencimento === dateStr);
-        
+
         return {
           dayNum,
           dateStr,
@@ -123,8 +123,8 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
         {/* Calendar Grid */}
         <div className="grid grid-cols-7 flex-1">
           {calendarDays.map((day, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className={`min-h-[120px] p-3 border-r border-b border-gray-50 transition-colors ${day.dayNum ? 'hover:bg-gray-50/30' : 'bg-gray-50/10'}`}
             >
               {day.dayNum && (
@@ -136,7 +136,7 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
                   </div>
                   <div className="space-y-1 overflow-y-auto max-h-[100px] custom-scroll pr-1">
                     {day.events.map((ev: any, evIdx: number) => (
-                      <div 
+                      <div
                         key={evIdx}
                         onClick={() => setSelectedEvent(ev)}
                         className={`px-2 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-tight truncate border cursor-pointer hover:shadow-sm transition-all ${getEventColor(ev)}`}
@@ -170,8 +170,8 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
             </div>
 
             <div className="space-y-6">
-              <DetailItem label="Data Agendada" value={selectedEvent.dataVencimento} icon={<Clock className="w-4 h-4" />} />
-              
+              <DetailItem label="Data Agendada" value={`${selectedEvent.dataVencimento}${selectedEvent.horaVencimento ? ` às ${selectedEvent.horaVencimento}` : ''}`} icon={<Clock className="w-4 h-4" />} />
+
               {selectedEvent.eventType === 'TASK' ? (
                 <>
                   <DetailItem label="Cliente" value={clientes.find(c => c.id === selectedEvent.clienteId)?.nome || '-'} icon={<User className="w-4 h-4" />} />

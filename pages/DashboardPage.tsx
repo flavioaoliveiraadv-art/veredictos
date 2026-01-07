@@ -1,10 +1,10 @@
 
 import React, { useMemo, useState } from 'react';
-import { 
-  Clock, 
-  CheckSquare, 
-  Calendar as CalendarIcon, 
-  ChevronRight, 
+import {
+  Clock,
+  CheckSquare,
+  Calendar as CalendarIcon,
+  ChevronRight,
   ChevronLeft,
   Bell,
   Scale,
@@ -37,7 +37,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
   };
 
   const statsPrazos = useMemo(() => getStatsForType(t => t === TipoPrazo.PRAZO), [prazos, todayBR]);
-  const statsTarefas = useMemo(() => getStatsForType(t => 
+  const statsTarefas = useMemo(() => getStatsForType(t =>
     [TipoPrazo.TAREFA, TipoPrazo.DILIGENCIA, TipoPrazo.REUNIAO, TipoPrazo.ATENDIMENTO, TipoPrazo.ADMINISTRATIVO].includes(t)
   ), [prazos, todayBR]);
   const statsAudiencias = useMemo(() => getStatsForType(t => t === TipoPrazo.AUDIENCIA), [prazos, todayBR]);
@@ -55,7 +55,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
     const start = new Date();
     // Ajustar para o início da semana (Segunda-feira)
     const day = start.getDay();
-    const diff = start.getDate() - day + (day === 0 ? -6 : 1) + (currentWeekOffset * 7); 
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1) + (currentWeekOffset * 7);
     const monday = new Date(start.setDate(diff));
 
     return Array.from({ length: 7 }).map((_, i) => {
@@ -93,23 +93,23 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
 
       {/* Primary Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard 
-          title="Prazos" 
-          icon={<Clock className="w-5 h-5" />} 
+        <StatCard
+          title="Prazos"
+          icon={<Clock className="w-5 h-5" />}
           iconColor="text-rose-500 bg-rose-50"
           stats={statsPrazos}
           onClick={() => navigate('/tarefas')}
         />
-        <StatCard 
-          title="Tarefas" 
-          icon={<CheckSquare className="w-5 h-5" />} 
+        <StatCard
+          title="Tarefas"
+          icon={<CheckSquare className="w-5 h-5" />}
           iconColor="text-blue-500 bg-blue-50"
           stats={statsTarefas}
           onClick={() => navigate('/tarefas')}
         />
-        <StatCard 
-          title="Audiências" 
-          icon={<CalendarIcon className="w-5 h-5" />} 
+        <StatCard
+          title="Audiências"
+          icon={<CalendarIcon className="w-5 h-5" />}
           iconColor="text-orange-500 bg-orange-50"
           stats={statsAudiencias}
           onClick={() => navigate('/tarefas')}
@@ -118,7 +118,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
 
       {/* Main Grid: Weekly Calendar (Left) | Priority Events (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Weekly Calendar Column */}
         <div className="lg:col-span-2 bg-white rounded-[40px] border border-gray-100 shadow-sm p-8 flex flex-col min-h-[500px]">
           <div className="flex items-center justify-between mb-8">
@@ -165,7 +165,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
         <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm flex flex-col overflow-hidden">
           <div className="p-8 pb-4 flex items-center justify-between">
             <h2 className="text-xl font-black text-[#0b1726]">Prioritários</h2>
-            <button 
+            <button
               onClick={() => navigate('/tarefas')}
               className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:text-indigo-800 transition-colors"
             >
@@ -177,18 +177,17 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
             {priorityEvents.length > 0 ? priorityEvents.map((event) => {
               const status = getEventStatusTag(event.dataVencimento);
               const proc = processos.find(p => p.id === event.processoId);
-              
+
               return (
-                <div 
+                <div
                   key={event.id}
                   className="flex items-center justify-between p-4 bg-gray-50 border border-transparent rounded-[24px] hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group cursor-pointer"
                   onClick={() => navigate('/tarefas')}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
-                      event.tipo === TipoPrazo.AUDIENCIA ? 'bg-orange-100 text-orange-600' :
-                      event.tipo === TipoPrazo.PRAZO ? 'bg-rose-100 text-rose-600' : 'bg-white text-gray-400'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${event.tipo === TipoPrazo.AUDIENCIA ? 'bg-orange-100 text-orange-600' :
+                        event.tipo === TipoPrazo.PRAZO ? 'bg-rose-100 text-rose-600' : 'bg-white text-gray-400'
+                      }`}>
                       {event.tipo === TipoPrazo.AUDIENCIA ? <Scale className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
                     </div>
                     <div className="min-w-0">
@@ -204,6 +203,11 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
                     <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tighter ${status.color}`}>
                       {status.label}
                     </span>
+                    {event.horaVencimento && (
+                      <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-md">
+                        {event.horaVencimento}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -222,7 +226,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
 
 const StatCard = ({ title, icon, iconColor, stats, onClick }: any) => {
   return (
-    <div 
+    <div
       onClick={onClick}
       className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all group"
     >
@@ -232,7 +236,7 @@ const StatCard = ({ title, icon, iconColor, stats, onClick }: any) => {
           {icon}
         </div>
       </div>
-      
+
       <div className="flex items-center justify-between">
         <div className="text-center">
           <p className={`text-xl font-black ${stats.atrasados > 0 ? 'text-rose-500' : 'text-gray-800'}`}>
