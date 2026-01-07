@@ -389,9 +389,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                         <Plus className="w-4 h-4" /> Adicionar outro processo
                       </button>
                     </div>
-                    <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 flex items-center gap-3 h-fit">
-                      <FileText className="w-5 h-5 text-indigo-500" />
-                      <p className="text-[10px] font-bold text-indigo-700 uppercase leading-tight tracking-wider">Selecione processos ativos para vinculação imediata à ficha do cliente.</p>
                     </div>
                   </div>
                 </div>
@@ -419,39 +416,41 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
               <button type="submit" form="clientForm" className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all">Salvar Cliente</button>
             </div>
           </div>
-        </div>
+        </div >
       )}
 
-      {/* MODAL: HISTÓRICO */}
-      {isHistoryModalOpen && selectedCliente && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4 cursor-default"
-          onClick={() => setIsHistoryModalOpen(false)}
-        >
-          <div
-            className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-10">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-black text-gray-800 flex items-center gap-3"><History className="w-6 h-6 text-indigo-600" /> Histórico</h2>
-                <button onClick={() => setIsHistoryModalOpen(false)} className="text-gray-400 hover:text-gray-800 transition-colors"><X className="w-7 h-7" /></button>
+{/* MODAL: HISTÓRICO */ }
+{
+  isHistoryModalOpen && selectedCliente && (
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4 cursor-default"
+      onClick={() => setIsHistoryModalOpen(false)}
+    >
+      <div
+        className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-10">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-black text-gray-800 flex items-center gap-3"><History className="w-6 h-6 text-indigo-600" /> Histórico</h2>
+            <button onClick={() => setIsHistoryModalOpen(false)} className="text-gray-400 hover:text-gray-800 transition-colors"><X className="w-7 h-7" /></button>
+          </div>
+          <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
+            {historico.filter(h => h.idReferencia === selectedCliente.id).map((h, i) => (
+              <div key={h.id} className="relative pl-10">
+                <div className="absolute left-0 top-1.5 w-7 h-7 rounded-full border-4 border-white shadow bg-indigo-600 flex items-center justify-center z-10"><div className="w-1.5 h-1.5 rounded-full bg-white"></div></div>
+                {i !== historico.filter(h => h.idReferencia === selectedCliente.id).length - 1 && <div className="absolute left-3 top-6 bottom-[-32px] w-0.5 bg-gray-100"></div>}
+                <p className="text-[10px] font-black text-gray-400 mb-1">{h.dataHora}</p>
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100"><p className="text-xs font-bold text-gray-700 leading-relaxed">{h.descricao}</p></div>
               </div>
-              <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
-                {historico.filter(h => h.idReferencia === selectedCliente.id).map((h, i) => (
-                  <div key={h.id} className="relative pl-10">
-                    <div className="absolute left-0 top-1.5 w-7 h-7 rounded-full border-4 border-white shadow bg-indigo-600 flex items-center justify-center z-10"><div className="w-1.5 h-1.5 rounded-full bg-white"></div></div>
-                    {i !== historico.filter(h => h.idReferencia === selectedCliente.id).length - 1 && <div className="absolute left-3 top-6 bottom-[-32px] w-0.5 bg-gray-100"></div>}
-                    <p className="text-[10px] font-black text-gray-400 mb-1">{h.dataHora}</p>
-                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100"><p className="text-xs font-bold text-gray-700 leading-relaxed">{h.descricao}</p></div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
+  )
+}
+    </div >
   );
 };
 
