@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   ScrollText,
   Gavel,
+  FilePenLine,
   Users as UsersIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -114,7 +115,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
         />
         <StatCard
           title="Prazos"
-          icon={<ScrollText className="w-5 h-5" />}
+          icon={<FilePenLine className="w-5 h-5" />}
           iconColor="text-blue-500 bg-blue-50"
           stats={statsPrazos}
           onClick={() => navigate('/tarefas')}

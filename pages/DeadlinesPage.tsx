@@ -22,6 +22,7 @@ import {
   ArrowRight,
   ScrollText,
   Gavel,
+  FilePenLine,
   Users as UsersIcon
 } from 'lucide-react';
 import {
@@ -212,7 +213,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
   const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => {
     switch (tipo) {
       case TipoPrazo.AUDIENCIA: return <Gavel className={className} />;
-      case TipoPrazo.PRAZO: return <ScrollText className={className} />;
+      case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
       case TipoPrazo.DILIGENCIA: return <AlertTriangle className={className} />;
       case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
       case TipoPrazo.ATENDIMENTO: return <Activity className={className} />;
