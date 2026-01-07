@@ -232,7 +232,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
   const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => {
     switch (tipo) {
-      case TipoPrazo.AUDIENCIA: return <Gavel className={className} />;
+      case TipoPrazo.AUDIENCIA: return <GavelWithBase className={className} />;
       case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
       case TipoPrazo.DILIGENCIA: return <AlertTriangle className={className} />;
       case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;

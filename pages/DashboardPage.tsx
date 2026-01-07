@@ -107,7 +107,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
         />
         <StatCard
           title="Audiências"
-          icon={<Gavel className="w-5 h-5" />}
+          icon={<GavelWithBase className="w-5 h-5" />}
           iconColor="text-orange-500 bg-orange-50"
           stats={statsAudiencias}
           isFeminine={true}

@@ -23,6 +23,8 @@ import {
   formatCurrency,
   getTodayBR
 } from '../utils/formatters';
+import { GavelWithBase } from '../components/CustomIcons';
+import { FilePenLine, ScrollText, AlertTriangle, Users as UsersIcon, MessageSquare, Activity as ActivityIcon, CheckSquare } from 'lucide-react';
 
 interface AgendaPageProps {
   prazos: Prazo[];
@@ -80,6 +82,18 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
 
   const monthsBr = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
   const weekdaysBr = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => {
+    switch (tipo) {
+      case TipoPrazo.AUDIENCIA: return <GavelWithBase className={className} />;
+      case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
+      case TipoPrazo.DILIGENCIA: return <AlertTriangle className={className} />;
+      case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
+      case TipoPrazo.ATENDIMENTO: return <MessageSquare className={className} />;
+      case TipoPrazo.ADMINISTRATIVO: return <ActivityIcon className={className} />;
+      default: return <CheckSquare className={className} />;
+    }
+  };
 
   const changeMonth = (delta: number) => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
@@ -159,7 +173,7 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
             <div className="flex justify-between items-start mb-10">
               <div className="flex items-center gap-4">
                 <div className={`p-4 rounded-2xl ${getEventColor(selectedEvent)} shadow-sm`}>
-                  {selectedEvent.eventType === 'FINANCE' ? <DollarSign className="w-6 h-6" /> : <Activity className="w-6 h-6" />}
+                  {selectedEvent.eventType === 'FINANCE' ? <DollarSign className="w-6 h-6" /> : getActivityIcon(selectedEvent.tipo, "w-6 h-6")}
                 </div>
                 <div>
                   <h2 className="text-2xl font-black text-gray-800 tracking-tighter">{selectedEvent.descricao}</h2>
