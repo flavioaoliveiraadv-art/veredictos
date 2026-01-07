@@ -144,6 +144,10 @@ const App: React.FC = () => {
     localStorage.removeItem('legalpro_auth'); // Final cleanup of legacy key
   };
 
+  const sortedClientes = React.useMemo(() => {
+    return [...clientes].sort((a, b) => a.nome.localeCompare(b.nome));
+  }, [clientes]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0b1726] flex items-center justify-center">
@@ -162,12 +166,12 @@ const App: React.FC = () => {
         <Sidebar onLogout={handleLogout} />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <Routes>
-            <Route path="/" element={<DashboardPage clientes={clientes} processos={processos} prazos={prazos} financeiro={financeiro} />} />
-            <Route path="/clientes" element={<ClientsPage clientes={clientes} setClientes={setClientes} processos={processos} setProcessos={setProcessos} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
-            <Route path="/processos" element={<ProcessesPage processos={processos} setProcessos={setProcessos} clientes={clientes} setPrazos={setPrazos} prazos={prazos} recursos={recursos} setRecursos={setRecursos} historico={historico} setHistorico={setHistorico} financeiro={financeiro} />} />
-            <Route path="/agenda" element={<AgendaPage prazos={prazos} processos={processos} clientes={clientes} financeiro={financeiro} />} />
-            <Route path="/tarefas" element={<TasksPage prazos={prazos} setPrazos={setPrazos} processos={processos} clientes={clientes} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
-            <Route path="/financeiro" element={<FinancePage financeiro={financeiro} setFinanceiro={setFinanceiro} clientes={clientes} processos={processos} prazos={prazos} />} />
+            <Route path="/" element={<DashboardPage clientes={sortedClientes} processos={processos} prazos={prazos} financeiro={financeiro} />} />
+            <Route path="/clientes" element={<ClientsPage clientes={sortedClientes} setClientes={setClientes} processos={processos} setProcessos={setProcessos} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
+            <Route path="/processos" element={<ProcessesPage processos={processos} setProcessos={setProcessos} clientes={sortedClientes} setPrazos={setPrazos} prazos={prazos} recursos={recursos} setRecursos={setRecursos} historico={historico} setHistorico={setHistorico} financeiro={financeiro} />} />
+            <Route path="/agenda" element={<AgendaPage prazos={prazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} />} />
+            <Route path="/tarefas" element={<TasksPage prazos={prazos} setPrazos={setPrazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
+            <Route path="/financeiro" element={<FinancePage financeiro={financeiro} setFinanceiro={setFinanceiro} clientes={sortedClientes} processos={processos} prazos={prazos} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
@@ -177,7 +181,7 @@ const App: React.FC = () => {
         <NotificationModal
           overdue={overdueAlerts}
           today={todayAlerts}
-          clientes={clientes}
+          clientes={sortedClientes}
           processos={processos}
           onClose={() => setShowNotificationModal(false)}
           onViewTasks={() => {
