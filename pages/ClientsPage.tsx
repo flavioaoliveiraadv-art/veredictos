@@ -48,6 +48,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
   // --- Form State ---
   const [formData, setFormData] = useState<Partial<Cliente>>(INITIAL_FORM_STATE);
   const [initialFormValue, setInitialFormValue] = useState<string>(JSON.stringify(INITIAL_FORM_STATE));
+  const [isClientTypeSelectionModalOpen, setIsClientTypeSelectionModalOpen] = useState(false);
 
   // --- Helpers ---
   const addHistorico = (idReferencia: string, descricao: string) => {
@@ -163,11 +164,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
         </div>
         <button
           onClick={() => {
-            const state = INITIAL_FORM_STATE;
-            setFormData(state);
-            setInitialFormValue(JSON.stringify(state));
-            setIsEditMode(false);
-            setIsNewClientModalOpen(true);
+            setIsClientTypeSelectionModalOpen(true);
           }}
           className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-2 font-black shadow-xl shadow-indigo-200 transition-all"
         >
@@ -339,6 +336,73 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
         </div>
       )}
 
+      {/* MODAL: SELEÇÃO DE TIPO DE CLIENTE */}
+      {isClientTypeSelectionModalOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 cursor-default"
+          onClick={() => setIsClientTypeSelectionModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-[40px] w-full max-w-lg shadow-2xl animate-in zoom-in duration-300 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-8 text-center">
+              <h2 className="text-2xl font-black text-gray-800 mb-2">Novo Cliente</h2>
+              <p className="text-gray-500 font-medium mb-8">Selecione o tipo de cliente que deseja cadastrar</p>
+
+              <div className="grid grid-cols-1 gap-4">
+                <button
+                  onClick={() => {
+                    const state = { ...INITIAL_FORM_STATE, tipo: 'PF' as const };
+                    setFormData(state);
+                    setInitialFormValue(JSON.stringify(state));
+                    setIsEditMode(false);
+                    setIsClientTypeSelectionModalOpen(false);
+                    setIsNewClientModalOpen(true);
+                  }}
+                  className="p-6 rounded-3xl border-2 border-gray-100 hover:border-indigo-600 hover:bg-indigo-50 group transition-all"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      <User className="w-6 h-6" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-lg font-black text-gray-800 group-hover:text-indigo-700">Pessoa Física</h3>
+                      <p className="text-xs font-bold text-gray-400">Cadastro por CPF</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const state = { ...INITIAL_FORM_STATE, tipo: 'PJ' as const };
+                    setFormData(state);
+                    setInitialFormValue(JSON.stringify(state));
+                    setIsEditMode(false);
+                    setIsClientTypeSelectionModalOpen(false);
+                    setIsNewClientModalOpen(true);
+                  }}
+                  className="p-6 rounded-3xl border-2 border-gray-100 hover:border-indigo-600 hover:bg-indigo-50 group transition-all"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                      <div className="relative">
+                        <User className="w-4 h-4 absolute -left-1 top-0" />
+                        <User className="w-4 h-4 absolute left-2 top-0" />
+                      </div>
+                    </div>
+                    <div className="text-left">
+                      <h3 className="text-lg font-black text-gray-800 group-hover:text-indigo-700">Pessoa Jurídica</h3>
+                      <p className="text-xs font-bold text-gray-400">Cadastro por CNPJ</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL: CADASTRO / EDIÇÃO */}
       {isNewClientModalOpen && (
         <div
@@ -351,7 +415,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
           >
             <div className="p-8 pb-6 flex items-center justify-between border-b border-gray-100">
               <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
-                <User className="w-7 h-7 text-indigo-600" /> {isEditMode ? 'Editar Cliente' : 'Cadastro de Novo Cliente'}
+                <User className="w-7 h-7 text-indigo-600" />
+                {isEditMode ? 'Editar Cliente' : (formData.tipo === 'PJ' ? 'Novo Cliente - Pessoa Jurídica' : 'Novo Cliente - Pessoa Física')}
               </h2>
               <button onClick={handleCloseNewClientModal} className="text-gray-400 hover:text-gray-600 transition-colors">
                 <X className="w-8 h-8" />
@@ -401,23 +466,31 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                     <Filter className="w-3 h-3" /> Dados de Qualificação
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-                    <div className="space-y-2">
-                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 ml-1">Tipo de Pessoa</label>
-                      <select
-                        className="w-full px-5 py-2.5 bg-white rounded-2xl border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-sm transition-all"
-                        value={formData.tipo}
-                        onChange={e => setFormData({ ...formData, tipo: e.target.value as 'PF' | 'PJ' })}
-                      >
-                        <option value="PF">Pessoa Física</option>
-                        <option value="PJ">Pessoa Jurídica</option>
-                      </select>
-                    </div>
-                    <FormInput label="Estado Civil" value={formData.estadoCivil} onChange={e => setFormData({ ...formData, estadoCivil: e.target.value })} placeholder="Solteiro, Casado..." />
-                    <FormInput label="Profissão" value={formData.profissao} onChange={e => setFormData({ ...formData, profissao: e.target.value })} placeholder="Ex: Advogado, Engenheiro" />
-                    <FormInput label="RG" value={formData.rg} onChange={e => setFormData({ ...formData, rg: e.target.value })} placeholder="00.000.000-0" />
-                    <FormInput label="CPF/CNPJ" value={formData.documento} onChange={e => setFormData({ ...formData, documento: e.target.value })} placeholder="000.000.000-00" />
-                    <FormInput label="Telefone" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: e.target.value })} placeholder="(00) 00000-0000" />
-                    <FormInput label="E-mail" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="exemplo@email.com" />
+                    {/* Campos Específicos para PF */}
+                    {formData.tipo === 'PF' && (
+                      <>
+                        <FormInput label="Estado Civil" value={formData.estadoCivil} onChange={e => setFormData({ ...formData, estadoCivil: e.target.value })} placeholder="Solteiro, Casado..." />
+                        <FormInput label="Profissão" value={formData.profissao} onChange={e => setFormData({ ...formData, profissao: e.target.value })} placeholder="Ex: Advogado, Engenheiro" />
+                        <FormInput label="RG" value={formData.rg} onChange={e => setFormData({ ...formData, rg: e.target.value })} placeholder="00.000.000-0" />
+                      </>
+                    )}
+
+                    {/* Campo CPF/CNPJ (Rótulo Dinâmico) */}
+                    <FormInput
+                      label={formData.tipo === 'PJ' ? "CNPJ" : "CPF"}
+                      value={formData.documento}
+                      onChange={e => setFormData({ ...formData, documento: e.target.value })}
+                      placeholder={formData.tipo === 'PJ' ? "00.000.000/0000-00" : "000.000.000-00"}
+                    />
+
+                    {/* Campos de Contato (Apenas PF) */}
+                    {formData.tipo === 'PF' && (
+                      <>
+                        <FormInput label="Telefone" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: e.target.value })} placeholder="(00) 00000-0000" />
+                        <FormInput label="E-mail" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="exemplo@email.com" />
+                      </>
+                    )}
+
                     <div className="md:col-span-3">
                       <FormInput label="Endereço com CEP" value={formData.endereco} onChange={e => setFormData({ ...formData, endereco: e.target.value })} placeholder="Rua, Número, Bairro, Cidade, Estado - CEP 00000-000" />
                     </div>
