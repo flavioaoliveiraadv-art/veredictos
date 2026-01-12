@@ -25,7 +25,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
     // Simula delay de login e validação
     setTimeout(() => {
-      if (email === 'admin@veredictos.com.br' && password === '123456') {
+      if (email === 'oliveiraelinsadv@outlook.com' && password === 'Oel123456') {
         onLogin();
       } else {
         setError('Credenciais inválidas. Tente novamente.');
