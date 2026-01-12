@@ -267,7 +267,12 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     </div>
                     <div>
                       <p className="text-sm font-black text-gray-800">{f.descricao}</p>
-                      <p className="text-[10px] font-bold text-gray-400">Venc: {f.dataVencimento}</p>
+                      <p className="text-[10px] font-bold text-gray-400">
+                        Venc: {f.dataVencimento}
+                        {f.parcela && f.parcela !== '1/1' && (
+                          <span className="ml-2 text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded">Parcela {f.parcela}</span>
+                        )}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
