@@ -256,10 +256,14 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Qualificação e Identificação</h3>
                     <div className="grid grid-cols-2 gap-y-8 gap-x-12">
                       <DetailField label="Representante Legal" value={selectedCliente.representanteLegal || '-'} />
-                      <DetailField label="Estado Civil" value={selectedCliente.estadoCivil || '-'} />
-                      <DetailField label="Profissão" value={selectedCliente.profissao || '-'} />
-                      <DetailField label="RG" value={selectedCliente.rg || '-'} />
-                      <DetailField label="CPF" value={selectedCliente.documento || '-'} />
+                      {selectedCliente.tipo !== 'PJ' && (
+                        <>
+                          <DetailField label="Estado Civil" value={selectedCliente.estadoCivil || '-'} />
+                          <DetailField label="Profissão" value={selectedCliente.profissao || '-'} />
+                          <DetailField label="RG" value={selectedCliente.rg || '-'} />
+                        </>
+                      )}
+                      <DetailField label={selectedCliente.tipo === 'PJ' ? 'CNPJ' : 'CPF'} value={selectedCliente.documento || '-'} />
                     </div>
                   </section>
                   <section>
