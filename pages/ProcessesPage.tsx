@@ -78,6 +78,12 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     }).map(r => ({ ...r, _tipoItem: 'RECURSO' as const }));
 
     return [...procs, ...recs].sort((a, b) => {
+      const clienteA = clientes.find(c => c.id === a.clienteId)?.nome || '';
+      const clienteB = clientes.find(c => c.id === b.clienteId)?.nome || '';
+
+      const comparison = clienteA.localeCompare(clienteB);
+      if (comparison !== 0) return comparison;
+
       const nomeA = (a as any).objeto || (a as any).tipoRecurso || '';
       const nomeB = (b as any).objeto || (b as any).tipoRecurso || '';
       return nomeA.localeCompare(nomeB);
