@@ -25,7 +25,7 @@ interface ProcessesPageProps {
   financeiro: Financeiro[];
 }
 
-const INITIAL_PROC_STATE: Partial<Processo> = { areaAtuacao: AreaAtuacao.CIVEL, faseProcessual: FaseProcessual.CONHECIMENTO, status: StatusProcesso.ATIVO, numeros: [''], valorCausa: 0, dataDistribuicao: getTodayBR() };
+const INITIAL_PROC_STATE: Partial<Processo> = { areaAtuacao: AreaAtuacao.CIVEL, faseProcessual: FaseProcessual.CONHECIMENTO, status: StatusProcesso.ATIVO, numeros: [''], valorCausa: 0, dataDistribuicao: getTodayBR(), polo: undefined };
 const INITIAL_REC_STATE: Partial<Recurso> = { dataDistribuicao: getTodayBR(), gratuidade: false, status: StatusProcesso.ATIVO };
 
 const ProcessesPage: React.FC<ProcessesPageProps> = ({
@@ -314,7 +314,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Informações Gerais</h3>
                     <div className="grid grid-cols-2 gap-8 text-balance">
                       <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
-                      <DetailField label="Polo do Cliente" value={selectedProcess.polo || '-'} className={selectedProcess.polo === 'Autor' ? 'text-indigo-600' : 'text-rose-600'} />
+                      <DetailField label="Polo" value={selectedProcess.polo || '-'} className={selectedProcess.polo === 'Autor' ? 'text-indigo-600' : 'text-rose-600'} />
                       <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
                       <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
                       <DetailField label="Área de Atuação" value={selectedProcess.areaAtuacao} />
@@ -521,7 +521,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     <option value="">Selecione...</option>
                     {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                   </FormSelect>
-                  <FormSelect label="Polo do Cliente" required value={procFormData.polo} onChange={e => setProcFormData({ ...procFormData, polo: e.target.value as 'Autor' | 'Réu' })}>
+                  <FormSelect label="Polo" required value={procFormData.polo || ''} onChange={e => setProcFormData({ ...procFormData, polo: e.target.value as 'Autor' | 'Réu' })}>
                     <option value="">Selecione...</option>
                     <option value="Autor">Autor (Polo Ativo)</option>
                     <option value="Réu">Réu (Polo Passivo)</option>
