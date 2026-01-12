@@ -269,8 +269,12 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                   <section>
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Contato e Localização</h3>
                     <div className="grid grid-cols-2 gap-y-8 gap-x-12">
-                      <DetailField label="E-mail" value={selectedCliente.email} className="text-indigo-600" />
-                      <DetailField label="Telefone" value={selectedCliente.telefone} />
+                      {selectedCliente.tipo !== 'PJ' && (
+                        <>
+                          <DetailField label="E-mail" value={selectedCliente.email} className="text-indigo-600" />
+                          <DetailField label="Telefone" value={selectedCliente.telefone} />
+                        </>
+                      )}
                       <div className="col-span-2">
                         <DetailField label="Endereço com CEP" value={selectedCliente.endereco || '-'} />
                       </div>
