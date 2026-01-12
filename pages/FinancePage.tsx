@@ -342,7 +342,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                         ) : compareDatesBR(entry.dataVencimento, todayStr) < 0 ? (
                           <span className="px-4 py-1.5 bg-rose-50 text-rose-500 rounded-full text-[10px] font-black uppercase tracking-widest">Atrasado</span>
                         ) : entry.dataVencimento === todayStr ? (
-                          <span className="px-4 py-1.5 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest">Para Hoje</span>
+                          <span className="px-4 py-1.5 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Para Hoje</span>
                         ) : (
                           <span className="px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest">Pendente</span>
                         )}
@@ -502,7 +502,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                   ) : compareDatesBR(selectedEntry.dataVencimento, todayStr) < 0 ? (
                     <span className="px-3 py-1 bg-rose-50 text-rose-500 rounded-full text-[9px] font-black uppercase tracking-widest">Atrasado</span>
                   ) : selectedEntry.dataVencimento === todayStr ? (
-                    <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest">Para Hoje</span>
+                    <span className="px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap">Para Hoje</span>
                   ) : (
                     <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-widest">Pendente</span>
                   )}
