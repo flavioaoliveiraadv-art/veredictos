@@ -430,7 +430,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                 <X className="w-8 h-8" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-8 custom-scroll">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 custom-scroll">
               <form id="clientForm" onSubmit={handleSaveCliente} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="md:col-span-2">
