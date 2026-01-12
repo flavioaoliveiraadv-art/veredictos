@@ -335,7 +335,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                         <p className="text-[10px] font-bold text-gray-400">{processos.find(p => p.id === entry.processoId)?.numeros[0] || '-'}</p>
                       </td>
                       <td className="px-10 py-6"><p className="text-xs font-black text-gray-700">{entry.dataVencimento}</p></td>
-                      <td className="px-10 py-6"><p className="text-sm font-black text-gray-800">{entry.tipo === 'Receita' ? '+' : '-'} {formatCurrency(entry.valor)}</p></td>
+                      <td className="px-10 py-6"><p className="text-sm font-black text-gray-800 whitespace-nowrap">{entry.tipo === 'Receita' ? '+' : '-'} {formatCurrency(entry.valor)}</p></td>
                       <td className="px-10 py-6">
                         {entry.status === StatusFinanceiro.PAGO ? (
                           <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest">Pago</span>
