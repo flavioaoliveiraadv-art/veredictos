@@ -26,7 +26,7 @@ interface DashboardProps {
   financeiro: any[];
 }
 
-const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
+const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro }) => {
   const navigate = useNavigate();
   const todayBR = getTodayBR();
   const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
@@ -76,7 +76,9 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
   }, [currentWeekOffset]);
 
   const getEventsForDate = (dateStr: string) => {
-    return prazos.filter(p => p.dataVencimento === dateStr);
+    const taskEvents = prazos.filter(p => p.dataVencimento === dateStr).map(t => ({ ...t, eventType: 'TASK' }));
+    const financialEvents = financeiro ? financeiro.filter(f => f.dataVencimento === dateStr).map(f => ({ ...f, eventType: 'FINANCE' })) : [];
+    return [...taskEvents, ...financialEvents];
   };
 
   const getEventStatusTag = (vencimento: string) => {
@@ -84,6 +86,15 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
     if (diff < 0) return { label: 'ATRASADO', color: 'bg-rose-100 text-rose-500' };
     if (diff === 0) return { label: 'HOJE', color: 'bg-amber-100 text-amber-500' };
     return { label: 'PRÓXIMO', color: 'bg-orange-100 text-orange-500' };
+  };
+
+  const getEventColor = (event: any) => {
+    if (event.eventType === 'FINANCE') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+    switch (event.tipo) {
+      case TipoPrazo.PRAZO: return 'bg-rose-50 text-rose-600 border-rose-100';
+      case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
+      default: return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+    }
   };
 
   return (
@@ -155,9 +166,9 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos }) => {
                     </div>
                   </div>
                   <div className="flex-1 space-y-2 overflow-y-auto max-h-[250px] custom-scroll pr-1">
-                    {events.map(ev => (
-                      <div key={ev.id} className="p-2 rounded-xl text-[9px] font-bold border border-white bg-white shadow-sm text-gray-600 leading-tight">
-                        {ev.descricao}
+                    {events.map((ev: any) => (
+                      <div key={ev.id} className={`p-2 rounded-xl text-[9px] font-bold border shadow-sm leading-tight ${getEventColor(ev)}`}>
+                        {ev.eventType === 'FINANCE' ? `$ ${ev.descricao}` : ev.descricao}
                       </div>
                     ))}
                     {events.length === 0 && <div className="h-full flex items-center justify-center opacity-20"><CalendarIcon className="w-4 h-4 text-gray-300" /></div>}
