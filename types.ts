@@ -15,7 +15,8 @@ export enum AreaAtuacao {
   CONSUMIDOR = 'Consumidor',
   FAMILIA = 'Família',
   SUCESSOES = 'Sucessões',
-  ADMINISTRATIVO = 'Administrativo'
+  ADMINISTRATIVO = 'Administrativo',
+  CONSTITUCIONAL = 'Constitucional'
 }
 
 export enum FaseProcessual {

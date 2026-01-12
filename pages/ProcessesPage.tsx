@@ -78,9 +78,9 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     }).map(r => ({ ...r, _tipoItem: 'RECURSO' as const }));
 
     return [...procs, ...recs].sort((a, b) => {
-      const dataA = (a as any).ultimaAtualizacao || (a as any).dataDistribuicao;
-      const dataB = (b as any).ultimaAtualizacao || (b as any).dataDistribuicao;
-      return compareDatesBR(dataB, dataA);
+      const nomeA = (a as any).objeto || (a as any).tipoRecurso || '';
+      const nomeB = (b as any).objeto || (b as any).tipoRecurso || '';
+      return nomeA.localeCompare(nomeB);
     });
   }, [processos, recursos, activeTab, searchTerm, clientes]);
 
