@@ -324,9 +324,9 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                       <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
                       <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
                       <DetailField label="Área de Atuação" value={selectedProcess.areaAtuacao} />
+                      <DetailField label="Vara / Local" value={selectedProcess.localTramitacao || '-'} />
                       <DetailField label="Comarca" value={selectedProcess.comarca || '-'} />
                       <DetailField label="Tribunal" value={selectedProcess.tribunal || '-'} />
-                      <DetailField label="Vara / Local" value={selectedProcess.localTramitacao || '-'} />
                       <DetailField label="Distribuição" value={selectedProcess.dataDistribuicao || '-'} />
                       <DetailField label="Justiça Gratuita" value={selectedProcess.gratuidade ? 'Sim' : 'Não'} />
                       <DetailField label="Valor da Causa" value={formatCurrency(selectedProcess.valorCausa)} className="font-black" />
@@ -547,9 +547,9 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <FormSelect label="Fase Processual" value={procFormData.faseProcessual} onChange={e => setProcFormData({ ...procFormData, faseProcessual: e.target.value as FaseProcessual })}>
                     {Object.values(FaseProcessual).map(v => <option key={v} value={v}>{v}</option>)}
                   </FormSelect>
+                  <FormInput label="Vara / Local" placeholder="Ex: 1ª Vara Cível" value={procFormData.localTramitacao} onChange={e => setProcFormData({ ...procFormData, localTramitacao: e.target.value })} />
                   <FormInput label="Comarca" placeholder="Ex: São Paulo" value={procFormData.comarca} onChange={e => setProcFormData({ ...procFormData, comarca: e.target.value })} />
                   <FormInput label="Tribunal" placeholder="Ex: TJSP" value={procFormData.tribunal} onChange={e => setProcFormData({ ...procFormData, tribunal: e.target.value })} />
-                  <FormInput label="Vara / Local" placeholder="Ex: 1ª Vara Cível" value={procFormData.localTramitacao} onChange={e => setProcFormData({ ...procFormData, localTramitacao: e.target.value })} />
                   <div className="col-span-2"><FormInput label="Data de Distribuição" type="date" value={toISODate(procFormData.dataDistribuicao || '')} onChange={e => setProcFormData({ ...procFormData, dataDistribuicao: toBRDate(e.target.value) })} /></div>
                 </div>
               </form>
