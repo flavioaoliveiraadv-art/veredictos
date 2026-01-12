@@ -259,7 +259,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
           onClick={() => { setFormData(INITIAL_STATE); setIsVincularProcesso(false); setIsFormModalOpen(true); }}
           className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-2 font-black shadow-xl shadow-indigo-100 transition-all"
         >
-          <Plus className="w-5 h-5" /> Nova Atividade
+          <Plus className="w-5 h-5" /> Nova Tarefa
         </button>
       </header>
 
