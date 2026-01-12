@@ -80,6 +80,7 @@ export interface Processo {
   status: StatusProcesso;
   dataDistribuicao: string;
   ultimaAtualizacao: string;
+  polo?: 'Autor' | 'Réu';
 }
 
 export interface Cliente {

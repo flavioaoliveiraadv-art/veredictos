@@ -314,6 +314,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Informações Gerais</h3>
                     <div className="grid grid-cols-2 gap-8 text-balance">
                       <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
+                      <DetailField label="Polo do Cliente" value={selectedProcess.polo || '-'} className={selectedProcess.polo === 'Autor' ? 'text-indigo-600' : 'text-rose-600'} />
                       <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
                       <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
                       <DetailField label="Área de Atuação" value={selectedProcess.areaAtuacao} />
@@ -519,6 +520,11 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <FormSelect label="Cliente" required value={procFormData.clienteId} onChange={e => setProcFormData({ ...procFormData, clienteId: e.target.value })}>
                     <option value="">Selecione...</option>
                     {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                  </FormSelect>
+                  <FormSelect label="Polo do Cliente" required value={procFormData.polo} onChange={e => setProcFormData({ ...procFormData, polo: e.target.value as 'Autor' | 'Réu' })}>
+                    <option value="">Selecione...</option>
+                    <option value="Autor">Autor (Polo Ativo)</option>
+                    <option value="Réu">Réu (Polo Passivo)</option>
                   </FormSelect>
                   <FormInput label="Número do Processo" required placeholder="0000000-00.0000.0.00.0000" value={procFormData.numeros?.[0] || ''} onChange={e => setProcFormData({ ...procFormData, numeros: [e.target.value] })} />
                   <FormInput label="Parte Contrária" placeholder="Nome da Parte Contrária" value={procFormData.parteContraria} onChange={e => setProcFormData({ ...procFormData, parteContraria: e.target.value.toUpperCase() })} />
