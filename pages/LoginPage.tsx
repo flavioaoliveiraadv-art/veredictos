@@ -8,13 +8,29 @@ interface LoginPageProps {
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    if (!email || !password) {
+      setError('Por favor, preencha todos os campos.');
+      return;
+    }
+
     setLoading(true);
-    // Simula delay de login
+
+    // Simula delay de login e validação
     setTimeout(() => {
-      onLogin();
+      if (email === 'admin@veredictos.com.br' && password === '123456') {
+        onLogin();
+      } else {
+        setError('Credenciais inválidas. Tente novamente.');
+        setLoading(false);
+      }
     }, 1500);
   };
 
@@ -37,12 +53,21 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         {/* Login Card */}
         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-[40px] border border-white/10 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-200 text-sm p-4 rounded-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                <ShieldCheck className="w-5 h-5 text-red-500" />
+                {error}
+              </div>
+            )}
+
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 ml-1">Email Profissional</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   style={{
                     width: '100%',
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -64,6 +89,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-blue-400 transition-colors" />
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   style={{
                     width: '100%',
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
