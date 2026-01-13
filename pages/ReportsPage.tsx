@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, Routes, Route, Link } from 'react-router-dom';
 import { FileText, Users, Scale, LayoutDashboard } from 'lucide-react';
-import { Cliente, Processo, Prazo, Financeiro } from '../types';
+import { Cliente, Processo, Prazo, Financeiro, Recurso } from '../types';
 import ProcessReport from './reports/ProcessReport';
 import ClientReport from './reports/ClientReport';
 import GeneralReport from './reports/GeneralReport';
@@ -11,6 +11,7 @@ interface ReportsPageProps {
     processos: Processo[];
     prazos: Prazo[];
     financeiro: Financeiro[];
+    recursos: Recurso[];
 }
 
 const ReportsLanding: React.FC = () => {
@@ -19,7 +20,7 @@ const ReportsLanding: React.FC = () => {
     const reportTypes = [
         {
             title: 'Relatório de Processos',
-            description: 'Visão completa e detalhada dos processos, incluindo histórico e prazos.',
+            description: 'Dossiê completo e detalhado dos processos (Tarefas, Audiências, Recursos e Financeiro).',
             icon: Scale,
             path: 'processos',
             color: 'bg-blue-500'
@@ -68,11 +69,11 @@ const ReportsLanding: React.FC = () => {
     );
 };
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ clientes, processos, prazos, financeiro }) => {
+const ReportsPage: React.FC<ReportsPageProps> = ({ clientes, processos, prazos, financeiro, recursos }) => {
     return (
         <Routes>
             <Route index element={<ReportsLanding />} />
-            <Route path="processos" element={<ProcessReport clientes={clientes} processos={processos} prazos={prazos} />} />
+            <Route path="processos" element={<ProcessReport clientes={clientes} processos={processos} prazos={prazos} financeiro={financeiro} recursos={recursos} />} />
             <Route path="clientes" element={<ClientReport clientes={clientes} processos={processos} />} />
             <Route path="geral" element={<GeneralReport clientes={clientes} processos={processos} prazos={prazos} />} />
         </Routes>

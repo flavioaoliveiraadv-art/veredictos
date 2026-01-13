@@ -219,7 +219,7 @@ const App: React.FC = () => {
             <Route path="/agenda" element={<AgendaPage prazos={prazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} />} />
             <Route path="/tarefas" element={<TasksPage prazos={prazos} setPrazos={setPrazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
             <Route path="/financeiro" element={<FinancePage financeiro={financeiro} setFinanceiro={setFinanceiro} clientes={sortedClientes} processos={processos} prazos={prazos} />} />
-            <Route path="/relatorios/*" element={<ReportsPage clientes={sortedClientes} processos={processos} prazos={prazos} financeiro={financeiro} />} />
+            <Route path="/relatorios/*" element={<ReportsPage clientes={sortedClientes} processos={processos} prazos={prazos} financeiro={financeiro} recursos={recursos} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

@@ -1,247 +1,443 @@
 import React, { useState } from 'react';
-import { Cliente, Processo, Prazo } from '../../types';
-import { Search, FileDown, Printer, Filter } from 'lucide-react';
+import { Cliente, Processo, Prazo, Recurso, Financeiro } from '../../types';
+import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, AlertCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType } from 'docx';
-import { saveAs } from 'file-saver';
 
 interface ProcessReportProps {
     clientes: Cliente[];
     processos: Processo[];
     prazos: Prazo[];
+    recursos: Recurso[];
+    financeiro: Financeiro[];
 }
 
-const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, prazos }) => {
-    const [selectedCliente, setSelectedCliente] = useState<string>('');
-    const [selectedStatus, setSelectedStatus] = useState<string>('');
-    const [startDate, setStartDate] = useState<string>('');
-    const [endDate, setEndDate] = useState<string>('');
-    const [generated, setGenerated] = useState<boolean>(false);
+const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, prazos, recursos, financeiro }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedProcesso, setSelectedProcesso] = useState<Processo | null>(null);
 
-    // Filter Logic
+    // Filter processes for the grid view
     const filteredProcessos = processos.filter(p => {
-        if (selectedCliente && p.cliente !== selectedCliente) return false;
-        if (selectedStatus && p.status !== selectedStatus) return false;
-        return true;
+        const searchLower = searchTerm.toLowerCase();
+        const clientName = clientes.find(c => c.id === p.clienteId)?.nome || p.clienteId; // Assuming clienteId vs name based on types, doing safe check
+        return (
+            p.numero.toLowerCase().includes(searchLower) ||
+            clientName.toLowerCase().includes(searchLower) ||
+            (p.parteContraria && p.parteContraria.toLowerCase().includes(searchLower))
+        );
     });
 
-    const getProcessTasks = (processId: string) => {
-        return prazos.filter(t => t.processoId === processId || t.titulo.includes(processId)); // Simple matching fallback
-    };
-
-    // Mocking resources if not available in props directly or logic to find them
-    // Assuming 'recursos' mock data might need to be passed or derived. 
-    // For now I'll check if resources are in the process object or need a separate lookup.
-    // The props only have 'prazos' and 'processos'. I should probably accept 'recursos' too.
-    // But for now I'll list tasks.
-
-    const handleGenerate = () => {
-        setGenerated(true);
-    };
-
-    const getClientName = (id: string) => {
+    const getClientName = (id: string, nameOrIdProp?: string) => {
+        // Logic to resolve client name if 'clienteId' is an ID or if the prop passed is already the name
+        // Based on types.ts, Processoo has 'clienteId' and potentially 'cliente' (if inconsistent, but types say clienteId)
+        // We will look up in 'clientes' array.
         const client = clientes.find(c => c.id === id);
-        return client ? client.nome : id; // Fallback to ID if name not found or if ID is already name
+        return client ? client.nome : (nameOrIdProp || id);
     };
 
-    const exportPDF = () => {
+    const openDossier = (processo: Processo) => {
+        setSelectedProcesso(processo);
+    };
+
+    const closeDossier = () => {
+        setSelectedProcesso(null);
+    };
+
+    const exportDossierPDF = () => {
+        if (!selectedProcesso) return;
+
         const doc = new jsPDF();
+        const clienteName = getClientName(selectedProcesso.clienteId, (selectedProcesso as any).cliente); // Safe fallback
         let yPos = 20;
 
-        doc.setFontSize(16);
-        doc.text('Relatório Processual Detalhado', 14, yPos);
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(11, 23, 38); // Dark Brand Color
+        doc.text('Dossiê Processual Completo', 105, yPos, { align: 'center' });
         yPos += 10;
 
         doc.setFontSize(10);
-        doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, yPos);
-        yPos += 10;
+        doc.setTextColor(100);
+        doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 105, yPos, { align: 'center' });
+        yPos += 15;
 
-        filteredProcessos.forEach((p, index) => {
-            if (yPos > 270) {
-                doc.addPage();
-                yPos = 20;
-            }
+        // 1. Dados Gerais
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'bold');
+        doc.text('1. DADOS GERAIS DO PROCESSO', 16, yPos + 6);
+        yPos += 15;
 
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`Processo: ${p.numero}`, 14, yPos);
-            yPos += 6;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
 
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Cliente: ${p.cliente} | Status: ${p.status} | Vara: ${p.vara || 'N/A'}`, 14, yPos);
-            yPos += 6;
-
-            // Tasks
-            const tasks = getProcessTasks(p.id);
-            if (tasks.length > 0) {
-                const taskData = tasks.map(t => [
-                    t.titulo,
-                    new Date(t.dataVencimento).toLocaleDateString('pt-BR'),
-                    t.status
-                ]);
-
-                autoTable(doc, {
-                    startY: yPos,
-                    head: [['Tarefa/Prazo', 'Data Fatal', 'Status']],
-                    body: taskData,
-                    margin: { left: 14 },
-                    theme: 'plain',
-                    styles: { fontSize: 8 }
-                });
-
-                // @ts-ignore
-                yPos = doc.lastAutoTable.finalY + 10;
-            } else {
-                doc.text('(Sem tarefas vinculadas)', 14, yPos);
-                yPos += 10;
-            }
-
-            yPos += 5;
-            doc.setDrawColor(200);
-            doc.line(14, yPos, 196, yPos);
-            yPos += 10;
-        });
-
-        doc.save('relatorio-processos-detalhado.pdf');
-    };
-
-    const exportDOCX = () => {
-        // Simplified DOCX export for brevity, mirroring the structure
-        const children = [
-            new Paragraph({ text: "Relatório Processual Detalhado", heading: "Heading1" }),
-            new Paragraph({ text: `Gerado em: ${new Date().toLocaleDateString('pt-BR')}` }),
+        const generalData = [
+            [`Processo: ${selectedProcesso.numero}`, `Tribunal: ${selectedProcesso.tribunal || '-'}`],
+            [`Cliente: ${clienteName}`, `Comarca: ${selectedProcesso.comarca || '-'}`],
+            [`Parte Adversa: ${selectedProcesso.parteContraria || '-'}`, `Vara: ${selectedProcesso.localTramitacao || '-'}`],
+            [`Área: ${selectedProcesso.areaAtuacao}`, `Fase: ${selectedProcesso.faseProcessual}`],
+            [`Valor da Causa: R$ ${selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}`, `Status: ${selectedProcesso.status}`]
         ];
 
-        filteredProcessos.forEach(p => {
-            children.push(
-                new Paragraph({ text: `Processo: ${p.numero}`, heading: "Heading2" }),
-                new Paragraph({ text: `Cliente: ${p.cliente} | Status: ${p.status}` }),
-                new Paragraph({ text: "Tarefas/Prazos:", bold: true })
-            );
-
-            const tasks = getProcessTasks(p.id);
-            if (tasks.length > 0) {
-                tasks.forEach(t => {
-                    children.push(new Paragraph({
-                        text: `- ${t.titulo} (${new Date(t.dataVencimento).toLocaleDateString('pt-BR')}) - ${t.status}`,
-                        bullet: { level: 0 }
-                    }));
-                });
-            } else {
-                children.push(new Paragraph({ text: "(Sem tarefas vinculadas)" }));
-            }
-            children.push(new Paragraph({ text: "" })); // Spacer
+        // Manual layout for general info to mimic "Dossier" look better than a table
+        generalData.forEach(row => {
+            doc.text(row[0], 16, yPos);
+            doc.text(row[1], 110, yPos);
+            yPos += 6;
         });
+        yPos += 5;
 
-        const doc = new Document({
-            sections: [{ properties: {}, children }],
-        });
+        // 2. Tarefas e Prazos (Timeline)
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('2. HISTÓRICO DE TAREFAS E PRAZOS', 16, yPos + 6);
+        yPos += 10;
 
-        Packer.toBlob(doc).then(blob => {
-            saveAs(blob, "relatorio-processos-detalhado.docx");
-        });
+        const tasks = prazos
+            .filter(t => t.processoId === selectedProcesso.id || t.titulo?.includes(selectedProcesso.numero) || t.descricao?.includes(selectedProcesso.numero))
+            .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime());
+
+        if (tasks.length > 0) {
+            const taskRows = tasks.map(t => [
+                new Date(t.dataVencimento).toLocaleDateString('pt-BR'),
+                t.tipo || 'Tarefa',
+                t.titulo || t.descricao, // Fallback for title/desc
+                t.concluido ? 'Concluída' : 'Pendente'
+            ]);
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Data', 'Tipo', 'Descrição', 'Status']],
+                body: taskRows,
+                theme: 'grid',
+                headStyles: { fillColor: [79, 70, 229] },
+            });
+            // @ts-ignore
+            yPos = doc.lastAutoTable.finalY + 10;
+        } else {
+            doc.setFont('helvetica', 'italic');
+            doc.text('Nenhum registro encontrado.', 16, yPos + 5);
+            yPos += 15;
+        }
+
+        // 3. Recursos
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('3. RECURSOS VINCULADOS', 16, yPos + 6);
+        yPos += 10;
+
+        // Logic to find resources - Assuming Resource types have logical link
+        const linkedResources = recursos.filter(r => r.processoOriginarioId === selectedProcesso.id || r.numeroRecurso.includes(selectedProcesso.numero.split('.')[0])); // Loose matching if ID not exact
+
+        if (linkedResources.length > 0) {
+            const recRows = linkedResources.map(r => [
+                r.tipoRecurso,
+                r.numeroRecurso,
+                r.tribunal,
+                r.status
+            ]);
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Tipo', 'Número', 'Tribunal', 'Status']],
+                body: recRows,
+                theme: 'grid',
+                headStyles: { fillColor: [79, 70, 229] },
+            });
+            // @ts-ignore
+            yPos = doc.lastAutoTable.finalY + 10;
+        } else {
+            doc.setFont('helvetica', 'italic');
+            doc.text('Nenhum recurso vinculado encontrado.', 16, yPos + 5);
+            yPos += 15;
+        }
+
+        // 4. Financeiro
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('4. LANÇAMENTOS FINANCEIROS', 16, yPos + 6);
+        yPos += 10;
+
+        const finRecords = financeiro.filter(f => f.processoId === selectedProcesso.id || f.descricao.includes(selectedProcesso.numero));
+
+        if (finRecords.length > 0) {
+            const finRows = finRecords.map(f => [
+                new Date(f.dataVencimento).toLocaleDateString('pt-BR'),
+                f.tipo,
+                f.descricao,
+                `R$ ${f.valor.toLocaleString('pt-BR')}`,
+                f.status
+            ]);
+
+            // Calculate Totals
+            const totalReceitas = finRecords.filter(f => f.tipo === 'Receita').reduce((acc, curr) => acc + curr.valor, 0);
+            const totalDespesas = finRecords.filter(f => f.tipo === 'Despesa').reduce((acc, curr) => acc + curr.valor, 0);
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Vencimento', 'Tipo', 'Descrição', 'Valor', 'Status']],
+                body: finRows,
+                theme: 'grid',
+                headStyles: { fillColor: [79, 70, 229] },
+            });
+            // @ts-ignore
+            yPos = doc.lastAutoTable.finalY + 10;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Total Receitas: R$ ${totalReceitas.toLocaleString('pt-BR')}`, 16, yPos);
+            doc.text(`Total Despesas: R$ ${totalDespesas.toLocaleString('pt-BR')}`, 100, yPos);
+
+        } else {
+            doc.setFont('helvetica', 'italic');
+            doc.text('Nenhum lançamento financeiro encontrado.', 16, yPos + 5);
+        }
+
+        doc.save(`dossie_processo_${selectedProcesso.numero}.pdf`);
     };
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-slate-800">Relatório de Processos</h1>
-
-            {/* Filters */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Cliente</label>
-                        <select
-                            className="w-full rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500"
-                            value={selectedCliente}
-                            onChange={(e) => setSelectedCliente(e.target.value)}
-                        >
-                            <option value="">Todos</option>
-                            {clientes.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-                        <select
-                            className="w-full rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500"
-                            value={selectedStatus}
-                            onChange={(e) => setSelectedStatus(e.target.value)}
-                        >
-                            <option value="">Todos</option>
-                            <option value="Ativo">Ativo</option>
-                            <option value="Arquivado">Arquivado</option>
-                        </select>
-                    </div>
-                    <div className="md:col-span-2 flex items-end">
-                        <button
-                            onClick={handleGenerate}
-                            className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition w-full md:w-auto"
-                        >
-                            Gerar Relatório
-                        </button>
-                    </div>
+            {/* Header & Search */}
+            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-800">Relatório de Processos</h1>
+                    <p className="text-slate-500">Selecione um processo para gerar o dossiê completo</p>
+                </div>
+                <div className="relative w-full md:w-96">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input
+                        type="text"
+                        placeholder="Buscar por número, cliente ou parte..."
+                        className="w-full pl-10 pr-4 py-2 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
             </div>
 
-            {generated && (
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-fade-in">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-bold text-slate-800">Resultados ({filteredProcessos.length})</h2>
-                        <div className="flex gap-2">
-                            <button onClick={exportPDF} className="flex items-center gap-2 px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
-                                <FileDown className="w-4 h-4" /> PDF
-                            </button>
-                            <button onClick={exportDOCX} className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
-                                <FileDown className="w-4 h-4" /> DOCX
-                            </button>
+            {/* Grid of Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                {filteredProcessos.map(processo => {
+                    const clientName = getClientName(processo.clienteId, (processo as any).cliente);
+                    return (
+                        <div
+                            key={processo.id}
+                            onClick={() => openDossier(processo)}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-lg hover:border-blue-400 hover:-translate-y-1 transition-all group"
+                        >
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="bg-blue-50 p-2 rounded-lg group-hover:bg-blue-100 transition-colors">
+                                    <Scale className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${processo.status === 'Ativo' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'
+                                    }`}>
+                                    {processo.status}
+                                </span>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-slate-800 mb-1">{processo.numero}</h3>
+                            <p className="text-slate-500 text-sm mb-4 line-clamp-1">{processo.objeto}</p>
+
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2 text-slate-700">
+                                    <Users className="w-4 h-4 text-slate-400" />
+                                    <span className="font-medium truncate">{clientName}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-slate-500">
+                                    <Gavel className="w-4 h-4 text-slate-400" />
+                                    <span className="truncate">{processo.vara || 'Vara não informada'}</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    );
+                })}
+            </div>
 
-                    <div className="space-y-6">
-                        {filteredProcessos.map((p) => {
-                            const tasks = getProcessTasks(p.id);
-                            return (
-                                <div key={p.id} className="border border-slate-200 rounded-xl p-4 hover:border-blue-300 transition-colors">
-                                    <div className="flex flex-col md:flex-row justify-between mb-4">
-                                        <div>
-                                            <h3 className="font-bold text-slate-800 text-lg">{p.numero}</h3>
-                                            <p className="text-slate-600 text-sm">Cliente: <span className="font-medium">{p.cliente}</span></p>
-                                            <p className="text-slate-600 text-sm">Vara: {p.vara || 'N/A'}</p>
-                                        </div>
-                                        <div className="mt-2 md:mt-0">
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${p.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {p.status}
-                                            </span>
-                                        </div>
+            {filteredProcessos.length === 0 && (
+                <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
+                    <Scale className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                    <p className="text-slate-500 text-lg">Nenhum processo encontrado com esses termos.</p>
+                </div>
+            )}
+
+            {/* DOSSIER MODAL */}
+            {selectedProcesso && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-slate-50">
+                            <div>
+                                <p className="text-blue-600 font-bold text-sm tracking-wide uppercase mb-1">Dossiê Processual</p>
+                                <h2 className="text-2xl font-black text-slate-800">{selectedProcesso.numero}</h2>
+                                <div className="flex gap-3 mt-2 text-sm text-slate-600">
+                                    <span>Cliente: <b>{getClientName(selectedProcesso.clienteId, (selectedProcesso as any).cliente)}</b></span>
+                                    <span>•</span>
+                                    <span>{selectedProcesso.areaAtuacao}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={exportDossierPDF}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-lg shadow-blue-500/30"
+                                >
+                                    <FileDown className="w-4 h-4" />
+                                    Exportar PDF
+                                </button>
+                                <button
+                                    onClick={closeDossier}
+                                    className="bg-white hover:bg-slate-100 text-slate-400 hover:text-rose-500 p-2 rounded-xl transition-colors"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Content - Scrollable */}
+                        <div className="overflow-y-auto p-6 space-y-8 bg-white">
+
+                            {/* 1. DADOS GERAIS */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <FileText className="w-5 h-5 text-blue-500" />
+                                    Dados Gerais
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Tribunal / Comarca</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.tribunal || '-'} / {selectedProcesso.comarca || '-'}</p>
                                     </div>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Vara / Local</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.localTramitacao || '-'}</p>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Fase Processual</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.faseProcessual}</p>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Parte Adversa</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.parteContraria || '-'}</p>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Valor da Causa</label>
+                                        <p className="font-semibold text-emerald-700 mt-1">R$ {selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}</p>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Gratuidade Justiça</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.gratuidade ? 'Sim' : 'Não'}</p>
+                                    </div>
+                                </div>
+                            </section>
 
-                                    {tasks.length > 0 && (
-                                        <div className="mt-4 bg-slate-50 p-3 rounded-lg">
-                                            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tarefas e Prazos</h4>
-                                            <div className="space-y-2">
-                                                {tasks.map(t => (
-                                                    <div key={t.id} className="flex justify-between text-sm border-l-2 border-blue-400 pl-3">
-                                                        <span className="text-slate-700">{t.titulo}</span>
-                                                        <div className="flex gap-3">
-                                                            <span className="text-slate-500">{new Date(t.dataVencimento).toLocaleDateString('pt-BR')}</span>
-                                                            <span className={`font-medium ${t.concluido ? 'text-green-600' : 'text-amber-600'}`}>
-                                                                {t.concluido ? 'Concluída' : 'Pendente'}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                            {/* 2. TIMELINE DE TAREFAS */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <Calendar className="w-5 h-5 text-indigo-500" />
+                                    Histórico de Tarefas e Prazos
+                                </h3>
+                                <div className="space-y-3">
+                                    {prazos
+                                        .filter(t => t.processoId === selectedProcesso.id || t.titulo?.includes(selectedProcesso.numero) || t.descricao?.includes(selectedProcesso.numero))
+                                        .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime())
+                                        .map(t => (
+                                            <div key={t.id} className="flex items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+                                                <div className={`w-2 h-10 rounded-full mr-4 ${t.concluido ? 'bg-emerald-400' : 'bg-amber-400'}`}></div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-bold text-slate-800">{t.titulo || t.descricao}</p>
+                                                    <p className="text-xs text-slate-500">{t.tipo} • Vencimento: {new Date(t.dataVencimento).toLocaleDateString('pt-BR')}</p>
+                                                </div>
+                                                <div>
+                                                    <span className={`px-2 py-1 rounded text-xs font-bold ${t.concluido ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                                                        {t.concluido ? 'Realizada' : 'Pendente'}
+                                                    </span>
+                                                </div>
                                             </div>
-                                        </div>
+                                        ))
+                                    }
+                                    {prazos.filter(t => t.processoId === selectedProcesso.id).length === 0 && (
+                                        <p className="text-slate-400 italic text-sm">Nenhuma tarefa ou prazo registrado.</p>
                                     )}
                                 </div>
-                            );
-                        })}
+                            </section>
+
+                            {/* 3. RECURSOS */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <Gavel className="w-5 h-5 text-violet-500" />
+                                    Recursos Vinculados
+                                </h3>
+                                <div className="space-y-2">
+                                    {recursos
+                                        .filter(r => r.processoOriginarioId === selectedProcesso.id || r.numeroRecurso.includes(selectedProcesso.numero.split('.')[0]))
+                                        .map(r => (
+                                            <div key={r.id} className="bg-violet-50 p-4 rounded-xl border border-violet-100 flex justify-between items-center">
+                                                <div>
+                                                    <p className="font-bold text-violet-900">{r.tipoRecurso}</p>
+                                                    <p className="text-sm text-violet-700">Nº {r.numeroRecurso}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-xs font-bold uppercase text-violet-500">{r.tribunal}</p>
+                                                    <span className="text-xs bg-white px-2 py-1 rounded text-violet-800 border border-violet-200 mt-1 inline-block">{r.status}</span>
+                                                </div>
+                                            </div>
+                                        ))
+                                    }
+                                    {recursos.filter(r => r.processoOriginarioId === selectedProcesso.id).length === 0 && (
+                                        <p className="text-slate-400 italic text-sm">Nenhum recurso vinculado.</p>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* 4. FINANCEIRO */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <DollarSign className="w-5 h-5 text-emerald-500" />
+                                    Lançamentos Financeiros
+                                </h3>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {financeiro
+                                        .filter(f => f.processoId === selectedProcesso.id || f.descricao.includes(selectedProcesso.numero))
+                                        .map(f => (
+                                            <div key={f.id} className="flex justify-between items-center p-3 border-b border-slate-100 last:border-0">
+                                                <div>
+                                                    <p className="font-medium text-slate-800">{f.descricao}</p>
+                                                    <p className="text-xs text-slate-500">{new Date(f.dataVencimento).toLocaleDateString('pt-BR')} • {f.status}</p>
+                                                </div>
+                                                <div className={`font-bold ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                    {f.tipo === 'Receita' ? '+' : '-'} R$ {f.valor.toLocaleString('pt-BR')}
+                                                </div>
+                                            </div>
+                                        ))
+                                    }
+                                    {financeiro.filter(f => f.processoId === selectedProcesso.id).length === 0 && (
+                                        <p className="text-slate-400 italic text-sm">Nenhum lançamento financeiro.</p>
+                                    )}
+                                </div>
+                            </section>
+
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="bg-slate-50 p-4 border-t border-slate-100 text-center text-xs text-slate-400">
+                            Dossiê gerado automaticamente pelo módulo de Relatórios do VeredictOS.
+                        </div>
                     </div>
                 </div>
             )}
+
         </div>
     );
 };
