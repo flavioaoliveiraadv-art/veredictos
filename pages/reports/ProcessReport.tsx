@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Cliente, Processo, Prazo, Recurso, Financeiro } from '../../types';
-import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, AlertCircle } from 'lucide-react';
+import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, AlertCircle, Users } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
