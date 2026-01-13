@@ -1,144 +1,380 @@
 import React, { useState } from 'react';
-import { Cliente, Processo } from '../../types';
-import { FileDown, Users } from 'lucide-react';
+import { Cliente, Processo, Financeiro } from '../../types';
+import { Search, FileDown, X, Users, MapPin, Briefcase, DollarSign, FileText } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType } from 'docx';
-import { saveAs } from 'file-saver';
 
 interface ClientReportProps {
     clientes: Cliente[];
     processos: Processo[];
+    financeiro: Financeiro[];
 }
 
-const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos }) => {
-    const [generated, setGenerated] = useState<boolean>(false);
+const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financeiro }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
 
-    const handleGenerate = () => {
-        setGenerated(true);
+    // Filter clients
+    const filteredClientes = clientes.filter(c =>
+        c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (c.cpf && c.cpf.includes(searchTerm)) ||
+        (c.cnpj && c.cnpj.includes(searchTerm))
+    );
+
+    const openDossier = (cliente: Cliente) => {
+        setSelectedCliente(cliente);
     };
 
-    const getActiveProcessCount = (clientName: string) => {
-        return processos.filter(p => p.cliente === clientName && p.status === 'Ativo').length;
+    const closeDossier = () => {
+        setSelectedCliente(null);
     };
 
-    const exportPDF = () => {
+    const getActiveProcessCount = (clientId: string) => {
+        // Assuming clienteId is the link. Check types if name is used.
+        // Based on previous files, process.clienteId links to client.id
+        return processos.filter(p => p.clienteId === clientId && p.status === 'Ativo').length;
+    };
+
+    const exportDossierPDF = () => {
+        if (!selectedCliente) return;
+
         const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text('Relatório de Clientes', 14, 22);
+        let yPos = 20;
 
-        const tableData = clientes.map(c => [
-            c.nome,
-            c.tipo,
-            c.cpf || c.cnpj || '-',
-            getActiveProcessCount(c.nome).toString()
-        ]);
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(11, 23, 38);
+        doc.text('Dossiê do Cliente', 105, yPos, { align: 'center' });
+        yPos += 10;
 
-        autoTable(doc, {
-            head: [['Nome', 'Tipo', 'Documento', 'Processos Ativos']],
-            body: tableData,
-            startY: 30,
-        });
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 105, yPos, { align: 'center' });
+        yPos += 15;
 
-        doc.save('relatorio-clientes.pdf');
-    };
+        // 1. DADOS CADASTRAIS
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.setFont('helvetica', 'bold');
+        doc.text('1. DADOS CADASTRAIS', 16, yPos + 6);
+        yPos += 15;
 
-    const exportDOCX = () => {
-        const tableRows = [
-            new TableRow({
-                children: [
-                    new TableCell({ children: [new Paragraph({ text: "Nome", bold: true })] }),
-                    new TableCell({ children: [new Paragraph({ text: "Tipo", bold: true })] }),
-                    new TableCell({ children: [new Paragraph({ text: "Documento", bold: true })] }),
-                    new TableCell({ children: [new Paragraph({ text: "Proc. Ativos", bold: true })] }),
-                ],
-            }),
-            ...clientes.map(c =>
-                new TableRow({
-                    children: [
-                        new TableCell({ children: [new Paragraph(c.nome)] }),
-                        new TableCell({ children: [new Paragraph(c.tipo)] }),
-                        new TableCell({ children: [new Paragraph(c.cpf || c.cnpj || "-")] }),
-                        new TableCell({ children: [new Paragraph(getActiveProcessCount(c.nome).toString())] }),
-                    ],
-                })
-            )
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+
+        const clientData = [
+            [`Nome: ${selectedCliente.nome}`, `Tipo: ${selectedCliente.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}`],
+            [`Documento: ${selectedCliente.documento}`, `Status: ${selectedCliente.status}`],
+            [`Email: ${selectedCliente.email}`, `Telefone: ${selectedCliente.telefone}`],
+            [`Endereço: ${selectedCliente.endereco || '-'}`, `Cadastro: ${new Date(selectedCliente.createdAt).toLocaleDateString('pt-BR')}`]
         ];
 
-        const doc = new Document({
-            sections: [{
-                properties: {},
-                children: [
-                    new Paragraph({ text: "Relatório de Clientes", heading: "Heading1" }),
-                    new Table({
-                        rows: tableRows,
-                        width: { size: 100, type: WidthType.PERCENTAGE },
-                    }),
-                ],
-            }],
+        clientData.forEach(row => {
+            doc.text(row[0], 16, yPos);
+            doc.text(row[1], 110, yPos);
+            yPos += 6;
         });
 
-        Packer.toBlob(doc).then(blob => {
-            saveAs(blob, "relatorio-clientes.docx");
-        });
+        if (selectedCliente.representanteLegal) {
+            doc.text(`Representante Legal: ${selectedCliente.representanteLegal}`, 16, yPos);
+            yPos += 6;
+        }
+        yPos += 5;
+
+        // 2. PROCESSOS VINCULADOS
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('2. PROCESSOS VINCULADOS', 16, yPos + 6);
+        yPos += 10;
+
+        const linkedProcesses = processos.filter(p => p.clienteId === selectedCliente.id);
+
+        if (linkedProcesses.length > 0) {
+            const procRows = linkedProcesses.map(p => [
+                p.numero,
+                p.objeto,
+                `${p.tribunal || '-'} / ${p.localTramitacao || '-'}`,
+                p.status
+            ]);
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Número', 'Objeto', 'Local', 'Status']],
+                body: procRows,
+                theme: 'grid',
+                headStyles: { fillColor: [16, 185, 129] }, // Emerald color
+            });
+            // @ts-ignore
+            yPos = doc.lastAutoTable.finalY + 10;
+        } else {
+            doc.setFont('helvetica', 'italic');
+            doc.text('Nenhum processo vinculado encontrado.', 16, yPos + 5);
+            yPos += 15;
+        }
+
+        // 3. FINANCEIRO DO CLIENTE
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('3. FINANCEIRO DO CLIENTE', 16, yPos + 6);
+        yPos += 10;
+
+        // Filter logic: Financial records linked directly to client OR via processes of this client
+        // Requirement says: "Listar todos os lançamentos financeiros vinculados diretamente ao cliente"
+        // "Não incluir lançamentos vinculados apenas aos processos" -> Strict interpretation: only if financeiro.clienteId matches.
+        const clientFinancials = financeiro.filter(f => f.clienteId === selectedCliente.id);
+
+        if (clientFinancials.length > 0) {
+            const finRows = clientFinancials.map(f => [
+                new Date(f.dataVencimento).toLocaleDateString('pt-BR'),
+                f.tipo,
+                f.descricao,
+                `R$ ${f.valor.toLocaleString('pt-BR')}`,
+                f.status
+            ]);
+
+            const total = clientFinancials.reduce((acc, curr) => {
+                return curr.tipo === 'Receita' ? acc + curr.valor : acc - curr.valor;
+            }, 0);
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Vencimento', 'Tipo', 'Descrição', 'Valor', 'Status']],
+                body: finRows,
+                theme: 'grid',
+                headStyles: { fillColor: [16, 185, 129] },
+            });
+            // @ts-ignore
+            yPos = doc.lastAutoTable.finalY + 10;
+
+            doc.setFont('helvetica', 'bold');
+            doc.text(`Saldo Total (Receitas - Despesas): R$ ${total.toLocaleString('pt-BR')}`, 16, yPos);
+
+        } else {
+            doc.setFont('helvetica', 'italic');
+            doc.text('Nenhum lançamento financeiro direto encontrado.', 16, yPos + 5);
+        }
+
+        doc.save(`dossie_cliente_${selectedCliente.nome.replace(/\s+/g, '_')}.pdf`);
     };
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-slate-800">Relatório de Clientes</h1>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p className="text-slate-600 mb-4">Gerar listagem completa de clientes e contagem de processos.</p>
-                <button
-                    onClick={handleGenerate}
-                    className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-emerald-700 transition"
-                >
-                    Gerar Listagem
-                </button>
+            {/* Header & Search */}
+            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-800">Relatório de Clientes</h1>
+                    <p className="text-slate-500">Selecione um cliente para gerar o dossiê completo</p>
+                </div>
+                <div className="relative w-full md:w-96">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                    <input
+                        type="text"
+                        placeholder="Buscar por nome ou documento..."
+                        className="w-full pl-10 pr-4 py-2 rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
             </div>
 
-            {generated && (
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-fade-in">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-bold text-slate-800">Clientes ({clientes.length})</h2>
-                        <div className="flex gap-2">
-                            <button onClick={exportPDF} className="flex items-center gap-2 px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
-                                <FileDown className="w-4 h-4" /> PDF
-                            </button>
-                            <button onClick={exportDOCX} className="flex items-center gap-2 px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
-                                <FileDown className="w-4 h-4" /> DOCX
-                            </button>
-                        </div>
-                    </div>
+            {/* Grid of Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                {filteredClientes.map(cliente => {
+                    const activeProcesses = getActiveProcessCount(cliente.id);
+                    return (
+                        <div
+                            key={cliente.id}
+                            onClick={() => openDossier(cliente)}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 cursor-pointer hover:shadow-lg hover:border-emerald-400 hover:-translate-y-1 transition-all group"
+                        >
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="bg-emerald-50 p-2 rounded-lg group-hover:bg-emerald-100 transition-colors">
+                                    <Users className="w-6 h-6 text-emerald-600" />
+                                </div>
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${cliente.status === 'Ativo' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'
+                                    }`}>
+                                    {cliente.status}
+                                </span>
+                            </div>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-slate-200">
-                                    <th className="py-3 px-4 text-sm font-semibold text-slate-600">Nome</th>
-                                    <th className="py-3 px-4 text-sm font-semibold text-slate-600">Tipo</th>
-                                    <th className="py-3 px-4 text-sm font-semibold text-slate-600">Documento</th>
-                                    <th className="py-3 px-4 text-sm font-semibold text-slate-600">Proc. Ativos</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {clientes.map((c) => (
-                                    <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
-                                        <td className="py-3 px-4 text-sm text-slate-800 font-medium">{c.nome}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-600">{c.tipo}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-600 font-mono">{c.cpf || c.cnpj || '-'}</td>
-                                        <td className="py-3 px-4 text-sm text-slate-600">
-                                            <span className="bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-xs font-bold">
-                                                {getActiveProcessCount(c.nome)}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                            <h3 className="text-lg font-bold text-slate-800 mb-1">{cliente.nome}</h3>
+                            <p className="text-slate-500 text-sm mb-4">{cliente.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}</p>
+
+                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                                <Briefcase className="w-4 h-4 text-emerald-500" />
+                                <span className="font-medium">{activeProcesses} Processos Ativos</span>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {filteredClientes.length === 0 && (
+                <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
+                    <Users className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                    <p className="text-slate-500 text-lg">Nenhum cliente encontrado.</p>
+                </div>
+            )}
+
+            {/* DOSSIER MODAL */}
+            {selectedCliente && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+
+                        {/* Modal Header */}
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-start bg-emerald-50/50">
+                            <div>
+                                <p className="text-emerald-600 font-bold text-sm tracking-wide uppercase mb-1">Dossiê do Cliente</p>
+                                <h2 className="text-2xl font-black text-slate-800">{selectedCliente.nome}</h2>
+                                <div className="flex gap-3 mt-2 text-sm text-slate-600">
+                                    <span>{selectedCliente.documento}</span>
+                                    <span>•</span>
+                                    <span>{selectedCliente.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={exportDossierPDF}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-lg shadow-emerald-500/30"
+                                >
+                                    <FileDown className="w-4 h-4" />
+                                    Exportar PDF
+                                </button>
+                                <button
+                                    onClick={closeDossier}
+                                    className="bg-white hover:bg-slate-100 text-slate-400 hover:text-rose-500 p-2 rounded-xl transition-colors"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="overflow-y-auto p-6 space-y-8 bg-white">
+
+                            {/* 1. DADOS CADASTRAIS */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <FileText className="w-5 h-5 text-emerald-500" />
+                                    Dados Cadastrais
+                                </h3>
+                                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Nome Completo / Razão Social</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedCliente.nome}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Documento (CPF/CNPJ)</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedCliente.documento}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Email</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedCliente.email}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Telefone</label>
+                                        <p className="font-semibold text-slate-800 mt-1">{selectedCliente.telefone}</p>
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="text-xs text-slate-500 uppercase font-bold">Endereço</label>
+                                        <div className="flex items-start gap-2 mt-1">
+                                            <MapPin className="w-4 h-4 text-emerald-500 mt-0.5" />
+                                            <p className="font-semibold text-slate-800">{selectedCliente.endereco || 'Não informado'}</p>
+                                        </div>
+                                    </div>
+                                    {selectedCliente.representanteLegal && (
+                                        <div className="md:col-span-2">
+                                            <label className="text-xs text-slate-500 uppercase font-bold">Representante Legal</label>
+                                            <p className="font-semibold text-slate-800 mt-1">{selectedCliente.representanteLegal}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* 2. PROCESSOS VINCULADOS */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <Briefcase className="w-5 h-5 text-blue-500" />
+                                    Processos Vinculados
+                                </h3>
+                                <div className="space-y-3">
+                                    {processos
+                                        .filter(p => p.clienteId === selectedCliente.id)
+                                        .map(p => (
+                                            <div key={p.id} className="flex justify-between items-center p-4 rounded-xl border border-slate-100 hover:bg-blue-50/30 transition-colors">
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-slate-800">{p.numero}</span>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${p.status === 'Ativo' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                            {p.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm text-slate-500 mt-1">{p.objeto} • {p.tribunal} ({p.localTramitacao})</p>
+                                                </div>
+                                                <div className="text-right hidden md:block">
+                                                    <p className="text-xs font-bold text-slate-400">FASE</p>
+                                                    <p className="text-sm font-semibold text-slate-700">{p.faseProcessual}</p>
+                                                </div>
+                                            </div>
+                                        ))
+                                    }
+                                    {processos.filter(p => p.clienteId === selectedCliente.id).length === 0 && (
+                                        <p className="text-slate-400 italic text-sm">Nenhum processo vinculado.</p>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* 3. FINANCEIRO */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <DollarSign className="w-5 h-5 text-emerald-500" />
+                                    Financeiro do Cliente
+                                </h3>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {financeiro
+                                        .filter(f => f.clienteId === selectedCliente.id)
+                                        .map(f => (
+                                            <div key={f.id} className="flex justify-between items-center p-3 border-b border-slate-100 last:border-0 border-dashed">
+                                                <div>
+                                                    <p className="font-medium text-slate-800">{f.descricao}</p>
+                                                    <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                                                        <span>{new Date(f.dataVencimento).toLocaleDateString('pt-BR')}</span>
+                                                        <span className={`px-2 py-0.5 rounded-full ${f.status === 'Pago' ? 'bg-green-100 text-green-700' :
+                                                                f.status === 'Atrasado' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                                                            }`}>{f.status}</span>
+                                                        {f.parcela && <span>Parcela {f.parcela}</span>}
+                                                    </div>
+                                                </div>
+                                                <div className={`font-bold ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                    {f.tipo === 'Receita' ? '+' : '-'} R$ {f.valor.toLocaleString('pt-BR')}
+                                                </div>
+                                            </div>
+                                        ))
+                                    }
+                                    {financeiro.filter(f => f.clienteId === selectedCliente.id).length === 0 && (
+                                        <p className="text-slate-400 italic text-sm">Nenhum lançamento financeiro direto encontrado.</p>
+                                    )}
+                                </div>
+                            </section>
+
+                        </div>
+
+                        {/* Footer */}
+                        <div className="bg-slate-50 p-4 border-t border-slate-100 text-center text-xs text-slate-400">
+                            VeredictOS Intelligence • Dossiê Gerado em {new Date().toLocaleDateString('pt-BR')}
+                        </div>
                     </div>
                 </div>
             )}
+
         </div>
     );
 };
