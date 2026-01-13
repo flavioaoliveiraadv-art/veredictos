@@ -235,8 +235,15 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                 ))}
                                             </div>
                                         </div>
-        </div>
+                                    )}
+                                </div>
                             );
-                        };
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
-                        export default ProcessReport;
+export default ProcessReport;
