@@ -8,6 +8,7 @@ import ProcessesPage from './pages/ProcessesPage';
 import AgendaPage from './pages/AgendaPage';
 import TasksPage from './pages/TasksPage';
 import FinancePage from './pages/FinancePage';
+import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/LoginPage';
 import NotificationModal from './components/NotificationModal';
 import { Cliente, Processo, Prazo, Financeiro, Recurso, HistoricoAlteracao } from './types';
@@ -218,6 +219,7 @@ const App: React.FC = () => {
             <Route path="/agenda" element={<AgendaPage prazos={prazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} />} />
             <Route path="/tarefas" element={<TasksPage prazos={prazos} setPrazos={setPrazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
             <Route path="/financeiro" element={<FinancePage financeiro={financeiro} setFinanceiro={setFinanceiro} clientes={sortedClientes} processos={processos} prazos={prazos} />} />
+            <Route path="/relatorios/*" element={<ReportsPage clientes={sortedClientes} processos={processos} prazos={prazos} financeiro={financeiro} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

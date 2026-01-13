@@ -9,7 +9,8 @@ import {
   Scale,
   Calendar,
   CheckSquare,
-  DollarSign
+  DollarSign,
+  FileText
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -24,6 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     { name: 'Tarefas', path: '/tarefas', icon: CheckSquare },
     { name: 'Agenda', path: '/agenda', icon: Calendar },
     { name: 'Financeiro', path: '/financeiro', icon: DollarSign },
+    { name: 'Relatórios', path: '/relatorios', icon: FileText },
   ];
 
   return (
