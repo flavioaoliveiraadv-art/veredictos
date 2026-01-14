@@ -16,6 +16,11 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProcesso, setSelectedProcesso] = useState<Processo | null>(null);
 
+    const getClientName = (id: string): string => {
+        const client = clientes?.find(c => c.id === id);
+        return client ? client.nome : 'Cliente não encontrado';
+    };
+
     // Helper to get the main process number (first in the array or fallback)
     const getNumeroProcesso = (p: Processo): string => {
         return p.numeros && p.numeros.length > 0 ? p.numeros[0] : 'Sem número';
@@ -40,11 +45,6 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
             const nameB = getClientName(b.clienteId);
             return nameA.localeCompare(nameB, 'pt-BR');
         });
-
-    const getClientName = (id: string): string => {
-        const client = clientes?.find(c => c.id === id);
-        return client ? client.nome : 'Cliente não encontrado';
-    };
 
     const openDossier = (processo: Processo) => {
         setSelectedProcesso(processo);
