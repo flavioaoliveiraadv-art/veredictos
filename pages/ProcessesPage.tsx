@@ -298,16 +298,15 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="bg-orange-100 text-orange-700 text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest">RECURSO - 2º GRAU</span>
-                      <h3 className="text-lg font-black text-gray-800 leading-tight">{rec.tipoRecurso}</h3>
+                      <h3 className="text-lg font-black text-orange-600 leading-tight">{rec.tipoRecurso}</h3>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-bold text-orange-600">{rec.numeroRecurso}</p>
-                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-tighter">Ref: {pai?.numeros[0]}</span>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Ref: {pai?.numeros[0]}</span>
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-gray-400">
                         <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> {cli?.nome}</span>
-                        <span className="flex items-center gap-1.5 bg-rose-50 text-rose-500 px-2 py-0.5 rounded text-[8px] uppercase font-black tracking-widest">Processo em 2º Grau</span>
                       </div>
                     </div>
                   </div>
@@ -316,7 +315,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-black uppercase tracking-tighter bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
                     <Clock className="w-3.5 h-3.5 text-orange-400" /> Atualizado em {rec.ultimaAtualizacao || rec.dataDistribuicao}
                   </div>
-                  <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${rec.status === StatusProcesso.ATIVO ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>{rec.status === StatusProcesso.ATIVO ? 'RECURSO ATIVO' : 'RECURSO ARQUIVADO'}</span>
+                  <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${rec.status === StatusProcesso.ATIVO ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>{rec.status === StatusProcesso.ATIVO ? 'ATIVO' : 'ARQUIVADO'}</span>
                 </div>
               </div>
             );
