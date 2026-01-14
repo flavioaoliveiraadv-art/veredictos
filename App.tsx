@@ -13,14 +13,6 @@ import LoginPage from './pages/LoginPage';
 import NotificationModal from './components/NotificationModal';
 import { Cliente, Processo, Prazo, Financeiro, Recurso, HistoricoAlteracao, Andamento } from './types';
 
-// Extend ImportMeta for Vite environment variables
-interface ImportMeta {
-  readonly env: {
-    readonly VITE_SUPABASE_URL: string;
-    readonly VITE_SUPABASE_ANON_KEY: string;
-    [key: string]: string | boolean | undefined;
-  };
-}
 import { INITIAL_CLIENTES, INITIAL_PROCESSOS, INITIAL_HISTORICO, INITIAL_PRAZOS } from './data/mockData';
 import { getTodayBR, compareDatesBR } from './utils/formatters';
 

@@ -58,7 +58,7 @@ export const maskDate = (value: string): string => {
  * Converte data ISO (yyyy-mm-dd) para BR (dd/mm/aaaa)
  */
 export const toBRDate = (isoDate: string): string => {
-  if (!isoDate) return "";
+  if (!isoDate || typeof isoDate !== 'string') return "";
   if (isoDate.includes('/')) return isoDate;
   const parts = isoDate.split('-');
   if (parts.length !== 3) return isoDate;
@@ -80,15 +80,24 @@ export const toISODate = (brDate: string): string => {
 /**
  * Compara duas datas no formato dd/mm/aaaa para ordenação cronológica correta
  */
-export const compareDatesBR = (a: string, b: string): number => {
-  if (!a || !b) return 0;
-  const [dayA, monthA, yearA] = a.split('/').map(Number);
-  const [dayB, monthB, yearB] = b.split('/').map(Number);
+export const compareDatesBR = (a: any, b: any): number => {
+  if (!a || !b || typeof a !== 'string' || typeof b !== 'string') return 0;
+  if (!a.includes('/') || !b.includes('/')) return 0;
 
-  const dateA = new Date(yearA, monthA - 1, dayA).getTime();
-  const dateB = new Date(yearB, monthB - 1, dayB).getTime();
+  try {
+    const [dayA, monthA, yearA] = a.split('/').map(Number);
+    const [dayB, monthB, yearB] = b.split('/').map(Number);
 
-  return dateA - dateB;
+    if (isNaN(dayA) || isNaN(dayB)) return 0;
+
+    const dateA = new Date(yearA, monthA - 1, dayA).getTime();
+    const dateB = new Date(yearB, monthB - 1, dayB).getTime();
+
+    if (isNaN(dateA) || isNaN(dateB)) return 0;
+    return dateA - dateB;
+  } catch (e) {
+    return 0;
+  }
 };
 
 /**

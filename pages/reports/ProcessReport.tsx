@@ -25,14 +25,18 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
     };
 
     // Filter processes for the grid view and sort by client name
-    const filteredProcessos = (processos || [])
+    const safeProcessos = Array.isArray(processos) ? processos : [];
+    const safeClientes = Array.isArray(clientes) ? clientes : [];
+
+    const filteredProcessos = safeProcessos
         .filter(p => {
             if (!p) return false;
             const searchLower = (searchTerm || '').toLowerCase();
-            const numero = getNumeroProcesso(p) || '';
-            const clientName = (clientes?.find(c => c && c.id === p.clienteId)?.nome || '').toLowerCase();
+            const numero = (getNumeroProcesso(p) || '').toLowerCase();
+            const clientObj = safeClientes.find(c => c && c.id === p.clienteId);
+            const clientName = (clientObj?.nome || '').toLowerCase();
             return (
-                numero.toLowerCase().includes(searchLower) ||
+                numero.includes(searchLower) ||
                 clientName.includes(searchLower) ||
                 (p.parteContraria && p.parteContraria.toLowerCase().includes(searchLower)) ||
                 (p.objeto && p.objeto.toLowerCase().includes(searchLower))
@@ -256,7 +260,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
     };
 
     // Handle loading state or empty data gracefully
-    if (!processos || processos.length === 0) {
+    if (!Array.isArray(processos) || processos.length === 0) {
         return (
             <div className="space-y-6">
                 <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
