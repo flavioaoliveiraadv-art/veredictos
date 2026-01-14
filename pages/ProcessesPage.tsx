@@ -372,11 +372,13 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                 ))}
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-                <div className="lg:col-span-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div className="md:col-span-2">
                   {subTab === 'DADOS' && (
-                    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2">
-                      <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="md:col-span-2">
+                        <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
+                      </div>
                       <DetailField label="Polo" value={selectedProcess.polo || '-'} />
                       <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
                       <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
