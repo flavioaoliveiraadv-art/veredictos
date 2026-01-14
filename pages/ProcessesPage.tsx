@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import {
   Processo, Cliente, StatusProcesso, Prazo, Recurso, HistoricoAlteracao,
-  AreaAtuacao, FaseProcessual, Financeiro
+  AreaAtuacao, FaseProcessual, Financeiro, TipoPrazo, Andamento, TipoAndamento, ProvidenciaAndamento
 } from '../types';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
 
@@ -28,6 +28,28 @@ interface ProcessesPageProps {
 const INITIAL_PROC_STATE: Partial<Processo> = { areaAtuacao: AreaAtuacao.CIVEL, faseProcessual: FaseProcessual.CONHECIMENTO, status: StatusProcesso.ATIVO, numeros: [''], valorCausa: 0, dataDistribuicao: getTodayBR(), polo: undefined, gratuidade: false };
 const INITIAL_REC_STATE: Partial<Recurso> = { dataDistribuicao: getTodayBR(), gratuidade: false, status: StatusProcesso.ATIVO };
 
+// Componentes Auxiliares (Movidos para o topo para evitar erros de declaração)
+const DetailField = ({ label, value, className = "", icon }: { label: string, value: string, className?: string, icon?: React.ReactNode }) => (
+  <div>
+    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">{icon} {label}</p>
+    <p className={`text-sm font-bold text-gray-800 ${className}`}>{value}</p>
+  </div>
+);
+
+const FormInput = ({ label, ...props }: any) => (
+  <div className="space-y-2">
+    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
+    <input {...props} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-sm outline-none focus:border-indigo-500 transition-all" />
+  </div>
+);
+
+const FormSelect = ({ label, children, ...props }: any) => (
+  <div className="space-y-2">
+    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
+    <select {...props} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-sm outline-none focus:border-indigo-500 transition-all appearance-none">{children}</select>
+  </div>
+);
+
 const ProcessesPage: React.FC<ProcessesPageProps> = ({
   processos, setProcessos, clientes, setPrazos, prazos, recursos, setRecursos, historico, setHistorico, financeiro
 }) => {
@@ -42,6 +64,24 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   // Form States
   const [procFormData, setProcFormData] = useState<Partial<Processo>>(INITIAL_PROC_STATE);
   const [recFormData, setRecFormData] = useState<Partial<Recurso>>(INITIAL_REC_STATE);
+
+  // Tabs inside Details Modal
+  const [subTab, setSubTab] = useState<'DADOS' | 'PARTES' | 'TAREFAS' | 'ANDAMENTOS' | 'FINANCEIRO'>('DADOS');
+
+  // Andamento States
+  const [isAndamentoModalOpen, setIsAndamentoModalOpen] = useState(false);
+  const [andamentoFormData, setAndamentoFormData] = useState<Partial<Andamento>>({
+    data: getTodayBR(),
+    tipo: TipoAndamento.INTIMACAO,
+    conteudo: '',
+    geraPrazo: false,
+    providencia: ProvidenciaAndamento.CIENCIA
+  });
+
+  // Quick Prazo States
+  const [isQuickPrazoModalOpen, setIsQuickPrazoModalOpen] = useState(false);
+  const [quickPrazoData, setQuickPrazoData] = useState<Partial<Prazo>>({});
+  const [pendingAndamentoId, setPendingAndamentoId] = useState<string | null>(null);
 
   const addHistorico = (idReferencia: string, descricao: string) => {
     const entry: HistoricoAlteracao = {
@@ -314,11 +354,28 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <button onClick={() => setSelectedProcess(null)} className="p-3 text-gray-400 hover:text-gray-800 rounded-2xl transition-all ml-4" title="Fechar"><X className="w-8 h-8" /></button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                <div className="lg:col-span-2 space-y-12">
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Informações Gerais</h3>
-                    <div className="grid grid-cols-2 gap-8 text-balance">
+              <div className="flex items-center gap-1 border-b border-gray-100 mb-8 overflow-x-auto custom-scroll pb-1">
+                {[
+                  { id: 'DADOS', label: 'Dados do Processo', icon: <FileText className="w-4 h-4" /> },
+                  { id: 'PARTES', label: 'Partes / Cliente', icon: <User className="w-4 h-4" /> },
+                  { id: 'TAREFAS', label: 'Tarefas e Prazos', icon: <CheckSquare className="w-4 h-4" /> },
+                  { id: 'ANDAMENTOS', label: 'Andamentos', icon: <Activity className="w-4 h-4" /> },
+                  { id: 'FINANCEIRO', label: 'Financeiro', icon: <DollarSign className="w-4 h-4" /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSubTab(tab.id as any)}
+                    className={`flex items-center gap-2 px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab === tab.id ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+                <div className="lg:col-span-3">
+                  {subTab === 'DADOS' && (
+                    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2">
                       <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
                       <DetailField label="Polo" value={selectedProcess.polo || '-'} />
                       <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
@@ -332,102 +389,203 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                       <DetailField label="Valor da Causa" value={formatCurrency(selectedProcess.valorCausa)} className="font-black" />
                       <DetailField label="Última Atualização" value={selectedProcess.ultimaAtualizacao} icon={<Clock className="w-3.5 h-3.5" />} />
                     </div>
-                  </section>
+                  )}
 
-                  {/* Recursos Vinculados */}
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
-                      <Scale className="w-4 h-4" /> Recursos
-                    </h3>
-                    <div className="space-y-3">
-                      {recursos.filter(r => r.processoOriginarioId === selectedProcess.id).length > 0 ? (
-                        recursos.filter(r => r.processoOriginarioId === selectedProcess.id).map(r => (
-                          <div
-                            key={r.id}
-                            onClick={() => { setSelectedRecurso(r); setSelectedProcess(null); }}
-                            className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100 flex items-center justify-between cursor-pointer hover:bg-orange-50 transition-all"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
-                                <Scale className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <p className="text-xs font-black text-gray-800">{r.tipoRecurso}</p>
-                                <p className="text-[10px] font-bold text-gray-400">{r.numeroRecurso}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-[9px] font-black uppercase text-orange-600">{r.status}</p>
-                              <p className="text-[8px] font-bold text-gray-400">Atualizado: {r.ultimaAtualizacao || r.dataDistribuicao}</p>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Nenhum recurso vinculado a este processo.</p>
-                      )}
-                    </div>
-                  </section>
+                  {subTab === 'PARTES' && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
 
-                  {/* Tarefas e Prazos */}
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
-                      <CheckSquare className="w-4 h-4" /> Tarefas e Prazos Vinculados
-                    </h3>
-                    <div className="space-y-3">
-                      {prazos.filter(p => p.processoId === selectedProcess.id).length > 0 ? (
-                        prazos.filter(p => p.processoId === selectedProcess.id).map(p => (
-                          <div key={p.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${p.concluido ? 'bg-emerald-50 text-emerald-500' : p.cancelado ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}>
-                                {p.concluido ? <CheckCircle2 className="w-4 h-4" /> : p.cancelado ? <XCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                      <section>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Cliente / Contratante</h3>
+                        {(() => {
+                          const cli = clientes.find(c => c.id === selectedProcess.clienteId);
+                          if (!cli) return <p className="text-sm text-gray-400 italic">Cliente não encontrado.</p>;
+                          return (
+                            <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-6">
+                              <div className="w-20 h-20 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                <User className="w-10 h-10" />
                               </div>
-                              <div>
-                                <p className="text-xs font-black text-gray-800">{p.descricao}</p>
-                                <p className="text-[10px] font-bold text-gray-400">{p.dataVencimento}</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 flex-1">
+                                <DetailField label="Nome / Razão Social" value={cli.nome} />
+                                <DetailField label="CPF / CNPJ" value={cli.documento} />
+                                <DetailField label="E-mail" value={cli.email} />
+                                <DetailField label="Telefone" value={cli.telefone} />
                               </div>
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${p.concluido ? 'bg-emerald-100 text-emerald-600' : p.cancelado ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'}`}>
-                              {p.concluido ? 'Realizado' : p.cancelado ? 'Cancelado' : 'Pendente'}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Nenhuma tarefa ou prazo vinculado.</p>
-                      )}
-                    </div>
-                  </section>
+                          );
+                        })()}
+                      </section>
 
-                  {/* Lançamentos Financeiros */}
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" /> Lançamentos Financeiros
-                    </h3>
-                    <div className="space-y-3">
-                      {financeiro.filter(f => f.processoId === selectedProcess.id).length > 0 ? (
-                        financeiro.filter(f => f.processoId === selectedProcess.id).map(f => (
-                          <div key={f.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
-                                <DollarSign className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <p className="text-xs font-black text-gray-800">{f.descricao}</p>
-                                <p className="text-[10px] font-bold text-gray-400">{f.dataVencimento}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className={`text-xs font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                                {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
-                              </p>
-                              <span className="text-[8px] font-black uppercase text-gray-400">{f.status}</span>
-                            </div>
+                      <section>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Adversário / Parte Contrária</h3>
+                        <div className="bg-rose-50/30 p-6 rounded-3xl border border-rose-100 flex items-center gap-6 text-rose-900">
+                          <div className="w-16 h-16 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center">
+                            <XCircle className="w-8 h-8" />
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Nenhum lançamento financeiro vinculado.</p>
-                      )}
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-rose-400 mb-1">Nome da Parte Contrária</p>
+                            <p className="text-xl font-black">{selectedProcess.parteContraria || 'NÃO INFORMADO'}</p>
+                          </div>
+                        </div>
+                      </section>
                     </div>
-                  </section>
+                  )}
+
+                  {subTab === 'TAREFAS' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                          <CheckSquare className="w-4 h-4" /> Tarefas e Prazos Judiciais
+                        </h3>
+                        <button
+                          onClick={() => {
+                            setQuickPrazoData({
+                              descricao: '',
+                              processoId: selectedProcess.id,
+                              clienteId: selectedProcess.clienteId,
+                              dataVencimento: getTodayBR(),
+                              tipo: TipoPrazo.TAREFA,
+                              responsavel: '',
+                              critico: false,
+                              concluido: false,
+                              cancelado: false,
+                              financeiroIds: []
+                            });
+                            setIsQuickPrazoModalOpen(true);
+                          }}
+                          className="text-indigo-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-all"
+                        >
+                          <Plus className="w-3 h-3" /> Nova Tarefa
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        {prazos.filter(p => p.processoId === selectedProcess.id).length > 0 ? (
+                          prazos.filter(p => p.processoId === selectedProcess.id).map(p => (
+                            <div key={p.id} className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-indigo-200 transition-all">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${p.concluido ? 'bg-emerald-50 text-emerald-500' : p.cancelado ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}>
+                                  {p.concluido ? <CheckCircle2 className="w-5 h-5" /> : p.cancelado ? <XCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-black text-gray-800">{p.descricao}</p>
+                                  <div className="flex items-center gap-3 mt-0.5">
+                                    <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1"><Calendar className="w-3 h-3" /> Vence em: {p.dataVencimento}</span>
+                                    {p.critico && <span className="bg-rose-100 text-rose-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">CRÍTICO</span>}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${p.concluido ? 'bg-emerald-100 text-emerald-600' : p.cancelado ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'}`}>
+                                {p.concluido ? 'Realizado' : p.cancelado ? 'Cancelado' : 'Pendente'}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-12 bg-gray-50 rounded-[32px] border border-dashed border-gray-200">
+                            <CheckSquare className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+                            <p className="text-xs text-gray-400 font-bold italic">Nenhuma tarefa ou prazo vinculado a este processo.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {subTab === 'ANDAMENTOS' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                          <Activity className="w-4 h-4" /> Histórico de Andamentos Processuais
+                        </h3>
+                        <button
+                          onClick={() => {
+                            setAndamentoFormData({ data: getTodayBR(), tipo: TipoAndamento.INTIMACAO, conteudo: '', geraPrazo: false, providencia: ProvidenciaAndamento.CIENCIA });
+                            setIsAndamentoModalOpen(true);
+                          }}
+                          className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-2"
+                        >
+                          <Plus className="w-3 h-3" /> Novo Andamento
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {selectedProcess.andamentos && selectedProcess.andamentos.length > 0 ? (
+                          [...selectedProcess.andamentos].reverse().map((and, idx) => (
+                            <div key={and.id} className="relative pl-10">
+                              <div className="absolute left-0 top-2 w-7 h-7 rounded-full border-4 border-white shadow bg-indigo-100 flex items-center justify-center z-10 text-indigo-600">
+                                <Activity className="w-3 h-3" />
+                              </div>
+                              {idx !== selectedProcess.andamentos!.length - 1 && <div className="absolute left-3.5 top-8 bottom-[-24px] w-0.5 bg-indigo-50"></div>}
+
+                              <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all">
+                                <div className="flex items-start justify-between mb-4">
+                                  <div>
+                                    <div className="flex items-center gap-3 mb-1">
+                                      <span className="text-xs font-black text-gray-800">{and.data}</span>
+                                      <span className="bg-indigo-50 text-indigo-600 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest">{and.tipo}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className={`text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded ${and.geraPrazo ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>
+                                        {and.geraPrazo ? 'Gera Prazo' : 'Sem Prazo'}
+                                      </span>
+                                      <span className="text-[8px] font-black text-gray-300 uppercase tracking-tighter">— {and.providencia}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
+                                  <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-16 bg-gray-50 rounded-[40px] border border-dashed border-gray-200">
+                            <Activity className="w-10 h-10 text-gray-200 mx-auto mb-4" />
+                            <p className="text-sm text-gray-400 font-bold italic mb-4">Inicie o registro cronológico dos andamentos.</p>
+                            <button
+                              onClick={() => setIsAndamentoModalOpen(true)}
+                              className="text-indigo-600 text-xs font-black uppercase tracking-widest hover:underline"
+                            >
+                              Adicionar primeiro andamento
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {subTab === 'FINANCEIRO' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <DollarSign className="w-4 h-4" /> Lançamentos Financeiros Vinculados
+                      </h3>
+                      <div className="space-y-3">
+                        {financeiro.filter(f => f.processoId === selectedProcess.id).length > 0 ? (
+                          financeiro.filter(f => f.processoId === selectedProcess.id).map(f => (
+                            <div key={f.id} className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-indigo-200 transition-all">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                                  <DollarSign className="w-5 h-5" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-black text-gray-800">{f.descricao}</p>
+                                  <p className="text-[10px] font-bold text-gray-400">{f.dataVencimento}</p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <p className={`text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                  {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
+                                </p>
+                                <span className={`text-[8px] font-black uppercase tracking-widest ${f.status === 'Pago' ? 'text-emerald-500' : 'text-amber-500'}`}>{f.status}</span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-12 bg-gray-50 rounded-[32px] border border-dashed border-gray-200">
+                            <DollarSign className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+                            <p className="text-xs text-gray-400 font-bold italic">Nenhum lançamento financeiro para este processo.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-6">
                   <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
@@ -452,201 +610,387 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* MODAL DETALHES RECURSO */}
-      {selectedRecurso && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-center justify-center p-4" onClick={() => setSelectedRecurso(null)}>
-          <div className="bg-white rounded-[40px] w-full max-w-4xl shadow-2xl animate-in slide-in-from-bottom-10 duration-500 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="p-10">
-              <div className="flex items-start justify-between mb-10">
-                <div className="flex items-center gap-5">
-                  <div className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center border-2 border-orange-100 shadow-lg">
-                    <Scale className="w-9 h-9" />
+      {
+        selectedRecurso && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[60] flex items-center justify-center p-4" onClick={() => setSelectedRecurso(null)}>
+            <div className="bg-white rounded-[40px] w-full max-w-4xl shadow-2xl animate-in slide-in-from-bottom-10 duration-500 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="p-10">
+                <div className="flex items-start justify-between mb-10">
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center border-2 border-orange-100 shadow-lg">
+                      <Scale className="w-9 h-9" />
+                    </div>
+                    <div>
+                      <span className="bg-orange-100 text-orange-700 text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-widest mb-1 inline-block">DETALHES DO RECURSO - 2º GRAU</span>
+                      <h2 className="text-3xl font-black text-gray-800 tracking-tighter leading-none">{selectedRecurso.tipoRecurso}</h2>
+                      <p className="text-base font-bold text-orange-600 mt-1">Ref: {processos.find(p => p.id === selectedRecurso.processoOriginarioId)?.numeros[0]}</p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="bg-orange-100 text-orange-700 text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-widest mb-1 inline-block">DETALHES DO RECURSO - 2º GRAU</span>
-                    <h2 className="text-3xl font-black text-gray-800 tracking-tighter leading-none">{selectedRecurso.tipoRecurso}</h2>
-                    <p className="text-base font-bold text-orange-600 mt-1">Ref: {processos.find(p => p.id === selectedRecurso.processoOriginarioId)?.numeros[0]}</p>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { setRecFormData(selectedRecurso); setIsRecModalOpen(true); }} className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-2xl transition-all" title="Editar Recurso"><Edit className="w-6 h-6" /></button>
+                    <button onClick={(e) => deleteRecurso(e, selectedRecurso.id)} className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all" title="Excluir Recurso"><Trash2 className="w-6 h-6" /></button>
+                    <button onClick={() => setSelectedRecurso(null)} className="p-3 text-gray-400 hover:text-gray-800 rounded-2xl transition-all ml-4" title="Fechar"><X className="w-8 h-8" /></button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => { setRecFormData(selectedRecurso); setIsRecModalOpen(true); }} className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-2xl transition-all" title="Editar Recurso"><Edit className="w-6 h-6" /></button>
-                  <button onClick={(e) => deleteRecurso(e, selectedRecurso.id)} className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all" title="Excluir Recurso"><Trash2 className="w-6 h-6" /></button>
-                  <button onClick={() => setSelectedRecurso(null)} className="p-3 text-gray-400 hover:text-gray-800 rounded-2xl transition-all ml-4" title="Fechar"><X className="w-8 h-8" /></button>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-12">
-                  <DetailField label="Número do Recurso" value={selectedRecurso.numeroRecurso} />
-                  <DetailField label="Local de Tramitação" value={selectedRecurso.localTramitacao} />
-                  <DetailField label="Tribunal" value={selectedRecurso.tribunal} />
-                  <DetailField label="Data de Distribuição" value={selectedRecurso.dataDistribuicao} />
-                  <DetailField label="Cliente Vinculado" value={clientes.find(c => c.id === selectedRecurso.clienteId)?.nome || '-'} />
-                  <DetailField label="Assistência Judiciária" value={selectedRecurso.gratuidade ? 'CONCEDIDA' : 'NEGADA / NÃO REQUERIDA'} />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-12">
+                    <DetailField label="Número do Recurso" value={selectedRecurso.numeroRecurso} />
+                    <DetailField label="Local de Tramitação" value={selectedRecurso.localTramitacao} />
+                    <DetailField label="Tribunal" value={selectedRecurso.tribunal} />
+                    <DetailField label="Data de Distribuição" value={selectedRecurso.dataDistribuicao} />
+                    <DetailField label="Cliente Vinculado" value={clientes.find(c => c.id === selectedRecurso.clienteId)?.nome || '-'} />
+                    <DetailField label="Assistência Judiciária" value={selectedRecurso.gratuidade ? 'CONCEDIDA' : 'NEGADA / NÃO REQUERIDA'} />
+                  </div>
 
-                <div className="space-y-6">
-                  <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Controle de Status</h4>
-                    <div className="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100 mb-4 shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                        <span className="text-sm font-black text-gray-700">Arquivar</span>
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
+                      <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Controle de Status</h4>
+                      <div className="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100 mb-4 shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                          <span className="text-sm font-black text-gray-700">Arquivar</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" checked={selectedRecurso.status === StatusProcesso.ARQUIVADO} onChange={() => {
+                            const newStatus = selectedRecurso.status === StatusProcesso.ARQUIVADO ? StatusProcesso.ATIVO : StatusProcesso.ARQUIVADO;
+                            const today = getTodayBR();
+                            setRecursos(prev => prev.map(r => r.id === selectedRecurso.id ? { ...r, status: newStatus, ultimaAtualizacao: today } : r));
+                            addHistorico(selectedRecurso.processoOriginarioId, `Recurso ${selectedRecurso.tipoRecurso} alterado para ${newStatus}.`);
+                            setSelectedRecurso(null);
+                          }} className="sr-only peer" />
+                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={selectedRecurso.status === StatusProcesso.ARQUIVADO} onChange={() => {
-                          const newStatus = selectedRecurso.status === StatusProcesso.ARQUIVADO ? StatusProcesso.ATIVO : StatusProcesso.ARQUIVADO;
-                          const today = getTodayBR();
-                          setRecursos(prev => prev.map(r => r.id === selectedRecurso.id ? { ...r, status: newStatus, ultimaAtualizacao: today } : r));
-                          addHistorico(selectedRecurso.processoOriginarioId, `Recurso ${selectedRecurso.tipoRecurso} alterado para ${newStatus}.`);
-                          setSelectedRecurso(null);
-                        }} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                      </label>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* MODAL CADASTRO PROCESSO */}
-      {isProcModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onClick={() => setIsProcModalOpen(false)}>
-          <div className="bg-white rounded-[40px] w-full max-w-3xl shadow-2xl animate-in zoom-in duration-300 max-h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="p-8 pb-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3"><FileText className="w-7 h-7 text-indigo-600" /> {procFormData.id ? 'Editar Processo' : 'Novo Processo'}</h2>
-              <button onClick={() => setIsProcModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="w-8 h-8" /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-10 custom-scroll">
-              <form id="procForm" onSubmit={handleSaveProcess} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormSelect label="Cliente" required value={procFormData.clienteId} onChange={e => setProcFormData({ ...procFormData, clienteId: e.target.value })}>
-                    <option value="">Selecione...</option>
-                    {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                  </FormSelect>
-                  <FormSelect label="Polo" required value={procFormData.polo || ''} onChange={e => setProcFormData({ ...procFormData, polo: e.target.value as 'Autor' | 'Réu' })}>
-                    <option value="">Selecione...</option>
-                    <option value="Autor">Autor (Polo Ativo)</option>
-                    <option value="Réu">Réu (Polo Passivo)</option>
-                  </FormSelect>
-                  <FormInput label="Número do Processo" required placeholder="0000000-00.0000.0.00.0000" value={procFormData.numeros?.[0] || ''} onChange={e => setProcFormData({ ...procFormData, numeros: [e.target.value] })} />
-                  <FormInput label="Parte Contrária" placeholder="Nome da Parte Contrária" value={procFormData.parteContraria} onChange={e => setProcFormData({ ...procFormData, parteContraria: e.target.value.toUpperCase() })} />
-                  <FormSelect label="Justiça Gratuita" value={procFormData.gratuidade ? 'S' : 'N'} onChange={e => setProcFormData({ ...procFormData, gratuidade: e.target.value === 'S' })}>
-                    <option value="N">Não</option>
-                    <option value="S">Sim</option>
-                  </FormSelect>
-                  <FormInput label="Valor da Causa" placeholder="R$ 0,00" value={formatCurrency(procFormData.valorCausa || 0)} onChange={e => setProcFormData({ ...procFormData, valorCausa: parseCurrency(e.target.value) })} />
-                  <div className="col-span-2"><FormInput label="Objeto do Processo" required placeholder="Descreva o objeto da ação" value={procFormData.objeto} onChange={e => setProcFormData({ ...procFormData, objeto: e.target.value.toUpperCase() })} /></div>
-                  <FormSelect label="Área de Atuação" value={procFormData.areaAtuacao} onChange={e => setProcFormData({ ...procFormData, areaAtuacao: e.target.value as AreaAtuacao })}>
-                    {Object.values(AreaAtuacao).map(v => <option key={v} value={v}>{v}</option>)}
-                  </FormSelect>
-                  <FormSelect label="Fase Processual" value={procFormData.faseProcessual} onChange={e => setProcFormData({ ...procFormData, faseProcessual: e.target.value as FaseProcessual })}>
-                    {Object.values(FaseProcessual).map(v => <option key={v} value={v}>{v}</option>)}
-                  </FormSelect>
-                  <FormInput label="Vara / Local" placeholder="Ex: 1ª Vara Cível" value={procFormData.localTramitacao} onChange={e => setProcFormData({ ...procFormData, localTramitacao: e.target.value })} />
-                  <FormInput label="Comarca" placeholder="Ex: São Paulo" value={procFormData.comarca} onChange={e => setProcFormData({ ...procFormData, comarca: e.target.value })} />
-                  <FormInput label="Tribunal" placeholder="Ex: TJSP" value={procFormData.tribunal} onChange={e => setProcFormData({ ...procFormData, tribunal: e.target.value })} />
-                  <div className="col-span-2"><FormInput label="Data de Distribuição" type="date" value={toISODate(procFormData.dataDistribuicao || '')} onChange={e => setProcFormData({ ...procFormData, dataDistribuicao: toBRDate(e.target.value) })} /></div>
-                </div>
-              </form>
-            </div>
-            <div className="p-8 border-t border-gray-100 bg-gray-50 flex gap-4">
-              <button type="button" onClick={() => setIsProcModalOpen(false)} className="flex-1 py-4 bg-white border border-gray-300 text-gray-500 rounded-2xl font-black uppercase text-xs">Cancelar</button>
-              <button type="submit" form="procForm" className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-indigo-100">Salvar Processo</button>
+      {
+        isProcModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onClick={() => setIsProcModalOpen(false)}>
+            <div className="bg-white rounded-[40px] w-full max-w-3xl shadow-2xl animate-in zoom-in duration-300 max-h-[90vh] flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="p-8 pb-6 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3"><FileText className="w-7 h-7 text-indigo-600" /> {procFormData.id ? 'Editar Processo' : 'Novo Processo'}</h2>
+                <button onClick={() => setIsProcModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="w-8 h-8" /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-10 custom-scroll">
+                <form id="procForm" onSubmit={handleSaveProcess} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormSelect label="Cliente" required value={procFormData.clienteId} onChange={e => setProcFormData({ ...procFormData, clienteId: e.target.value })}>
+                      <option value="">Selecione...</option>
+                      {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                    </FormSelect>
+                    <FormSelect label="Polo" required value={procFormData.polo || ''} onChange={e => setProcFormData({ ...procFormData, polo: e.target.value as 'Autor' | 'Réu' })}>
+                      <option value="">Selecione...</option>
+                      <option value="Autor">Autor (Polo Ativo)</option>
+                      <option value="Réu">Réu (Polo Passivo)</option>
+                    </FormSelect>
+                    <FormInput label="Número do Processo" required placeholder="0000000-00.0000.0.00.0000" value={procFormData.numeros?.[0] || ''} onChange={e => setProcFormData({ ...procFormData, numeros: [e.target.value] })} />
+                    <FormInput label="Parte Contrária" placeholder="Nome da Parte Contrária" value={procFormData.parteContraria} onChange={e => setProcFormData({ ...procFormData, parteContraria: e.target.value.toUpperCase() })} />
+                    <FormSelect label="Justiça Gratuita" value={procFormData.gratuidade ? 'S' : 'N'} onChange={e => setProcFormData({ ...procFormData, gratuidade: e.target.value === 'S' })}>
+                      <option value="N">Não</option>
+                      <option value="S">Sim</option>
+                    </FormSelect>
+                    <FormInput label="Valor da Causa" placeholder="R$ 0,00" value={formatCurrency(procFormData.valorCausa || 0)} onChange={e => setProcFormData({ ...procFormData, valorCausa: parseCurrency(e.target.value) })} />
+                    <div className="col-span-2"><FormInput label="Objeto do Processo" required placeholder="Descreva o objeto da ação" value={procFormData.objeto} onChange={e => setProcFormData({ ...procFormData, objeto: e.target.value.toUpperCase() })} /></div>
+                    <FormSelect label="Área de Atuação" value={procFormData.areaAtuacao} onChange={e => setProcFormData({ ...procFormData, areaAtuacao: e.target.value as AreaAtuacao })}>
+                      {Object.values(AreaAtuacao).map(v => <option key={v} value={v}>{v}</option>)}
+                    </FormSelect>
+                    <FormSelect label="Fase Processual" value={procFormData.faseProcessual} onChange={e => setProcFormData({ ...procFormData, faseProcessual: e.target.value as FaseProcessual })}>
+                      {Object.values(FaseProcessual).map(v => <option key={v} value={v}>{v}</option>)}
+                    </FormSelect>
+                    <FormInput label="Vara / Local" placeholder="Ex: 1ª Vara Cível" value={procFormData.localTramitacao} onChange={e => setProcFormData({ ...procFormData, localTramitacao: e.target.value })} />
+                    <FormInput label="Comarca" placeholder="Ex: São Paulo" value={procFormData.comarca} onChange={e => setProcFormData({ ...procFormData, comarca: e.target.value })} />
+                    <FormInput label="Tribunal" placeholder="Ex: TJSP" value={procFormData.tribunal} onChange={e => setProcFormData({ ...procFormData, tribunal: e.target.value })} />
+                    <div className="col-span-2"><FormInput label="Data de Distribuição" type="date" value={toISODate(procFormData.dataDistribuicao || '')} onChange={e => setProcFormData({ ...procFormData, dataDistribuicao: toBRDate(e.target.value) })} /></div>
+                  </div>
+                </form>
+              </div>
+              <div className="p-8 border-t border-gray-100 bg-gray-50 flex gap-4">
+                <button type="button" onClick={() => setIsProcModalOpen(false)} className="flex-1 py-4 bg-white border border-gray-300 text-gray-500 rounded-2xl font-black uppercase text-xs">Cancelar</button>
+                <button type="submit" form="procForm" className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-indigo-100">Salvar Processo</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* MODAL CADASTRO RECURSO */}
-      {isRecModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4" onClick={() => setIsRecModalOpen(false)}>
-          <div className="bg-white rounded-[40px] w-full max-w-3xl shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
-            <div className="p-8 pb-6 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3"><Scale className="w-7 h-7 text-indigo-600" /> {recFormData.id ? 'Editar Recurso' : 'Novo Recurso'}</h2>
-              <button onClick={() => setIsRecModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="w-8 h-8" /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-10 custom-scroll">
-              <form id="recForm" onSubmit={handleSaveRecurso} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                  <FormInput label="Tipo de Recurso" required placeholder="Ex: Apelação, Agravo de Instrumento" value={recFormData.tipoRecurso} onChange={e => setRecFormData({ ...recFormData, tipoRecurso: e.target.value })} />
-                  <FormSelect label="Processo Originário" required value={recFormData.processoOriginarioId} onChange={e => setRecFormData({ ...recFormData, processoOriginarioId: e.target.value })}>
-                    <option value="">Selecione o processo originário...</option>
-                    {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
-                  </FormSelect>
-                  <div className="space-y-2 opacity-80">
-                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente (Automático)</label>
-                    <input type="text" readOnly className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-400 text-sm cursor-not-allowed" value={clientes.find(c => c.id === recFormData.clienteId)?.nome || 'Selecione o processo para vincular o cliente'} />
+      {
+        isRecModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4" onClick={() => setIsRecModalOpen(false)}>
+            <div className="bg-white rounded-[40px] w-full max-w-3xl shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="p-8 pb-6 border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3"><Scale className="w-7 h-7 text-indigo-600" /> {recFormData.id ? 'Editar Recurso' : 'Novo Recurso'}</h2>
+                <button onClick={() => setIsRecModalOpen(false)} className="text-gray-400 hover:text-gray-600"><X className="w-8 h-8" /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-10 custom-scroll">
+                <form id="recForm" onSubmit={handleSaveRecurso} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <FormInput label="Tipo de Recurso" required placeholder="Ex: Apelação, Agravo de Instrumento" value={recFormData.tipoRecurso} onChange={e => setRecFormData({ ...recFormData, tipoRecurso: e.target.value })} />
+                    <FormSelect label="Processo Originário" required value={recFormData.processoOriginarioId} onChange={e => setRecFormData({ ...recFormData, processoOriginarioId: e.target.value })}>
+                      <option value="">Selecione o processo originário...</option>
+                      {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
+                    </FormSelect>
+                    <div className="space-y-2 opacity-80">
+                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente (Automático)</label>
+                      <input type="text" readOnly className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-400 text-sm cursor-not-allowed" value={clientes.find(c => c.id === recFormData.clienteId)?.nome || 'Selecione o processo para vincular o cliente'} />
+                    </div>
+                    <FormInput label="Número do Recurso" placeholder="0000000-00.0000.0.00.0000" value={recFormData.numeroRecurso} onChange={e => setRecFormData({ ...recFormData, numeroRecurso: e.target.value })} />
+                    <FormSelect label="Gratuidade" value={recFormData.gratuidade ? 'S' : 'N'} onChange={e => setRecFormData({ ...recFormData, gratuidade: e.target.value === 'S' })}>
+                      <option value="N">Não</option>
+                      <option value="S">Sim</option>
+                    </FormSelect>
+                    <FormInput label="Data Distribuição" type="date" value={toISODate(recFormData.dataDistribuicao || '')} onChange={e => setRecFormData({ ...recFormData, dataDistribuicao: toBRDate(e.target.value) })} />
+                    <FormInput label="Tribunal" placeholder="Ex: TJSP, STJ" value={recFormData.tribunal} onChange={e => setRecFormData({ ...recFormData, tribunal: e.target.value })} />
+                    <FormInput label="Local de Tramitação" placeholder="Ex: 1ª Câmara de Direito Privado" value={recFormData.localTramitacao} onChange={e => setRecFormData({ ...recFormData, localTramitacao: e.target.value })} />
                   </div>
-                  <FormInput label="Número do Recurso" placeholder="0000000-00.0000.0.00.0000" value={recFormData.numeroRecurso} onChange={e => setRecFormData({ ...recFormData, numeroRecurso: e.target.value })} />
-                  <FormSelect label="Gratuidade" value={recFormData.gratuidade ? 'S' : 'N'} onChange={e => setRecFormData({ ...recFormData, gratuidade: e.target.value === 'S' })}>
-                    <option value="N">Não</option>
-                    <option value="S">Sim</option>
-                  </FormSelect>
-                  <FormInput label="Data Distribuição" type="date" value={toISODate(recFormData.dataDistribuicao || '')} onChange={e => setRecFormData({ ...recFormData, dataDistribuicao: toBRDate(e.target.value) })} />
-                  <FormInput label="Tribunal" placeholder="Ex: TJSP, STJ" value={recFormData.tribunal} onChange={e => setRecFormData({ ...recFormData, tribunal: e.target.value })} />
-                  <FormInput label="Local de Tramitação" placeholder="Ex: 1ª Câmara de Direito Privado" value={recFormData.localTramitacao} onChange={e => setRecFormData({ ...recFormData, localTramitacao: e.target.value })} />
-                </div>
-              </form>
-            </div>
-            <div className="p-8 border-t border-gray-100 bg-gray-50 flex gap-4">
-              <button type="button" onClick={() => setIsRecModalOpen(false)} className="flex-1 py-4 bg-white border border-gray-300 text-gray-500 rounded-2xl font-black uppercase text-xs">Cancelar</button>
-              <button type="submit" form="recForm" className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-indigo-100">Salvar Recurso</button>
+                </form>
+              </div>
+              <div className="p-8 border-t border-gray-100 bg-gray-50 flex gap-4">
+                <button type="button" onClick={() => setIsRecModalOpen(false)} className="flex-1 py-4 bg-white border border-gray-300 text-gray-500 rounded-2xl font-black uppercase text-xs">Cancelar</button>
+                <button type="submit" form="recForm" className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-indigo-100">Salvar Recurso</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* MODAL HISTORICO */}
-      {isHistoryLogModalOpen && selectedProcess && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4" onClick={() => setIsHistoryLogModalOpen(false)}>
-          <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
-            <div className="p-10">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-black text-gray-800 flex items-center gap-3"><History className="w-6 h-6 text-indigo-600" /> Registro de Alterações</h2>
-                <button onClick={() => setIsHistoryLogModalOpen(false)} className="text-gray-400"><X className="w-7 h-7" /></button>
-              </div>
-              <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
-                {historico.filter(h => h.idReferencia === selectedProcess.id).map((h, i, arr) => (
-                  <div key={h.id} className="relative pl-10">
-                    <div className="absolute left-0 top-1.5 w-7 h-7 rounded-full border-4 border-white shadow bg-indigo-600 flex items-center justify-center z-10"><div className="w-1.5 h-1.5 rounded-full bg-white"></div></div>
-                    {i !== arr.length - 1 && <div className="absolute left-3 top-6 bottom-[-32px] w-0.5 bg-gray-100"></div>}
-                    <p className="text-[10px] font-black text-gray-400 mb-1">{h.dataHora}</p>
-                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100"><p className="text-xs font-bold text-gray-700 leading-relaxed">{h.descricao}</p></div>
-                  </div>
-                ))}
+      {
+        isHistoryLogModalOpen && selectedProcess && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4" onClick={() => setIsHistoryLogModalOpen(false)}>
+            <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
+              <div className="p-10">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl font-black text-gray-800 flex items-center gap-3"><History className="w-6 h-6 text-indigo-600" /> Registro de Alterações</h2>
+                  <button onClick={() => setIsHistoryLogModalOpen(false)} className="text-gray-400"><X className="w-7 h-7" /></button>
+                </div>
+                <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
+                  {historico.filter(h => h.idReferencia === selectedProcess.id).map((h, i, arr) => (
+                    <div key={h.id} className="relative pl-10">
+                      <div className="absolute left-0 top-1.5 w-7 h-7 rounded-full border-4 border-white shadow bg-indigo-600 flex items-center justify-center z-10"><div className="w-1.5 h-1.5 rounded-full bg-white"></div></div>
+                      {i !== arr.length - 1 && <div className="absolute left-3 top-6 bottom-[-32px] w-0.5 bg-gray-100"></div>}
+                      <p className="text-[10px] font-black text-gray-400 mb-1">{h.dataHora}</p>
+                      <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100"><p className="text-xs font-bold text-gray-700 leading-relaxed">{h.descricao}</p></div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+      {/* MODAL ANDAMENTOS */}
+      {
+        isAndamentoModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4">
+            <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl animate-in zoom-in duration-300">
+              <div className="p-10">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
+                      <Activity className="w-8 h-8 text-indigo-600" /> Registrar Andamento
+                    </h2>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Lançamento de movimentação processual</p>
+                  </div>
+                  <button onClick={() => setIsAndamentoModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <X className="w-8 h-8" />
+                  </button>
+                </div>
+
+                <form className="space-y-8" id="andamentoForm" onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!selectedProcess) return;
+                  const and: Andamento = {
+                    ...andamentoFormData,
+                    id: `and-${Date.now()}`
+                  } as Andamento;
+
+                  const updatedProcesso = {
+                    ...selectedProcess,
+                    andamentos: [...(selectedProcess.andamentos || []), and],
+                    ultimaAtualizacao: getTodayBR()
+                  };
+
+                  setProcessos(prev => prev.map(p => p.id === selectedProcess.id ? updatedProcesso : p));
+                  setSelectedProcess(updatedProcesso);
+                  addHistorico(selectedProcess.id, `Novo andamento registrado: ${and.tipo}`);
+                  setIsAndamentoModalOpen(false);
+
+                  if (and.geraPrazo) {
+                    // Abrir modal de Prazo rápido
+                    setPendingAndamentoId(and.id);
+                    setQuickPrazoData({
+                      descricao: `${and.providencia.toUpperCase()}: ${and.tipo}`,
+                      processoId: selectedProcess.id,
+                      clienteId: selectedProcess.clienteId,
+                      dataVencimento: getTodayBR(),
+                      tipo: TipoPrazo.PRAZO,
+                      responsavel: '',
+                      critico: true,
+                      concluido: false,
+                      cancelado: false,
+                      financeiroIds: []
+                    });
+                    setIsQuickPrazoModalOpen(true);
+                  }
+                }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <FormInput
+                      label="Data do Andamento"
+                      type="date"
+                      required
+                      value={toISODate(andamentoFormData.data || '')}
+                      onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, data: toBRDate(e.target.value) })}
+                    />
+                    <FormSelect
+                      label="Tipo de Andamento"
+                      required
+                      value={andamentoFormData.tipo}
+                      onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, tipo: e.target.value as TipoAndamento })}
+                    >
+                      {Object.values(TipoAndamento).map(t => <option key={t} value={t}>{t}</option>)}
+                    </FormSelect>
+                  </div>
+
+                  <div className="space-y-4 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Classificação Estratégica</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <FormSelect
+                        label="Gera Prazo?"
+                        value={andamentoFormData.geraPrazo ? 'S' : 'N'}
+                        onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, geraPrazo: e.target.value === 'S' })}
+                      >
+                        <option value="N">Não</option>
+                        <option value="S">Sim</option>
+                      </FormSelect>
+                      <FormSelect
+                        label="Tipo de Providência"
+                        value={andamentoFormData.providencia}
+                        onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, providencia: e.target.value as ProvidenciaAndamento })}
+                      >
+                        {Object.values(ProvidenciaAndamento).map(p => <option key={p} value={p}>{p}</option>)}
+                      </FormSelect>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Conteúdo / Descrição</label>
+                    <textarea
+                      required
+                      className="w-full h-32 px-5 py-4 bg-gray-50 border border-gray-100 rounded-3xl font-medium text-sm outline-none focus:border-indigo-500 transition-all resize-none"
+                      placeholder="Descreva o conteúdo do andamento processual..."
+                      value={andamentoFormData.conteudo}
+                      onChange={(e) => setAndamentoFormData({ ...andamentoFormData, conteudo: e.target.value })}
+                    />
+                  </div>
+                </form>
+
+                <div className="flex gap-4 mt-10">
+                  <button type="button" onClick={() => setIsAndamentoModalOpen(false)} className="flex-1 py-4 bg-white border border-gray-200 text-gray-400 rounded-2xl font-black uppercase text-xs hover:bg-gray-50 transition-all">Descartar</button>
+                  <button type="submit" form="andamentoForm" className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all">Registrar Andamento</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+      {/* MODAL PRAZO RÁPIDO (GATILHO DE ANDAMENTO) */}
+      {
+        isQuickPrazoModalOpen && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[95] flex items-center justify-center p-4">
+            <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl animate-in zoom-in duration-300">
+              <div className="p-10">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
+                      <Calendar className="w-8 h-8 text-amber-500" /> Agenda de Prazo
+                    </h2>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Configurar prazo gerado pelo andamento</p>
+                  </div>
+                  <button onClick={() => setIsQuickPrazoModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <X className="w-8 h-8" />
+                  </button>
+                </div>
+
+                <form className="space-y-6" id="quickPrazoForm" onSubmit={(e) => {
+                  e.preventDefault();
+                  const newPrazo: Prazo = {
+                    ...quickPrazoData,
+                    id: `p-${Date.now()}`
+                  } as Prazo;
+
+                  setPrazos(prev => [...prev, newPrazo]);
+                  addHistorico(newPrazo.processoId, `Prazo judicial agendado via andamento: ${newPrazo.descricao}`);
+
+                  // Vincular o prazo ao andamento se necessário (embora já tenhamos o fluxo)
+                  if (pendingAndamentoId && selectedProcess) {
+                    const updatedAndamentos = selectedProcess.andamentos?.map(a =>
+                      a.id === pendingAndamentoId ? { ...a, prazoId: newPrazo.id } : a
+                    );
+                    setProcessos(prev => prev.map(p => p.id === selectedProcess.id ? { ...p, andamentos: updatedAndamentos } : p));
+                  }
+
+                  setIsQuickPrazoModalOpen(false);
+                  setPendingAndamentoId(null);
+
+                  // Prompt opcional para tarefa vinculada
+                  if (confirm("Deseja criar uma tarefa interna (checklist) vinculada a este prazo?")) {
+                    // Aqui poderíamos abrir outro formulário ou apenas logar
+                    const tarefaInternal: Prazo = {
+                      ...newPrazo,
+                      id: `p-${Date.now() + 1}`,
+                      descricao: `[TAREFA] Providência para: ${newPrazo.descricao}`,
+                      tipo: TipoPrazo.TAREFA,
+                      critico: false
+                    };
+                    setPrazos(prev => [...prev, tarefaInternal]);
+                    addHistorico(newPrazo.processoId, `Tarefa interna vinculada ao prazo criada.`);
+                  }
+                }}>
+                  <FormInput label="Descrição do Prazo" required value={quickPrazoData.descricao} onChange={(e: any) => setQuickPrazoData({ ...quickPrazoData, descricao: e.target.value })} />
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <FormInput label="Data de Vencimento" type="date" required value={toISODate(quickPrazoData.dataVencimento || '')} onChange={(e: any) => setQuickPrazoData({ ...quickPrazoData, dataVencimento: toBRDate(e.target.value) })} />
+                    <FormInput label="Hora" type="time" value={quickPrazoData.horaVencimento} onChange={(e: any) => setQuickPrazoData({ ...quickPrazoData, horaVencimento: e.target.value })} />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <FormSelect label="Tipo de Prazo" required value={quickPrazoData.tipo} onChange={(e: any) => setQuickPrazoData({ ...quickPrazoData, tipo: e.target.value as TipoPrazo })}>
+                      {Object.values(TipoPrazo).map(t => <option key={t} value={t}>{t}</option>)}
+                    </FormSelect>
+                    <FormSelect label="Crítico / Urgente?" value={quickPrazoData.critico ? 'S' : 'N'} onChange={(e: any) => setQuickPrazoData({ ...quickPrazoData, critico: e.target.value === 'S' })}>
+                      <option value="N">Não</option>
+                      <option value="S">Sim</option>
+                    </FormSelect>
+                  </div>
+                  <FormInput label="Responsável" required placeholder="Nome do responsável" value={quickPrazoData.responsavel} onChange={(e: any) => setQuickPrazoData({ ...quickPrazoData, responsavel: e.target.value })} />
+                </form>
+
+                <div className="flex gap-4 mt-10">
+                  <button type="button" onClick={() => setIsQuickPrazoModalOpen(false)} className="flex-1 py-4 bg-white border border-gray-200 text-gray-400 rounded-2xl font-black uppercase text-xs">Pular Cadastro</button>
+                  <button type="submit" form="quickPrazoForm" className="flex-1 py-4 bg-amber-500 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-amber-100 hover:bg-amber-600 transition-all">Agendar Prazo</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
-
-const DetailField = ({ label, value, className = "", icon }: { label: string, value: string, className?: string, icon?: React.ReactNode }) => (
-  <div>
-    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">{icon} {label}</p>
-    <p className={`text-sm font-bold text-gray-800 ${className}`}>{value}</p>
-  </div>
-);
-
-const FormInput = ({ label, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <input {...props} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-sm outline-none focus:border-indigo-500 transition-all" />
-  </div>
-);
-
-const FormSelect = ({ label, children, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <select {...props} className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-sm outline-none focus:border-indigo-500 transition-all appearance-none">{children}</select>
-  </div>
-);
 
 export default ProcessesPage;

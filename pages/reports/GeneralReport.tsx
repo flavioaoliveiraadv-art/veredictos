@@ -18,6 +18,7 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
         processosArquivados: processos.filter(p => p.status === 'Arquivado').length,
         prazosPendentes: prazos.filter(p => !p.concluido).length,
         prazosConcluidos: prazos.filter(p => p.concluido).length,
+        totalAndamentos: processos.reduce((acc, p) => acc + (p.andamentos?.length || 0), 0)
     };
 
     const exportPDF = () => {
@@ -33,6 +34,7 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
         doc.text(`Processos Arquivados: ${stats.processosArquivados}`, 14, 69);
         doc.text(`Tarefas/Prazos Pendentes: ${stats.prazosPendentes}`, 14, 76);
         doc.text(`Tarefas/Prazos Concluídos: ${stats.prazosConcluidos}`, 14, 83);
+        doc.text(`Total de Andamentos Registrados: ${stats.totalAndamentos}`, 14, 90);
 
         doc.save('relatorio-geral.pdf');
     };
@@ -51,6 +53,7 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
                     new Paragraph({ text: `Processos Arquivados: ${stats.processosArquivados}`, bullet: { level: 0 } }),
                     new Paragraph({ text: `Tarefas Pendentes: ${stats.prazosPendentes}`, bullet: { level: 0 } }),
                     new Paragraph({ text: `Tarefas Concluídas: ${stats.prazosConcluidos}`, bullet: { level: 0 } }),
+                    new Paragraph({ text: `Total de Andamentos: ${stats.totalAndamentos}`, bullet: { level: 0 } }),
                 ],
             }],
         });
@@ -84,12 +87,12 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
                     <p className="text-3xl font-bold text-blue-600 mt-2">{stats.processosAtivos}</p>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <p className="text-sm text-slate-500 font-medium">Tarefas Pendentes</p>
-                    <p className="text-3xl font-bold text-amber-500 mt-2">{stats.prazosPendentes}</p>
+                    <p className="text-sm text-slate-500 font-medium">Andamentos Registrados</p>
+                    <p className="text-3xl font-bold text-indigo-600 mt-2">{stats.totalAndamentos}</p>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <p className="text-sm text-slate-500 font-medium">Concluídas</p>
-                    <p className="text-3xl font-bold text-emerald-600 mt-2">{stats.prazosConcluidos}</p>
+                    <p className="text-sm text-slate-500 font-medium">Tarefas Pendentes</p>
+                    <p className="text-3xl font-bold text-amber-500 mt-2">{stats.prazosPendentes}</p>
                 </div>
             </div>
 

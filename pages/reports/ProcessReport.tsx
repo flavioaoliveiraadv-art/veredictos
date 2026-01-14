@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Cliente, Processo, Prazo, Recurso, Financeiro } from '../../types';
-import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, Users } from 'lucide-react';
+import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, Users, Activity } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -201,10 +201,46 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
             doc.setFont('helvetica', 'bold');
             doc.text(`Total Receitas: R$ ${totalReceitas.toLocaleString('pt-BR')}`, 16, yPos);
             doc.text(`Total Despesas: R$ ${totalDespesas.toLocaleString('pt-BR')}`, 100, yPos);
-
+            yPos += 10;
         } else {
             doc.setFont('helvetica', 'italic');
             doc.text('Nenhum lançamento financeiro encontrado.', 16, yPos + 5);
+            yPos += 15;
+        }
+
+        // 5. Andamentos Processuais
+        if (yPos > 240) { doc.addPage(); yPos = 20; }
+
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('5. HISTÓRICO DE ANDAMENTOS', 16, yPos + 6);
+        yPos += 10;
+
+        const andamentosList = selectedProcesso.andamentos || [];
+
+        if (andamentosList.length > 0) {
+            const andRows = [...andamentosList].reverse().map(and => [
+                and.data,
+                and.tipo,
+                and.conteudo,
+                and.geraPrazo ? 'Sim' : 'Não'
+            ]);
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Data', 'Tipo', 'Conteúdo / Providência', 'Prazo?']],
+                body: andRows,
+                theme: 'grid',
+                headStyles: { fillColor: [79, 70, 229] },
+                columnStyles: {
+                    2: { cellWidth: 100 }
+                }
+            });
+        } else {
+            doc.setFont('helvetica', 'italic');
+            doc.text('Nenhum andamento registrado.', 16, yPos + 5);
         }
 
         doc.save(`dossie_processo_${numero.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
@@ -447,6 +483,32 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                     }
                                     {(financeiro || []).filter(f => f && f.processoId === selectedProcesso.id).length === 0 && (
                                         <p className="text-slate-400 italic text-sm">Nenhum lançamento financeiro.</p>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* 5. ANDAMENTOS */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <Activity className="w-5 h-5 text-indigo-500" />
+                                    Andamentos Processuais
+                                </h3>
+                                <div className="space-y-4">
+                                    {(selectedProcesso.andamentos || []).length > 0 ? (
+                                        [...selectedProcesso.andamentos!].reverse().map((and, idx) => (
+                                            <div key={and.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-black text-slate-800 bg-white px-2 py-1 rounded-lg shadow-sm">{and.data}</span>
+                                                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{and.tipo}</span>
+                                                    </div>
+                                                    {and.geraPrazo && <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded uppercase font-mono">Gera Prazo</span>}
+                                                </div>
+                                                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-slate-400 italic text-sm">Nenhum andamento registrado.</p>
                                     )}
                                 </div>
                             </section>

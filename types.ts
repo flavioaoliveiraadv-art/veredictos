@@ -65,6 +65,33 @@ export interface Recurso {
   ultimaAtualizacao: string;
 }
 
+export enum TipoAndamento {
+  INTIMACAO = 'Intimação',
+  DESPACHO = 'Despacho',
+  DECISAO_INTERLOCUTORIA = 'Decisão Interlocutória',
+  SENTENCA = 'Sentença',
+  ACORDAO = 'Acórdão',
+  CERTIDAO = 'Certidão',
+  JUNTADA = 'Juntada'
+}
+
+export enum ProvidenciaAndamento {
+  MANIFESTACAO = 'Manifestação',
+  RECURSO = 'Recurso',
+  CUMPRIMENTO = 'Cumprimento',
+  CIENCIA = 'Apenas ciência'
+}
+
+export interface Andamento {
+  id: string;
+  data: string;
+  tipo: TipoAndamento;
+  conteudo: string;
+  geraPrazo: boolean;
+  providencia: ProvidenciaAndamento;
+  prazoId?: string;
+}
+
 export interface Processo {
   id: string;
   objeto: string;
@@ -82,6 +109,7 @@ export interface Processo {
   dataDistribuicao: string;
   ultimaAtualizacao: string;
   polo?: 'Autor' | 'Réu';
+  andamentos?: Andamento[];
 }
 
 export interface Cliente {

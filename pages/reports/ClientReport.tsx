@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Cliente, Processo, Financeiro } from '../../types';
-import { Search, FileDown, X, Users, MapPin, Briefcase, DollarSign, FileText } from 'lucide-react';
+import { Search, FileDown, X, Users, MapPin, Briefcase, DollarSign, FileText, Activity } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -160,6 +160,44 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
         } else {
             doc.setFont('helvetica', 'italic');
             doc.text('Nenhum lançamento financeiro direto encontrado.', 16, yPos + 5);
+            yPos += 15;
+        }
+
+        // 4. ANDAMENTOS DOS PROCESSOS
+        if (yPos > 240) { doc.addPage(); yPos = 20; }
+
+        doc.setFillColor(241, 245, 249);
+        doc.rect(14, yPos, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('4. ÚLTIMOS ANDAMENTOS DOS PROCESSOS', 16, yPos + 6);
+        yPos += 10;
+
+        const allAndamentos = linkedProcesses.flatMap(p =>
+            (p.andamentos || []).map(a => ({ ...a, procNum: p.numero }))
+        ).sort((a, b) => b.data.localeCompare(a.data));
+
+        if (allAndamentos.length > 0) {
+            const andRows = allAndamentos.map(and => [
+                and.data,
+                and.procNum,
+                and.tipo,
+                and.conteudo
+            ]);
+
+            autoTable(doc, {
+                startY: yPos,
+                head: [['Data', 'Processo', 'Tipo', 'Conteúdo']],
+                body: andRows,
+                theme: 'grid',
+                headStyles: { fillColor: [16, 185, 129] },
+                columnStyles: {
+                    3: { cellWidth: 80 }
+                }
+            });
+        } else {
+            doc.setFont('helvetica', 'italic');
+            doc.text('Nenhum andamento registrado para os processos deste cliente.', 16, yPos + 5);
         }
 
         doc.save(`dossie_cliente_${selectedCliente.nome.replace(/\s+/g, '_')}.pdf`);
@@ -348,7 +386,7 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
                                                     <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                                                         <span>{new Date(f.dataVencimento).toLocaleDateString('pt-BR')}</span>
                                                         <span className={`px-2 py-0.5 rounded-full ${f.status === 'Pago' ? 'bg-green-100 text-green-700' :
-                                                                f.status === 'Atrasado' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                                                            f.status === 'Atrasado' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                                                             }`}>{f.status}</span>
                                                         {f.parcela && <span>Parcela {f.parcela}</span>}
                                                     </div>
@@ -361,6 +399,35 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
                                     }
                                     {financeiro.filter(f => f.clienteId === selectedCliente.id).length === 0 && (
                                         <p className="text-slate-400 italic text-sm">Nenhum lançamento financeiro direto encontrado.</p>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* 4. ANDAMENTOS DOS PROCESSOS */}
+                            <section>
+                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                    <Activity className="w-5 h-5 text-indigo-500" />
+                                    Histórico de Andamentos (Processos)
+                                </h3>
+                                <div className="space-y-4">
+                                    {processos.filter(p => p.clienteId === selectedCliente.id && (p.andamentos || []).length > 0).length > 0 ? (
+                                        processos.filter(p => p.clienteId === selectedCliente.id).flatMap(p =>
+                                            (p.andamentos || []).map(and => (
+                                                <div key={and.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PROCESSO: {p.numero}</span>
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                                                            <span className="text-xs font-black text-slate-800">{and.data}</span>
+                                                        </div>
+                                                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{and.tipo}</span>
+                                                    </div>
+                                                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                                </div>
+                                            ))
+                                        ).sort((a, b) => b.props.children[0].props.children[0].props.children[2].props.children.localeCompare(a.props.children[0].props.children[0].props.children[2].props.children)) // simplified sort by date if possible
+                                    ) : (
+                                        <p className="text-slate-400 italic text-sm">Nenhum andamento registrado para os processos deste cliente.</p>
                                     )}
                                 </div>
                             </section>
