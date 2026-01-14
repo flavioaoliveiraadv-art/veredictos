@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cliente, Processo, Prazo, Recurso, Financeiro, Andamento } from '../../types';
+import { Cliente, Processo, Prazo, Recurso, Financeiro } from '../../types';
 import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, Users, Activity } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -11,10 +11,9 @@ interface ProcessReportProps {
     prazos: Prazo[];
     recursos: Recurso[];
     financeiro: Financeiro[];
-    andamentos: Andamento[];
 }
 
-const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, prazos, recursos, financeiro, andamentos }) => {
+const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, prazos, recursos, financeiro }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProcesso, setSelectedProcesso] = useState<Processo | null>(null);
 
@@ -108,49 +107,13 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         });
         yPos += 5;
 
-        // 2. Andamentos (NEW)
-        doc.setFillColor(241, 245, 249);
-        doc.rect(14, yPos, 182, 8, 'F');
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('2. HISTÓRICO DE ANDAMENTOS', 16, yPos + 6);
-        yPos += 10;
-
-        const procAndamentos = (andamentos || [])
-            .filter(a => a && a.processoId === selectedProcesso.id)
-            .sort((a, b) => compareDatesBR(b.data, a.data)); // Reversa (mais novo primeiro)
-
-        if (procAndamentos.length > 0) {
-            const andamentoRows = procAndamentos.map(a => [
-                a.data,
-                a.tipo,
-                a.descricao,
-                a.providencia
-            ]);
-
-            autoTable(doc, {
-                startY: yPos,
-                head: [['Data', 'Tipo', 'Descrição', 'Providência']],
-                body: andamentoRows,
-                theme: 'grid',
-                headStyles: { fillColor: [79, 70, 229] },
-                columnStyles: { 2: { cellWidth: 80 } }
-            });
-            // @ts-ignore
-            yPos = doc.lastAutoTable.finalY + 10;
-        } else {
-            doc.setFont('helvetica', 'italic');
-            doc.text('Nenhum andamento registrado.', 16, yPos + 5);
-            yPos += 15;
-        }
-
-        // 3. Tarefas e Prazos (Shifted)
+        // 2. Tarefas e Prazos
         if (yPos > 240) { doc.addPage(); yPos = 20; }
         doc.setFillColor(241, 245, 249);
         doc.rect(14, yPos, 182, 8, 'F');
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('3. HISTÓRICO DE TAREFAS E PRAZOS', 16, yPos + 6);
+        doc.text('2. HISTÓRICO DE TAREFAS E PRAZOS', 16, yPos + 6);
         yPos += 10;
 
         const tasks = (prazos || [])
@@ -186,7 +149,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         doc.rect(14, yPos, 182, 8, 'F');
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('4. RECURSOS VINCULADOS', 16, yPos + 6);
+        doc.text('3. RECURSOS VINCULADOS', 16, yPos + 6);
         yPos += 10;
 
         const linkedResources = (recursos || []).filter(r => r && r.processoOriginarioId === selectedProcesso.id);
@@ -220,7 +183,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         doc.rect(14, yPos, 182, 8, 'F');
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('5. LANÇAMENTOS FINANCEIROS', 16, yPos + 6);
+        doc.text('4. LANÇAMENTOS FINANCEIROS', 16, yPos + 6);
         yPos += 10;
 
         const finRecords = (financeiro || []).filter(f => f && f.processoId === selectedProcesso.id);
@@ -414,42 +377,6 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                 </div>
                             </section>
 
-                            {/* 2. TIMELINE DE ANDAMENTOS */}
-                            <section>
-                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                                    <Activity className="w-5 h-5 text-indigo-500" />
-                                    Histórico de Andamentos
-                                </h3>
-                                <div className="space-y-4">
-                                    {(andamentos || [])
-                                        .filter(a => a && a.processoId === selectedProcesso.id)
-                                        .sort((a, b) => compareDatesBR(b.data, a.data))
-                                        .map(a => (
-                                            <div key={a.id} className="relative pl-8 before:absolute before:left-[11px] before:top-2 before:bottom-0 before:w-0.5 before:bg-slate-100 last:before:hidden">
-                                                <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full border-2 border-indigo-400 bg-white z-10 flex items-center justify-center">
-                                                    <div className="w-2 h-2 rounded-full bg-indigo-600"></div>
-                                                </div>
-                                                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 shadow-sm">
-                                                    <div className="flex items-center gap-3 mb-2">
-                                                        <span className="text-xs font-black text-indigo-600">{a.data}</span>
-                                                        <span className="bg-indigo-100 text-indigo-700 text-[9px] font-black uppercase px-2 py-0.5 rounded tracking-widest">{a.tipo}</span>
-                                                        <span className="bg-white text-slate-500 text-[9px] font-bold uppercase px-2 py-0.5 rounded border border-slate-200 tracking-widest">{a.providencia}</span>
-                                                    </div>
-                                                    <p className="text-sm text-slate-700 font-medium whitespace-pre-wrap">{a.descricao}</p>
-                                                    {a.prazoId && (
-                                                        <div className="mt-3 pt-3 border-t border-slate-200 flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase">
-                                                            <Calendar className="w-3.5 h-3.5" /> Prazo Gerado e Vinculado
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))
-                                    }
-                                    {(andamentos || []).filter(a => a && a.processoId === selectedProcesso.id).length === 0 && (
-                                        <p className="text-slate-400 italic text-sm">Nenhum andamento registrado.</p>
-                                    )}
-                                </div>
-                            </section>
 
                             {/* 3. TIMELINE DE TAREFAS */}
                             <section>

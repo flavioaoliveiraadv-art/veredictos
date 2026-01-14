@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cliente, Processo, Financeiro, Andamento } from '../../types';
+import { Cliente, Processo, Financeiro } from '../../types';
 import { Search, FileDown, X, Users, MapPin, Briefcase, DollarSign, FileText } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -8,10 +8,9 @@ interface ClientReportProps {
     clientes: Cliente[];
     processos: Processo[];
     financeiro: Financeiro[];
-    andamentos: Andamento[];
 }
 
-const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financeiro, andamentos }) => {
+const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financeiro }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
 

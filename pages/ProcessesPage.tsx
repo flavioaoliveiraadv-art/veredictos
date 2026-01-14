@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import {
   Processo, Cliente, StatusProcesso, Prazo, Recurso, HistoricoAlteracao,
-  AreaAtuacao, FaseProcessual, Financeiro, Andamento, TipoAndamento, ProvidenciaAndamento, TipoPrazo
+  AreaAtuacao, FaseProcessual, Financeiro, TipoPrazo
 } from '../types';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
 
@@ -20,8 +20,6 @@ interface ProcessesPageProps {
   prazos: Prazo[];
   recursos: Recurso[];
   setRecursos: React.Dispatch<React.SetStateAction<Recurso[]>>;
-  andamentos: Andamento[];
-  setAndamentos: React.Dispatch<React.SetStateAction<Andamento[]>>;
   historico: HistoricoAlteracao[];
   setHistorico: React.Dispatch<React.SetStateAction<HistoricoAlteracao[]>>;
   financeiro: Financeiro[];
@@ -32,7 +30,7 @@ const INITIAL_REC_STATE: Partial<Recurso> = { dataDistribuicao: getTodayBR(), gr
 
 const ProcessesPage: React.FC<ProcessesPageProps> = ({
   processos, setProcessos, clientes, setPrazos, prazos, recursos, setRecursos,
-  andamentos, setAndamentos, historico, setHistorico, financeiro
+  historico, setHistorico, financeiro
 }) => {
   const [activeTab, setActiveTab] = useState<'ATIVO' | 'ARQUIVADO'>('ATIVO');
   const [searchTerm, setSearchTerm] = useState('');
@@ -47,22 +45,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   const [recFormData, setRecFormData] = useState<Partial<Recurso>>(INITIAL_REC_STATE);
 
   // Tabs inside Details Modal
-  const [subTab, setSubTab] = useState<'DADOS' | 'PARTES' | 'TAREFAS' | 'ANDAMENTOS' | 'FINANCEIRO' | 'RELATORIOS'>('DADOS');
+  const [subTab, setSubTab] = useState<'DADOS' | 'PARTES' | 'TAREFAS' | 'FINANCEIRO' | 'RELATORIOS'>('DADOS');
 
-  // Andamentos State
-  const [isAndamentoModalOpen, setIsAndamentoModalOpen] = useState(false);
-  const [andamentoFormData, setAndamentoFormData] = useState<Partial<Andamento>>({
-    data: getTodayBR(),
-    tipo: TipoAndamento.JUNTADA,
-    geraPrazo: false,
-    providencia: ProvidenciaAndamento.CIENCIA
-  });
-
-  // Flow after andamento
-  const [isClassificationModalOpen, setIsClassificationModalOpen] = useState(false);
-  const [isNewPrazoFromAndamentoModalOpen, setIsNewPrazoFromAndamentoModalOpen] = useState(false);
-  const [newPrazoData, setNewPrazoData] = useState<Partial<Prazo>>({});
-  const [currentAndamentoId, setCurrentAndamentoId] = useState<string | null>(null);
 
   const addHistorico = (idReferencia: string, descricao: string) => {
     const entry: HistoricoAlteracao = {
@@ -185,73 +169,10 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     if (confirm('AVISO CRÍTICO: Esta é uma exclusão permanente. Ao excluir este processo, TODOS os recursos vinculados a ele também serão removidos definitivamente. Deseja prosseguir com a exclusão?')) {
       setProcessos(prev => prev.filter(p => p.id !== id));
       setRecursos(prev => prev.filter(r => r.processoOriginarioId !== id));
-      setAndamentos(prev => prev.filter(a => a.processoId !== id));
       setSelectedProcess(null);
     }
   };
 
-  const handleSaveAndamento = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedProcess) return;
-
-    const id = `and-${Date.now()}`;
-    const newAndamento: Andamento = {
-      ...andamentoFormData,
-      id,
-      processoId: selectedProcess.id,
-    } as Andamento;
-
-    setAndamentos(prev => [...prev, newAndamento]);
-    setCurrentAndamentoId(id);
-    addHistorico(selectedProcess.id, `Novo andamento registrado: ${newAndamento.tipo}.`);
-    setIsAndamentoModalOpen(false);
-    setIsClassificationModalOpen(true);
-  };
-
-  const handleClassificationSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (andamentoFormData.geraPrazo) {
-      setNewPrazoData({
-        processoId: selectedProcess?.id,
-        clienteId: selectedProcess?.clienteId,
-        descricao: `Ação referente ao andamento: ${andamentoFormData.tipo}`,
-        dataVencimento: getTodayBR(),
-        tipo: TipoPrazo.PRAZO,
-        responsavel: 'Dr. Flávio Oliveira',
-        concluido: false,
-        cancelado: false,
-        financeiroIds: [],
-        andamentoId: currentAndamentoId || undefined
-      });
-      setIsNewPrazoFromAndamentoModalOpen(true);
-    }
-    setIsClassificationModalOpen(false);
-  };
-
-  const handleCreatePrazoFromAndamento = (e: React.FormEvent) => {
-    e.preventDefault();
-    const prazoId = `p-${Date.now()}`;
-    const finalPrazo: Prazo = {
-      ...newPrazoData,
-      id: prazoId
-    } as Prazo;
-
-    setPrazos(prev => [...prev, finalPrazo]);
-
-    // Vincular prazo ao andamento
-    if (currentAndamentoId) {
-      setAndamentos(prev => prev.map(a => a.id === currentAndamentoId ? { ...a, prazoId } : a));
-    }
-
-    if (confirm('Deseja criar uma tarefa vinculada a este prazo?')) {
-      // Redirecionar ou abrir modal de tarefa? 
-      // Para manter o escopo, vamos apenas informar que a tarefa pode ser criada no módulo de tarefas.
-      // Ou criar uma tarefa básica automaticamente.
-      addHistorico(selectedProcess!.id, `Prazo e tarefa gerados a partir de andamento.`);
-    }
-
-    setIsNewPrazoFromAndamentoModalOpen(false);
-  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
@@ -404,7 +325,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   { id: 'DADOS', label: 'Dados do Processo', icon: <FileText className="w-4 h-4" /> },
                   { id: 'PARTES', label: 'Partes / Cliente', icon: <User className="w-4 h-4" /> },
                   { id: 'TAREFAS', label: 'Tarefas e Prazos', icon: <CheckSquare className="w-4 h-4" /> },
-                  { id: 'ANDAMENTOS', label: 'Andamentos', icon: <Activity className="w-4 h-4" /> },
                   { id: 'FINANCEIRO', label: 'Financeiro', icon: <DollarSign className="w-4 h-4" /> },
                   { id: 'RELATORIOS', label: 'Relatórios', icon: <Search className="w-4 h-4" /> },
                 ].map((tab) => (
@@ -545,78 +465,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   )}
 
-                  {subTab === 'ANDAMENTOS' && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Histórico de Andamentos</h3>
-                        <button
-                          onClick={() => {
-                            setAndamentoFormData({
-                              data: getTodayBR(),
-                              tipo: TipoAndamento.JUNTADA,
-                              geraPrazo: false,
-                              providencia: ProvidenciaAndamento.CIENCIA,
-                              descricao: ''
-                            });
-                            setIsAndamentoModalOpen(true);
-                          }}
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-100"
-                        >
-                          <Plus className="w-4 h-4" /> Novo Andamento
-                        </button>
-                      </div>
-
-                      <div className="space-y-6 relative before:absolute before:left-6 before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-100">
-                        {andamentos.filter(a => a.processoId === selectedProcess.id).length > 0 ? (
-                          andamentos
-                            .filter(a => a.processoId === selectedProcess.id)
-                            .sort((a, b) => compareDatesBR(b.data, a.data))
-                            .map((and) => {
-                              const relatedPrazo = and.prazoId ? prazos.find(p => p.id === and.prazoId) : null;
-                              return (
-                                <div key={and.id} className="relative pl-16">
-                                  <div className="absolute left-3.5 top-0 w-5 h-5 rounded-full bg-white border-2 border-indigo-400 z-10"></div>
-                                  <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-all">
-                                    <div className="flex items-center justify-between mb-3">
-                                      <div className="flex items-center gap-3">
-                                        <span className="text-xs font-black text-indigo-600">{and.data}</span>
-                                        <span className="bg-indigo-50 text-indigo-700 text-[9px] font-black uppercase px-2 py-0.5 rounded tracking-widest">{and.tipo}</span>
-                                        <span className="bg-gray-100 text-gray-600 text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest">{and.providencia}</span>
-                                      </div>
-                                      {and.geraPrazo && (
-                                        <span className="flex items-center gap-1.5 text-[9px] font-black text-rose-500 uppercase">
-                                          <AlertTriangle className="w-3.5 h-3.5" /> Gerou Prazo
-                                        </span>
-                                      )}
-                                    </div>
-                                    <p className="text-sm font-bold text-gray-700 whitespace-pre-wrap mb-4">{and.descricao}</p>
-
-                                    {relatedPrazo && (
-                                      <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <Clock className="w-4 h-4 text-amber-500" />
-                                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Prazo Vinculado:</span>
-                                          <span className="text-[10px] font-bold text-gray-700">{relatedPrazo.descricao} ({relatedPrazo.dataVencimento})</span>
-                                        </div>
-                                        <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${relatedPrazo.concluido ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                                          {relatedPrazo.concluido ? 'Finalizado' : 'Aguardando'}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })
-                        ) : (
-                          <div className="pl-16">
-                            <div className="p-12 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
-                              <p className="text-sm text-gray-400 font-bold italic">Nenhum andamento registrado para este processo.</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
 
                   {subTab === 'FINANCEIRO' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
@@ -704,10 +552,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                       <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
                         <p className="text-[9px] font-black text-gray-400 uppercase mb-3">Resumo Processual</p>
                         <div className="space-y-2">
-                          <div className="flex justify-between text-[11px] font-bold">
-                            <span className="text-gray-500">Andamentos:</span>
-                            <span className="text-gray-800">{andamentos.filter(a => a.processoId === selectedProcess.id).length}</span>
-                          </div>
                           <div className="flex justify-between text-[11px] font-bold">
                             <span className="text-gray-500">Prazos Ativos:</span>
                             <span className="text-amber-600">{prazos.filter(p => p.processoId === selectedProcess.id && !p.concluido && !p.cancelado).length}</span>
@@ -875,96 +719,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
       )}
 
 
-      {/* MODAL NOVO ANDAMENTO */}
-      {isAndamentoModalOpen && selectedProcess && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setIsAndamentoModalOpen(false)}>
-          <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl animate-in zoom-in duration-300 overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="p-10">
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3"><Activity className="w-8 h-8 text-indigo-600" /> Registrar Andamento</h2>
-                <button onClick={() => setIsAndamentoModalOpen(false)} className="text-gray-400"><X className="w-8 h-8" /></button>
-              </div>
-              <form onSubmit={handleSaveAndamento} className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <FormInput label="Data do Andamento" type="date" required value={toISODate(andamentoFormData.data || '')} onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, data: toBRDate(e.target.value) })} />
-                  <FormSelect label="Tipo de Andamento" required value={andamentoFormData.tipo} onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, tipo: e.target.value as TipoAndamento })}>
-                    {Object.values(TipoAndamento).map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
-                  </FormSelect>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Texto do Andamento (DJE / PJe / e-SAJ)</label>
-                  <textarea
-                    required
-                    rows={6}
-                    value={andamentoFormData.descricao}
-                    onChange={(e) => setAndamentoFormData({ ...andamentoFormData, descricao: e.target.value })}
-                    placeholder="Cole aqui o conteúdo do andamento processual..."
-                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-3xl font-bold text-sm outline-none focus:border-indigo-500 transition-all resize-none"
-                  />
-                </div>
-                <button type="submit" className="w-full py-5 bg-indigo-600 text-white rounded-[24px] font-black uppercase text-xs shadow-xl shadow-indigo-100 transition-all hover:bg-indigo-700">Continuar para Classificação</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL CLASSIFICAÇÃO JURÍDICA */}
-      {isClassificationModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[40px] w-full max-w-lg shadow-2xl animate-in zoom-in duration-300">
-            <div className="p-10">
-              <h2 className="text-xl font-black text-gray-800 mb-2">Classificação Jurídica</h2>
-              <p className="text-sm text-gray-400 font-medium mb-8">Defina a natureza deste andamento para o sistema.</p>
-              <form onSubmit={handleClassificationSubmit} className="space-y-8">
-                <div className="space-y-4">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Este andamento gera prazo?</p>
-                  <div className="flex gap-4">
-                    <button type="button" onClick={() => setAndamentoFormData({ ...andamentoFormData, geraPrazo: true })} className={`flex-1 py-4 rounded-2xl border-2 font-black uppercase text-xs transition-all ${andamentoFormData.geraPrazo ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}>Sim</button>
-                    <button type="button" onClick={() => setAndamentoFormData({ ...andamentoFormData, geraPrazo: false })} className={`flex-1 py-4 rounded-2xl border-2 font-black uppercase text-xs transition-all ${!andamentoFormData.geraPrazo ? 'border-rose-600 bg-rose-50 text-rose-600' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}>Não</button>
-                  </div>
-                </div>
-                <FormSelect label="Tipo de Providência" required value={andamentoFormData.providencia} onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, providencia: e.target.value as ProvidenciaAndamento })}>
-                  {Object.values(ProvidenciaAndamento).map(prov => <option key={prov} value={prov}>{prov}</option>)}
-                </FormSelect>
-                <div className="flex gap-4">
-                  <button type="submit" className="flex-1 py-5 bg-indigo-600 text-white rounded-[24px] font-black uppercase text-xs shadow-xl shadow-indigo-100">Finalizar Registro</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL CRIAR PRAZO A PARTIR DE ANDAMENTO */}
-      {isNewPrazoFromAndamentoModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
-            <div className="p-8 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-xl font-black text-gray-800">Abertura de Prazo</h2>
-              <button onClick={() => setIsNewPrazoFromAndamentoModalOpen(false)} className="text-gray-400"><X className="w-7 h-7" /></button>
-            </div>
-            <div className="p-10 flex-1 overflow-y-auto">
-              <form id="andamentoPrazoForm" onSubmit={handleCreatePrazoFromAndamento} className="space-y-6">
-                <FormInput label="Descrição do Prazo" required value={newPrazoData.descricao} onChange={(e: any) => setNewPrazoData({ ...newPrazoData, descricao: e.target.value })} />
-                <div className="grid grid-cols-2 gap-6">
-                  <FormInput label="Data Inicial (Publicação)" type="date" value={toISODate(newPrazoData.dataVencimento || getTodayBR())} onChange={(e: any) => setNewPrazoData({ ...newPrazoData, dataVencimento: toBRDate(e.target.value) })} />
-                  <FormSelect label="Tipo de Prazo" value={newPrazoData.tipo} onChange={(e: any) => setNewPrazoData({ ...newPrazoData, tipo: e.target.value as any })}>
-                    {Object.values(TipoPrazo).map(t => <option key={t} value={t}>{t}</option>)}
-                  </FormSelect>
-                </div>
-                <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
-                  <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest mb-2">Dica de Gestão</p>
-                  <p className="text-xs text-amber-800 font-medium leading-relaxed">Este prazo ficará vinculado permanentemente a este andamento e ao processo, garantindo rastreabilidade jurídica total.</p>
-                </div>
-              </form>
-            </div>
-            <div className="p-8 border-t border-gray-100 bg-gray-50">
-              <button form="andamentoPrazoForm" type="submit" className="w-full py-5 bg-amber-600 text-white rounded-[24px] font-black uppercase text-xs shadow-xl shadow-amber-100">Abrir Prazo agora</button>
-            </div>
-          </div>
-        </div>
-      )}
       {/* MODAL HISTORICO */}
       {isHistoryLogModalOpen && selectedProcess && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] flex items-center justify-center p-4" onClick={() => setIsHistoryLogModalOpen(false)}>

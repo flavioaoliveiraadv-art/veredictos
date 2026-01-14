@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, Routes, Route, Link } from 'react-router-dom';
 import { FileText, Users, Scale, LayoutDashboard } from 'lucide-react';
-import { Cliente, Processo, Prazo, Financeiro, Recurso, Andamento } from '../types';
+import { Cliente, Processo, Prazo, Financeiro, Recurso } from '../types';
 import ProcessReport from './reports/ProcessReport';
 import ClientReport from './reports/ClientReport';
 import GeneralReport from './reports/GeneralReport';
@@ -12,7 +12,6 @@ interface ReportsPageProps {
     prazos: Prazo[];
     financeiro: Financeiro[];
     recursos: Recurso[];
-    andamentos: Andamento[];
 }
 
 const ReportsLanding: React.FC = () => {
@@ -70,13 +69,13 @@ const ReportsLanding: React.FC = () => {
     );
 };
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ clientes, processos, prazos, financeiro, recursos, andamentos }) => {
+const ReportsPage: React.FC<ReportsPageProps> = ({ clientes, processos, prazos, financeiro, recursos }) => {
     return (
         <Routes>
             <Route index element={<ReportsLanding />} />
-            <Route path="processos" element={<ProcessReport clientes={clientes} processos={processos} prazos={prazos} financeiro={financeiro} recursos={recursos} andamentos={andamentos} />} />
-            <Route path="clientes" element={<ClientReport clientes={clientes} processos={processos} financeiro={financeiro} andamentos={andamentos} />} />
-            <Route path="geral" element={<GeneralReport clientes={clientes} processos={processos} prazos={prazos} andamentos={andamentos} />} />
+            <Route path="processos" element={<ProcessReport clientes={clientes} processos={processos} prazos={prazos} financeiro={financeiro} recursos={recursos} />} />
+            <Route path="clientes" element={<ClientReport clientes={clientes} processos={processos} financeiro={financeiro} />} />
+            <Route path="geral" element={<GeneralReport clientes={clientes} processos={processos} prazos={prazos} />} />
         </Routes>
     );
 };

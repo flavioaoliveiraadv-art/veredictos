@@ -123,7 +123,6 @@ export interface Prazo {
   observacoesRealizacao?: string;
   observacoesRelatorio?: string;
   financeiroIds: string[];
-  andamentoId?: string; // Vínculo com o andamento que originou o prazo
 }
 
 export enum StatusFinanceiro {
@@ -146,32 +145,4 @@ export interface Financeiro {
   tarefaVinculadaId?: string;
   comprovante?: string; // Base64 do arquivo de comprovante
   comprovanteNome?: string; // Nome original do arquivo
-}
-
-export enum TipoAndamento {
-  INTIMACAO = 'Intimação',
-  DESPACHO = 'Despacho',
-  DECISAO = 'Decisão interlocutória',
-  SENTENCA = 'Sentença',
-  ACORDAO = 'Acórdão',
-  CERTIDAO = 'Certidão',
-  JUNTADA = 'Juntada'
-}
-
-export enum ProvidenciaAndamento {
-  MANIFESTACAO = 'Manifestação',
-  RECURSO = 'Recurso',
-  CUMPRIMENTO = 'Cumprimento',
-  CIENCIA = 'Apenas ciência'
-}
-
-export interface Andamento {
-  id: string;
-  processoId: string;
-  data: string;
-  tipo: TipoAndamento;
-  descricao: string;
-  geraPrazo: boolean;
-  providencia: ProvidenciaAndamento;
-  prazoId?: string;
 }
