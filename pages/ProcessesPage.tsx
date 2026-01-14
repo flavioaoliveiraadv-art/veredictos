@@ -298,7 +298,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="bg-orange-100 text-orange-700 text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest">RECURSO - 2º GRAU</span>
-                      <h3 className="text-lg font-black text-orange-600 leading-tight">{rec.tipoRecurso}</h3>
+                      <h3 className="text-lg font-black text-gray-800 leading-tight">{rec.tipoRecurso}</h3>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
