@@ -110,7 +110,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
             const taskRows = tasks.map(t => [
                 new Date(t.dataVencimento).toLocaleDateString('pt-BR'),
                 t.tipo || 'Tarefa',
-                t.descricao || '-',
+                t.observacoesRelatorio ? `${t.descricao}\nObs: ${t.observacoesRelatorio}` : (t.descricao || '-'),
                 t.concluido ? 'Concluída' : 'Pendente'
             ]);
 
@@ -381,6 +381,12 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                 <div className="flex-1">
                                                     <p className="text-sm font-bold text-slate-800">{t.descricao || 'Sem descrição'}</p>
                                                     <p className="text-xs text-slate-500">{t.tipo} • Vencimento: {new Date(t.dataVencimento).toLocaleDateString('pt-BR')}</p>
+                                                    {t.observacoesRelatorio && (
+                                                        <div className="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-100">
+                                                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Observações para Relatório</p>
+                                                            <p className="text-xs text-slate-700 font-medium">{t.observacoesRelatorio}</p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <span className={`px-2 py-1 rounded text-xs font-bold ${t.concluido ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>

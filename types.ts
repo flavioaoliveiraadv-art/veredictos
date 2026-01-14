@@ -121,6 +121,7 @@ export interface Prazo {
   cancelado: boolean;
   justificativaCancelamento?: string;
   observacoesRealizacao?: string;
+  observacoesRelatorio?: string;
   financeiroIds: string[];
 }
 
