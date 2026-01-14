@@ -3,6 +3,7 @@ import { Cliente, Processo, Prazo, Recurso, Financeiro, Andamento } from '../../
 import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, Users, Activity } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { compareDatesBR } from '../../utils/formatters';
 
 interface ProcessReportProps {
     clientes: Cliente[];
@@ -26,19 +27,19 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
     const filteredProcessos = (processos || [])
         .filter(p => {
             if (!p) return false;
-            const searchLower = searchTerm.toLowerCase();
-            const numero = getNumeroProcesso(p);
-            const clientName = clientes?.find(c => c.id === p.clienteId)?.nome || '';
+            const searchLower = (searchTerm || '').toLowerCase();
+            const numero = getNumeroProcesso(p) || '';
+            const clientName = (clientes?.find(c => c && c.id === p.clienteId)?.nome || '').toLowerCase();
             return (
                 numero.toLowerCase().includes(searchLower) ||
-                clientName.toLowerCase().includes(searchLower) ||
+                clientName.includes(searchLower) ||
                 (p.parteContraria && p.parteContraria.toLowerCase().includes(searchLower)) ||
                 (p.objeto && p.objeto.toLowerCase().includes(searchLower))
             );
         })
         .sort((a, b) => {
-            const nameA = getClientName(a.clienteId);
-            const nameB = getClientName(b.clienteId);
+            const nameA = getClientName(a.clienteId) || '';
+            const nameB = getClientName(b.clienteId) || '';
             return nameA.localeCompare(nameB);
         });
 
@@ -111,11 +112,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
 
         const procAndamentos = (andamentos || [])
             .filter(a => a && a.processoId === selectedProcesso.id)
-            .sort((a, b) => {
-                const dateA = a.data.split('/').reverse().join('-');
-                const dateB = b.data.split('/').reverse().join('-');
-                return new Date(dateB).getTime() - new Date(dateA).getTime();
-            });
+            .sort((a, b) => compareDatesBR(b.data, a.data)); // Reversa (mais novo primeiro)
 
         if (procAndamentos.length > 0) {
             const andamentoRows = procAndamentos.map(a => [
@@ -152,7 +149,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
 
         const tasks = (prazos || [])
             .filter(t => t && t.processoId === selectedProcesso.id)
-            .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime());
+            .sort((a, b) => compareDatesBR(a.dataVencimento, b.dataVencimento));
 
         if (tasks.length > 0) {
             const taskRows = tasks.map(t => [
@@ -420,11 +417,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                 <div className="space-y-4">
                                     {(andamentos || [])
                                         .filter(a => a && a.processoId === selectedProcesso.id)
-                                        .sort((a, b) => {
-                                            const dateA = a.data.split('/').reverse().join('-');
-                                            const dateB = b.data.split('/').reverse().join('-');
-                                            return new Date(dateB).getTime() - new Date(dateA).getTime();
-                                        })
+                                        .sort((a, b) => compareDatesBR(b.data, a.data))
                                         .map(a => (
                                             <div key={a.id} className="relative pl-8 before:absolute before:left-[11px] before:top-2 before:bottom-0 before:w-0.5 before:bg-slate-100 last:before:hidden">
                                                 <div className="absolute left-0 top-1.5 w-6 h-6 rounded-full border-2 border-indigo-400 bg-white z-10 flex items-center justify-center">
@@ -461,7 +454,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                 <div className="space-y-3">
                                     {(prazos || [])
                                         .filter(t => t && t.processoId === selectedProcesso.id)
-                                        .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime())
+                                        .sort((a, b) => compareDatesBR(a.dataVencimento, b.dataVencimento))
                                         .map(t => (
                                             <div key={t.id} className="flex items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
                                                 <div className={`w-2 h-10 rounded-full mr-4 ${t.concluido ? 'bg-emerald-400' : 'bg-amber-400'}`}></div>
