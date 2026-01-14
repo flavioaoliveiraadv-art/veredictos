@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import {
   Processo, Cliente, StatusProcesso, Prazo, Recurso, HistoricoAlteracao,
-  AreaAtuacao, FaseProcessual, Financeiro
+  AreaAtuacao, FaseProcessual, Financeiro, Andamento, TipoAndamento, ProvidenciaAndamento, TipoPrazo
 } from '../types';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
 
@@ -20,6 +20,8 @@ interface ProcessesPageProps {
   prazos: Prazo[];
   recursos: Recurso[];
   setRecursos: React.Dispatch<React.SetStateAction<Recurso[]>>;
+  andamentos: Andamento[];
+  setAndamentos: React.Dispatch<React.SetStateAction<Andamento[]>>;
   historico: HistoricoAlteracao[];
   setHistorico: React.Dispatch<React.SetStateAction<HistoricoAlteracao[]>>;
   financeiro: Financeiro[];
@@ -29,7 +31,8 @@ const INITIAL_PROC_STATE: Partial<Processo> = { areaAtuacao: AreaAtuacao.CIVEL, 
 const INITIAL_REC_STATE: Partial<Recurso> = { dataDistribuicao: getTodayBR(), gratuidade: false, status: StatusProcesso.ATIVO };
 
 const ProcessesPage: React.FC<ProcessesPageProps> = ({
-  processos, setProcessos, clientes, setPrazos, prazos, recursos, setRecursos, historico, setHistorico, financeiro
+  processos, setProcessos, clientes, setPrazos, prazos, recursos, setRecursos,
+  andamentos, setAndamentos, historico, setHistorico, financeiro
 }) => {
   const [activeTab, setActiveTab] = useState<'ATIVO' | 'ARQUIVADO'>('ATIVO');
   const [searchTerm, setSearchTerm] = useState('');
@@ -42,6 +45,24 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   // Form States
   const [procFormData, setProcFormData] = useState<Partial<Processo>>(INITIAL_PROC_STATE);
   const [recFormData, setRecFormData] = useState<Partial<Recurso>>(INITIAL_REC_STATE);
+
+  // Tabs inside Details Modal
+  const [subTab, setSubTab] = useState<'DADOS' | 'PARTES' | 'TAREFAS' | 'ANDAMENTOS' | 'FINANCEIRO' | 'RELATORIOS'>('DADOS');
+
+  // Andamentos State
+  const [isAndamentoModalOpen, setIsAndamentoModalOpen] = useState(false);
+  const [andamentoFormData, setAndamentoFormData] = useState<Partial<Andamento>>({
+    data: getTodayBR(),
+    tipo: TipoAndamento.JUNTADA,
+    geraPrazo: false,
+    providencia: ProvidenciaAndamento.CIENCIA
+  });
+
+  // Flow after andamento
+  const [isClassificationModalOpen, setIsClassificationModalOpen] = useState(false);
+  const [isNewPrazoFromAndamentoModalOpen, setIsNewPrazoFromAndamentoModalOpen] = useState(false);
+  const [newPrazoData, setNewPrazoData] = useState<Partial<Prazo>>({});
+  const [currentAndamentoId, setCurrentAndamentoId] = useState<string | null>(null);
 
   const addHistorico = (idReferencia: string, descricao: string) => {
     const entry: HistoricoAlteracao = {
@@ -164,8 +185,72 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     if (confirm('AVISO CRÍTICO: Esta é uma exclusão permanente. Ao excluir este processo, TODOS os recursos vinculados a ele também serão removidos definitivamente. Deseja prosseguir com a exclusão?')) {
       setProcessos(prev => prev.filter(p => p.id !== id));
       setRecursos(prev => prev.filter(r => r.processoOriginarioId !== id));
+      setAndamentos(prev => prev.filter(a => a.processoId !== id));
       setSelectedProcess(null);
     }
+  };
+
+  const handleSaveAndamento = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProcess) return;
+
+    const id = `and-${Date.now()}`;
+    const newAndamento: Andamento = {
+      ...andamentoFormData,
+      id,
+      processoId: selectedProcess.id,
+    } as Andamento;
+
+    setAndamentos(prev => [...prev, newAndamento]);
+    setCurrentAndamentoId(id);
+    addHistorico(selectedProcess.id, `Novo andamento registrado: ${newAndamento.tipo}.`);
+    setIsAndamentoModalOpen(false);
+    setIsClassificationModalOpen(true);
+  };
+
+  const handleClassificationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (andamentoFormData.geraPrazo) {
+      setNewPrazoData({
+        processoId: selectedProcess?.id,
+        clienteId: selectedProcess?.clienteId,
+        descricao: `Ação referente ao andamento: ${andamentoFormData.tipo}`,
+        dataVencimento: getTodayBR(),
+        tipo: TipoPrazo.PRAZO,
+        responsavel: 'Dr. Flávio Oliveira',
+        concluido: false,
+        cancelado: false,
+        financeiroIds: [],
+        andamentoId: currentAndamentoId || undefined
+      });
+      setIsNewPrazoFromAndamentoModalOpen(true);
+    }
+    setIsClassificationModalOpen(false);
+  };
+
+  const handleCreatePrazoFromAndamento = (e: React.FormEvent) => {
+    e.preventDefault();
+    const prazoId = `p-${Date.now()}`;
+    const finalPrazo: Prazo = {
+      ...newPrazoData,
+      id: prazoId
+    } as Prazo;
+
+    setPrazos(prev => [...prev, finalPrazo]);
+
+    // Vincular prazo ao andamento
+    if (currentAndamentoId) {
+      setAndamentos(prev => prev.map(a => a.id === currentAndamentoId ? { ...a, prazoId } : a));
+    }
+
+    if (confirm('Deseja criar uma tarefa vinculada a este prazo?')) {
+      // Redirecionar ou abrir modal de tarefa? 
+      // Para manter o escopo, vamos apenas informar que a tarefa pode ser criada no módulo de tarefas.
+      // Ou criar uma tarefa básica automaticamente.
+      addHistorico(selectedProcess!.id, `Prazo e tarefa gerados a partir de andamento.`);
+    }
+
+    setIsNewPrazoFromAndamentoModalOpen(false);
   };
 
   return (
@@ -314,137 +399,325 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <button onClick={() => setSelectedProcess(null)} className="p-3 text-gray-400 hover:text-gray-800 rounded-2xl transition-all ml-4" title="Fechar"><X className="w-8 h-8" /></button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                <div className="lg:col-span-2 space-y-12">
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Informações Gerais</h3>
-                    <div className="grid grid-cols-2 gap-8 text-balance">
-                      <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
-                      <DetailField label="Polo" value={selectedProcess.polo || '-'} />
-                      <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
-                      <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
-                      <DetailField label="Área de Atuação" value={selectedProcess.areaAtuacao} />
-                      <DetailField label="Vara / Local" value={selectedProcess.localTramitacao || '-'} />
-                      <DetailField label="Comarca" value={selectedProcess.comarca || '-'} />
-                      <DetailField label="Tribunal" value={selectedProcess.tribunal || '-'} />
-                      <DetailField label="Distribuição" value={selectedProcess.dataDistribuicao || '-'} />
-                      <DetailField label="Justiça Gratuita" value={selectedProcess.gratuidade ? 'Sim' : 'Não'} />
-                      <DetailField label="Valor da Causa" value={formatCurrency(selectedProcess.valorCausa)} className="font-black" />
-                      <DetailField label="Última Atualização" value={selectedProcess.ultimaAtualizacao} icon={<Clock className="w-3.5 h-3.5" />} />
-                    </div>
-                  </section>
+              <div className="flex items-center gap-1 border-b border-gray-100 mb-8 overflow-x-auto custom-scroll pb-1">
+                {[
+                  { id: 'DADOS', label: 'Dados do Processo', icon: <FileText className="w-4 h-4" /> },
+                  { id: 'PARTES', label: 'Partes / Cliente', icon: <User className="w-4 h-4" /> },
+                  { id: 'TAREFAS', label: 'Tarefas e Prazos', icon: <CheckSquare className="w-4 h-4" /> },
+                  { id: 'ANDAMENTOS', label: 'Andamentos', icon: <Activity className="w-4 h-4" /> },
+                  { id: 'FINANCEIRO', label: 'Financeiro', icon: <DollarSign className="w-4 h-4" /> },
+                  { id: 'RELATORIOS', label: 'Relatórios', icon: <Search className="w-4 h-4" /> },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setSubTab(tab.id as any)}
+                    className={`flex items-center gap-2 px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${subTab === tab.id ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+                  >
+                    {tab.icon} {tab.label}
+                  </button>
+                ))}
+              </div>
 
-                  {/* Recursos Vinculados */}
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
-                      <Scale className="w-4 h-4" /> Recursos
-                    </h3>
-                    <div className="space-y-3">
-                      {recursos.filter(r => r.processoOriginarioId === selectedProcess.id).length > 0 ? (
-                        recursos.filter(r => r.processoOriginarioId === selectedProcess.id).map(r => (
-                          <div
-                            key={r.id}
-                            onClick={() => { setSelectedRecurso(r); setSelectedProcess(null); }}
-                            className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100 flex items-center justify-between cursor-pointer hover:bg-orange-50 transition-all"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
-                                <Scale className="w-4 h-4" />
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+                <div className="lg:col-span-3">
+                  {subTab === 'DADOS' && (
+                    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-2">
+                      <section>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Informações Gerais</h3>
+                        <div className="grid grid-cols-2 gap-8 text-balance">
+                          <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
+                          <DetailField label="Polo" value={selectedProcess.polo || '-'} />
+                          <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
+                          <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
+                          <DetailField label="Área de Atuação" value={selectedProcess.areaAtuacao} />
+                          <DetailField label="Vara / Local" value={selectedProcess.localTramitacao || '-'} />
+                          <DetailField label="Comarca" value={selectedProcess.comarca || '-'} />
+                          <DetailField label="Tribunal" value={selectedProcess.tribunal || '-'} />
+                          <DetailField label="Distribuição" value={selectedProcess.dataDistribuicao || '-'} />
+                          <DetailField label="Justiça Gratuita" value={selectedProcess.gratuidade ? 'Sim' : 'Não'} />
+                          <DetailField label="Valor da Causa" value={formatCurrency(selectedProcess.valorCausa)} className="font-black" />
+                          <DetailField label="Última Atualização" value={selectedProcess.ultimaAtualizacao} icon={<Clock className="w-3.5 h-3.5" />} />
+                        </div>
+                      </section>
+
+                      <section>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
+                          <Scale className="w-4 h-4" /> Recursos Originados
+                        </h3>
+                        <div className="space-y-3">
+                          {recursos.filter(r => r.processoOriginarioId === selectedProcess.id).length > 0 ? (
+                            recursos.filter(r => r.processoOriginarioId === selectedProcess.id).map(r => (
+                              <div
+                                key={r.id}
+                                onClick={() => { setSelectedRecurso(r); setSelectedProcess(null); }}
+                                className="p-4 bg-orange-50/50 rounded-2xl border border-orange-100 flex items-center justify-between cursor-pointer hover:bg-orange-50 transition-all"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
+                                    <Scale className="w-4 h-4" />
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-black text-gray-800">{r.tipoRecurso}</p>
+                                    <p className="text-[10px] font-bold text-gray-400">{r.numeroRecurso}</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-[9px] font-black uppercase text-orange-600">{r.status}</p>
+                                  <p className="text-[8px] font-bold text-gray-400">Atualizado: {r.ultimaAtualizacao || r.dataDistribuicao}</p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-xs font-black text-gray-800">{r.tipoRecurso}</p>
-                                <p className="text-[10px] font-bold text-gray-400">{r.numeroRecurso}</p>
-                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs text-gray-400 italic">Nenhum recurso gerado a partir deste processo.</p>
+                          )}
+                        </div>
+                      </section>
+                    </div>
+                  )}
+
+                  {subTab === 'PARTES' && (
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
+                      <section>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Dados da Parte Assistida</h3>
+                        {(() => {
+                          const cli = clientes.find(c => c.id === selectedProcess.clienteId);
+                          if (!cli) return <p className="text-xs text-gray-400 italic">Cliente não encontrado.</p>;
+                          return (
+                            <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100 grid grid-cols-2 gap-8">
+                              <DetailField label="Nome / Razão Social" value={cli.nome} />
+                              <DetailField label="CPF / CNPJ" value={cli.documento} />
+                              <DetailField label="E-mail" value={cli.email} />
+                              <DetailField label="Telefone" value={cli.telefone} />
+                              <DetailField label="Status" value={cli.status} />
+                              <DetailField label="Tipo" value={cli.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'} />
                             </div>
-                            <div className="text-right">
-                              <p className="text-[9px] font-black uppercase text-orange-600">{r.status}</p>
-                              <p className="text-[8px] font-bold text-gray-400">Atualizado: {r.ultimaAtualizacao || r.dataDistribuicao}</p>
+                          );
+                        })()}
+                      </section>
+                      <section>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Parte Adversa</h3>
+                        <div className="bg-rose-50/30 p-8 rounded-3xl border border-rose-100">
+                          <DetailField label="Nome da Parte Contrária" value={selectedProcess.parteContraria || 'Não informada'} />
+                        </div>
+                      </section>
+                    </div>
+                  )}
+
+                  {subTab === 'TAREFAS' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Atividades Vinculadas</h3>
+                        <button
+                          onClick={() => window.location.hash = '#/tarefas'}
+                          className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+                        >
+                          Ir para Módulo de Tarefas
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        {prazos.filter(p => p.processoId === selectedProcess.id).length > 0 ? (
+                          prazos.filter(p => p.processoId === selectedProcess.id).map(p => (
+                            <div key={p.id} className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-indigo-200 transition-all">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${p.concluido ? 'bg-emerald-50 text-emerald-500' : p.cancelado ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}>
+                                  {p.concluido ? <CheckCircle2 className="w-5 h-5" /> : p.cancelado ? <XCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-black text-gray-800">{p.descricao}</p>
+                                  <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400">
+                                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {p.dataVencimento}</span>
+                                    <span>•</span>
+                                    <span>{p.tipo}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${p.concluido ? 'bg-emerald-100 text-emerald-700' : p.cancelado ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
+                                {p.concluido ? 'Realizado' : p.cancelado ? 'Cancelado' : 'Pendente'}
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-12 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                            <p className="text-sm text-gray-400 font-bold italic">Nenhuma tarefa ou prazo para este processo.</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {subTab === 'ANDAMENTOS' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Histórico de Andamentos</h3>
+                        <button
+                          onClick={() => {
+                            setAndamentoFormData({
+                              data: getTodayBR(),
+                              tipo: TipoAndamento.JUNTADA,
+                              geraPrazo: false,
+                              providencia: ProvidenciaAndamento.CIENCIA,
+                              descricao: ''
+                            });
+                            setIsAndamentoModalOpen(true);
+                          }}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-100"
+                        >
+                          <Plus className="w-4 h-4" /> Novo Andamento
+                        </button>
+                      </div>
+
+                      <div className="space-y-6 relative before:absolute before:left-6 before:top-2 before:bottom-0 before:w-0.5 before:bg-gray-100">
+                        {andamentos.filter(a => a.processoId === selectedProcess.id).length > 0 ? (
+                          andamentos
+                            .filter(a => a.processoId === selectedProcess.id)
+                            .sort((a, b) => compareDatesBR(b.data, a.data))
+                            .map((and) => {
+                              const relatedPrazo = and.prazoId ? prazos.find(p => p.id === and.prazoId) : null;
+                              return (
+                                <div key={and.id} className="relative pl-16">
+                                  <div className="absolute left-3.5 top-0 w-5 h-5 rounded-full bg-white border-2 border-indigo-400 z-10"></div>
+                                  <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-200 transition-all">
+                                    <div className="flex items-center justify-between mb-3">
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-xs font-black text-indigo-600">{and.data}</span>
+                                        <span className="bg-indigo-50 text-indigo-700 text-[9px] font-black uppercase px-2 py-0.5 rounded tracking-widest">{and.tipo}</span>
+                                        <span className="bg-gray-100 text-gray-600 text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest">{and.providencia}</span>
+                                      </div>
+                                      {and.geraPrazo && (
+                                        <span className="flex items-center gap-1.5 text-[9px] font-black text-rose-500 uppercase">
+                                          <AlertTriangle className="w-3.5 h-3.5" /> Gerou Prazo
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-sm font-bold text-gray-700 whitespace-pre-wrap mb-4">{and.descricao}</p>
+
+                                    {relatedPrazo && (
+                                      <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <Clock className="w-4 h-4 text-amber-500" />
+                                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Prazo Vinculado:</span>
+                                          <span className="text-[10px] font-bold text-gray-700">{relatedPrazo.descricao} ({relatedPrazo.dataVencimento})</span>
+                                        </div>
+                                        <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${relatedPrazo.concluido ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                          {relatedPrazo.concluido ? 'Finalizado' : 'Aguardando'}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })
+                        ) : (
+                          <div className="pl-16">
+                            <div className="p-12 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                              <p className="text-sm text-gray-400 font-bold italic">Nenhum andamento registrado para este processo.</p>
                             </div>
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Nenhum recurso vinculado a este processo.</p>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </section>
+                  )}
 
-                  {/* Tarefas e Prazos */}
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
-                      <CheckSquare className="w-4 h-4" /> Tarefas e Prazos Vinculados
-                    </h3>
-                    <div className="space-y-3">
-                      {prazos.filter(p => p.processoId === selectedProcess.id).length > 0 ? (
-                        prazos.filter(p => p.processoId === selectedProcess.id).map(p => (
-                          <div key={p.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${p.concluido ? 'bg-emerald-50 text-emerald-500' : p.cancelado ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}>
-                                {p.concluido ? <CheckCircle2 className="w-4 h-4" /> : p.cancelado ? <XCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
+                  {subTab === 'FINANCEIRO' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Lançamentos Vinculados</h3>
+                        <button
+                          onClick={() => window.location.hash = '#/financeiro'}
+                          className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+                        >
+                          Ir para Módulo Financeiro
+                        </button>
+                      </div>
+                      <div className="space-y-3">
+                        {financeiro.filter(f => f.processoId === selectedProcess.id).length > 0 ? (
+                          financeiro.filter(f => f.processoId === selectedProcess.id).map(f => (
+                            <div key={f.id} className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm">
+                              <div className="flex items-center gap-4">
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                                  <DollarSign className="w-5 h-5" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-black text-gray-800">{f.descricao}</p>
+                                  <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400">
+                                    <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {f.dataVencimento}</span>
+                                    <span>•</span>
+                                    <span>{f.status}</span>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-xs font-black text-gray-800">{p.descricao}</p>
-                                <p className="text-[10px] font-bold text-gray-400">{p.dataVencimento}</p>
+                              <div className="text-right">
+                                <p className={`text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                  {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
+                                </p>
                               </div>
                             </div>
-                            <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${p.concluido ? 'bg-emerald-100 text-emerald-600' : p.cancelado ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'}`}>
-                              {p.concluido ? 'Realizado' : p.cancelado ? 'Cancelado' : 'Pendente'}
-                            </span>
+                          ))
+                        ) : (
+                          <div className="p-12 text-center bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                            <p className="text-sm text-gray-400 font-bold italic">Nenhum lançamento financeiro para este processo.</p>
                           </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Nenhuma tarefa ou prazo vinculado.</p>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </section>
+                  )}
 
-                  {/* Lançamentos Financeiros */}
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" /> Lançamentos Financeiros
-                    </h3>
-                    <div className="space-y-3">
-                      {financeiro.filter(f => f.processoId === selectedProcess.id).length > 0 ? (
-                        financeiro.filter(f => f.processoId === selectedProcess.id).map(f => (
-                          <div key={f.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
-                                <DollarSign className="w-4 h-4" />
-                              </div>
-                              <div>
-                                <p className="text-xs font-black text-gray-800">{f.descricao}</p>
-                                <p className="text-[10px] font-bold text-gray-400">{f.dataVencimento}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className={`text-xs font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                                {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
-                              </p>
-                              <span className="text-[8px] font-black uppercase text-gray-400">{f.status}</span>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-gray-400 italic">Nenhum lançamento financeiro vinculado.</p>
-                      )}
+                  {subTab === 'RELATORIOS' && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+                      <div className="bg-indigo-50 p-10 rounded-[40px] border border-indigo-100 text-center">
+                        <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-100">
+                          <Search className="w-10 h-10 text-indigo-600" />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-800 mb-2">Relatórios do Processo</h3>
+                        <p className="text-sm text-gray-500 font-medium max-w-sm mx-auto mb-8">Gere dossiês completos e relatórios de acompanhamento específicos para este processo.</p>
+                        <button
+                          onClick={() => window.location.hash = '#/relatorios'}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs transition-all shadow-xl shadow-indigo-200"
+                        >
+                          Acessar Gerador de Relatórios
+                        </button>
+                      </div>
                     </div>
-                  </section>
+                  )}
                 </div>
+
                 <div className="space-y-6">
                   <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Status e Controle</h4>
-                    <div className="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100 mb-4 shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                        <span className="text-sm font-black text-gray-700">Arquivar</span>
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Controle Rápidos</h4>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                          <span className="text-[10px] font-black text-gray-700 uppercase">Arquivar</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" checked={selectedProcess.status === StatusProcesso.ARQUIVADO} onChange={() => {
+                            const newStatus = selectedProcess.status === StatusProcesso.ARQUIVADO ? StatusProcesso.ATIVO : StatusProcesso.ARQUIVADO;
+                            setProcessos(prev => prev.map(p => p.id === selectedProcess.id ? { ...p, status: newStatus } : p));
+                            setSelectedProcess(null);
+                          }} className="sr-only peer" />
+                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={selectedProcess.status === StatusProcesso.ARQUIVADO} onChange={() => {
-                          const newStatus = selectedProcess.status === StatusProcesso.ARQUIVADO ? StatusProcesso.ATIVO : StatusProcesso.ARQUIVADO;
-                          setProcessos(prev => prev.map(p => p.id === selectedProcess.id ? { ...p, status: newStatus } : p));
-                          setSelectedProcess(null);
-                        }} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                      </label>
+
+                      <div className="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                        <p className="text-[9px] font-black text-gray-400 uppercase mb-3">Resumo Processual</p>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-[11px] font-bold">
+                            <span className="text-gray-500">Andamentos:</span>
+                            <span className="text-gray-800">{andamentos.filter(a => a.processoId === selectedProcess.id).length}</span>
+                          </div>
+                          <div className="flex justify-between text-[11px] font-bold">
+                            <span className="text-gray-500">Prazos Ativos:</span>
+                            <span className="text-amber-600">{prazos.filter(p => p.processoId === selectedProcess.id && !p.concluido && !p.cancelado).length}</span>
+                          </div>
+                          <div className="flex justify-between text-[11px] font-bold">
+                            <span className="text-gray-500">Recursos:</span>
+                            <span className="text-orange-600">{recursos.filter(r => r.processoOriginarioId === selectedProcess.id).length}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -601,9 +874,100 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
         </div>
       )}
 
+
+      {/* MODAL NOVO ANDAMENTO */}
+      {isAndamentoModalOpen && selectedProcess && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4" onClick={() => setIsAndamentoModalOpen(false)}>
+          <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl animate-in zoom-in duration-300 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-10">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3"><Activity className="w-8 h-8 text-indigo-600" /> Registrar Andamento</h2>
+                <button onClick={() => setIsAndamentoModalOpen(false)} className="text-gray-400"><X className="w-8 h-8" /></button>
+              </div>
+              <form onSubmit={handleSaveAndamento} className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <FormInput label="Data do Andamento" type="date" required value={toISODate(andamentoFormData.data || '')} onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, data: toBRDate(e.target.value) })} />
+                  <FormSelect label="Tipo de Andamento" required value={andamentoFormData.tipo} onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, tipo: e.target.value as TipoAndamento })}>
+                    {Object.values(TipoAndamento).map(tipo => <option key={tipo} value={tipo}>{tipo}</option>)}
+                  </FormSelect>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Texto do Andamento (DJE / PJe / e-SAJ)</label>
+                  <textarea
+                    required
+                    rows={6}
+                    value={andamentoFormData.descricao}
+                    onChange={(e) => setAndamentoFormData({ ...andamentoFormData, descricao: e.target.value })}
+                    placeholder="Cole aqui o conteúdo do andamento processual..."
+                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-3xl font-bold text-sm outline-none focus:border-indigo-500 transition-all resize-none"
+                  />
+                </div>
+                <button type="submit" className="w-full py-5 bg-indigo-600 text-white rounded-[24px] font-black uppercase text-xs shadow-xl shadow-indigo-100 transition-all hover:bg-indigo-700">Continuar para Classificação</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CLASSIFICAÇÃO JURÍDICA */}
+      {isClassificationModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[40px] w-full max-w-lg shadow-2xl animate-in zoom-in duration-300">
+            <div className="p-10">
+              <h2 className="text-xl font-black text-gray-800 mb-2">Classificação Jurídica</h2>
+              <p className="text-sm text-gray-400 font-medium mb-8">Defina a natureza deste andamento para o sistema.</p>
+              <form onSubmit={handleClassificationSubmit} className="space-y-8">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Este andamento gera prazo?</p>
+                  <div className="flex gap-4">
+                    <button type="button" onClick={() => setAndamentoFormData({ ...andamentoFormData, geraPrazo: true })} className={`flex-1 py-4 rounded-2xl border-2 font-black uppercase text-xs transition-all ${andamentoFormData.geraPrazo ? 'border-indigo-600 bg-indigo-50 text-indigo-600' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}>Sim</button>
+                    <button type="button" onClick={() => setAndamentoFormData({ ...andamentoFormData, geraPrazo: false })} className={`flex-1 py-4 rounded-2xl border-2 font-black uppercase text-xs transition-all ${!andamentoFormData.geraPrazo ? 'border-rose-600 bg-rose-50 text-rose-600' : 'border-gray-100 text-gray-400 hover:border-gray-200'}`}>Não</button>
+                  </div>
+                </div>
+                <FormSelect label="Tipo de Providência" required value={andamentoFormData.providencia} onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, providencia: e.target.value as ProvidenciaAndamento })}>
+                  {Object.values(ProvidenciaAndamento).map(prov => <option key={prov} value={prov}>{prov}</option>)}
+                </FormSelect>
+                <div className="flex gap-4">
+                  <button type="submit" className="flex-1 py-5 bg-indigo-600 text-white rounded-[24px] font-black uppercase text-xs shadow-xl shadow-indigo-100">Finalizar Registro</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CRIAR PRAZO A PARTIR DE ANDAMENTO */}
+      {isNewPrazoFromAndamentoModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[120] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
+            <div className="p-8 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-xl font-black text-gray-800">Abertura de Prazo</h2>
+              <button onClick={() => setIsNewPrazoFromAndamentoModalOpen(false)} className="text-gray-400"><X className="w-7 h-7" /></button>
+            </div>
+            <div className="p-10 flex-1 overflow-y-auto">
+              <form id="andamentoPrazoForm" onSubmit={handleCreatePrazoFromAndamento} className="space-y-6">
+                <FormInput label="Descrição do Prazo" required value={newPrazoData.descricao} onChange={(e: any) => setNewPrazoData({ ...newPrazoData, descricao: e.target.value })} />
+                <div className="grid grid-cols-2 gap-6">
+                  <FormInput label="Data Inicial (Publicação)" type="date" value={toISODate(newPrazoData.dataVencimento || getTodayBR())} onChange={(e: any) => setNewPrazoData({ ...newPrazoData, dataVencimento: toBRDate(e.target.value) })} />
+                  <FormSelect label="Tipo de Prazo" value={newPrazoData.tipo} onChange={(e: any) => setNewPrazoData({ ...newPrazoData, tipo: e.target.value as any })}>
+                    {Object.values(TipoPrazo).map(t => <option key={t} value={t}>{t}</option>)}
+                  </FormSelect>
+                </div>
+                <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100">
+                  <p className="text-[9px] font-black text-amber-700 uppercase tracking-widest mb-2">Dica de Gestão</p>
+                  <p className="text-xs text-amber-800 font-medium leading-relaxed">Este prazo ficará vinculado permanentemente a este andamento e ao processo, garantindo rastreabilidade jurídica total.</p>
+                </div>
+              </form>
+            </div>
+            <div className="p-8 border-t border-gray-100 bg-gray-50">
+              <button form="andamentoPrazoForm" type="submit" className="w-full py-5 bg-amber-600 text-white rounded-[24px] font-black uppercase text-xs shadow-xl shadow-amber-100">Abrir Prazo agora</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* MODAL HISTORICO */}
       {isHistoryLogModalOpen && selectedProcess && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4" onClick={() => setIsHistoryLogModalOpen(false)}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[130] flex items-center justify-center p-4" onClick={() => setIsHistoryLogModalOpen(false)}>
           <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
             <div className="p-10">
               <div className="flex items-center justify-between mb-8">

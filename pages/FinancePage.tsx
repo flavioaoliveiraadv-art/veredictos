@@ -228,16 +228,24 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   }, [financeiro]);
 
   const filteredLançamentos = useMemo(() => {
+    let list = [];
     if (activeSubTab === 'PENDENTES') {
-      return financeiro
-        .filter(f => f.status !== StatusFinanceiro.PAGO)
-        .sort((a, b) => compareDatesBR(a.dataVencimento, b.dataVencimento));
+      list = financeiro.filter(f => f.status !== StatusFinanceiro.PAGO);
     } else {
-      return financeiro
-        .filter(f => f.status === StatusFinanceiro.PAGO)
-        .sort((a, b) => compareDatesBR(b.dataVencimento, a.dataVencimento));
+      list = financeiro.filter(f => f.status === StatusFinanceiro.PAGO);
     }
-  }, [financeiro, activeSubTab]);
+
+    // Ordenação Alfabética por NOME DO CLIENTE conforme solicitado
+    return [...list].sort((a, b) => {
+      const clientA = clientes.find(c => c.id === a.clienteId)?.nome || '';
+      const clientB = clientes.find(c => c.id === b.clienteId)?.nome || '';
+      if (clientA !== clientB) {
+        return clientA.localeCompare(clientB);
+      }
+      // Se for o mesmo cliente, ordena por data de vencimento
+      return compareDatesBR(a.dataVencimento, b.dataVencimento);
+    });
+  }, [financeiro, activeSubTab, clientes]);
 
   const totalProjetado = useMemo(() => {
     const receitas = financeiro.filter(f => f.tipo === 'Receita').reduce((s, f) => s + f.valor, 0);

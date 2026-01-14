@@ -11,7 +11,7 @@ import FinancePage from './pages/FinancePage';
 import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/LoginPage';
 import NotificationModal from './components/NotificationModal';
-import { Cliente, Processo, Prazo, Financeiro, Recurso, HistoricoAlteracao } from './types';
+import { Cliente, Processo, Prazo, Financeiro, Recurso, HistoricoAlteracao, Andamento } from './types';
 import { INITIAL_CLIENTES, INITIAL_PROCESSOS, INITIAL_HISTORICO, INITIAL_PRAZOS } from './data/mockData';
 import { getTodayBR, compareDatesBR } from './utils/formatters';
 
@@ -27,6 +27,7 @@ const App: React.FC = () => {
   const [prazos, setPrazos] = useState<Prazo[]>([]);
   const [financeiro, setFinanceiro] = useState<Financeiro[]>([]);
   const [recursos, setRecursos] = useState<Recurso[]>([]);
+  const [andamentos, setAndamentos] = useState<Andamento[]>([]);
   const [historico, setHistorico] = useState<HistoricoAlteracao[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
@@ -51,6 +52,7 @@ const App: React.FC = () => {
           setPrazos(dbData.prazos || []);
           setFinanceiro(dbData.financeiro || []);
           setRecursos(dbData.recursos || []);
+          setAndamentos(dbData.andamentos || []);
           setHistorico(dbData.historico || []);
           setLastSync(dbData.last_updated || new Date().toISOString());
         } else {
@@ -67,6 +69,7 @@ const App: React.FC = () => {
           setPrazos(savedPrazos ? JSON.parse(savedPrazos) : INITIAL_PRAZOS);
           setFinanceiro(savedFinanceiro ? JSON.parse(savedFinanceiro) : []);
           setRecursos(savedRecursos ? JSON.parse(savedRecursos) : []);
+          setAndamentos(localStorage.getItem('legalpro_andamentos') ? JSON.parse(localStorage.getItem('legalpro_andamentos')!) : []);
           setHistorico(savedHistorico ? JSON.parse(savedHistorico) : INITIAL_HISTORICO);
         }
       } catch (err) {
@@ -100,6 +103,7 @@ const App: React.FC = () => {
                 setPrazos(newData.prazos || []);
                 setFinanceiro(newData.financeiro || []);
                 setRecursos(newData.recursos || []);
+                setAndamentos(newData.andamentos || []);
                 setHistorico(newData.historico || []);
                 return newData.last_updated;
               }
@@ -127,6 +131,7 @@ const App: React.FC = () => {
         prazos,
         financeiro,
         recursos,
+        andamentos,
         historico,
         last_updated: timestamp
       };
@@ -137,6 +142,7 @@ const App: React.FC = () => {
       localStorage.setItem('legalpro_prazos', JSON.stringify(prazos));
       localStorage.setItem('legalpro_financeiro', JSON.stringify(financeiro));
       localStorage.setItem('legalpro_recursos', JSON.stringify(recursos));
+      localStorage.setItem('legalpro_andamentos', JSON.stringify(andamentos));
       localStorage.setItem('legalpro_historico', JSON.stringify(historico));
 
       // Save to Supabase (Upsert)
@@ -154,7 +160,7 @@ const App: React.FC = () => {
 
     const timeout = setTimeout(saveData, 1000); // Debounce
     return () => clearTimeout(timeout);
-  }, [clientes, processos, prazos, financeiro, recursos, historico, loading]);
+  }, [clientes, processos, prazos, financeiro, recursos, andamentos, historico, loading]);
 
   // Handle Notifications on Login
   useEffect(() => {
@@ -215,11 +221,11 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<DashboardPage clientes={sortedClientes} processos={processos} prazos={prazos} financeiro={financeiro} />} />
             <Route path="/clientes" element={<ClientsPage clientes={sortedClientes} setClientes={setClientes} processos={processos} setProcessos={setProcessos} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
-            <Route path="/processos" element={<ProcessesPage processos={processos} setProcessos={setProcessos} clientes={sortedClientes} setPrazos={setPrazos} prazos={prazos} recursos={recursos} setRecursos={setRecursos} historico={historico} setHistorico={setHistorico} financeiro={financeiro} />} />
+            <Route path="/processos" element={<ProcessesPage processos={processos} setProcessos={setProcessos} clientes={sortedClientes} setPrazos={setPrazos} prazos={prazos} recursos={recursos} setRecursos={setRecursos} andamentos={andamentos} setAndamentos={setAndamentos} historico={historico} setHistorico={setHistorico} financeiro={financeiro} />} />
             <Route path="/agenda" element={<AgendaPage prazos={prazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} />} />
             <Route path="/tarefas" element={<TasksPage prazos={prazos} setPrazos={setPrazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
             <Route path="/financeiro" element={<FinancePage financeiro={financeiro} setFinanceiro={setFinanceiro} clientes={sortedClientes} processos={processos} prazos={prazos} />} />
-            <Route path="/relatorios/*" element={<ReportsPage clientes={sortedClientes} processos={processos} prazos={prazos} financeiro={financeiro} recursos={recursos} />} />
+            <Route path="/relatorios/*" element={<ReportsPage clientes={sortedClientes} processos={processos} prazos={prazos} financeiro={financeiro} recursos={recursos} andamentos={andamentos} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

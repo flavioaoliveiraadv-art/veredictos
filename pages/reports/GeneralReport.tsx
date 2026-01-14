@@ -1,23 +1,25 @@
 import React from 'react';
-import { Cliente, Processo, Prazo } from '../../types';
+import { Cliente, Processo, Prazo, Andamento } from '../../types';
 import { FileDown, LayoutDashboard } from 'lucide-react';
 import jsPDF from 'jspdf';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
+import { Document, Packer, Paragraph } from 'docx';
 import { saveAs } from 'file-saver';
 
 interface GeneralReportProps {
     clientes: Cliente[];
     processos: Processo[];
     prazos: Prazo[];
+    andamentos: Andamento[];
 }
 
-const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, prazos }) => {
+const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, prazos, andamentos }) => {
     const stats = {
         totalClientes: clientes.length,
         processosAtivos: processos.filter(p => p.status === 'Ativo').length,
         processosArquivados: processos.filter(p => p.status === 'Arquivado').length,
         prazosPendentes: prazos.filter(p => !p.concluido).length,
         prazosConcluidos: prazos.filter(p => p.concluido).length,
+        totalAndamentos: (andamentos || []).length,
     };
 
     const exportPDF = () => {
@@ -33,6 +35,7 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
         doc.text(`Processos Arquivados: ${stats.processosArquivados}`, 14, 69);
         doc.text(`Tarefas/Prazos Pendentes: ${stats.prazosPendentes}`, 14, 76);
         doc.text(`Tarefas/Prazos Concluídos: ${stats.prazosConcluidos}`, 14, 83);
+        doc.text(`Total de Andamentos: ${stats.totalAndamentos}`, 14, 90);
 
         doc.save('relatorio-geral.pdf');
     };
@@ -46,11 +49,12 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
                     new Paragraph({ text: `Gerado em: ${new Date().toLocaleDateString('pt-BR')}` }),
                     new Paragraph({ text: "" }),
                     new Paragraph({ text: "RESUMO DE DADOS", heading: "Heading2" }),
-                    new Paragraph({ text: `Total de Clientes: ${stats.totalClientes}`, bullet: { level: 0 } }),
-                    new Paragraph({ text: `Processos Ativos: ${stats.processosAtivos}`, bullet: { level: 0 } }),
-                    new Paragraph({ text: `Processos Arquivados: ${stats.processosArquivados}`, bullet: { level: 0 } }),
-                    new Paragraph({ text: `Tarefas Pendentes: ${stats.prazosPendentes}`, bullet: { level: 0 } }),
-                    new Paragraph({ text: `Tarefas Concluídas: ${stats.prazosConcluidos}`, bullet: { level: 0 } }),
+                    new Paragraph({ text: `Total de Clientes: ${stats.totalClientes}` }),
+                    new Paragraph({ text: `Processos Ativos: ${stats.processosAtivos}` }),
+                    new Paragraph({ text: `Processos Arquivados: ${stats.processosArquivados}` }),
+                    new Paragraph({ text: `Tarefas Pendentes: ${stats.prazosPendentes}` }),
+                    new Paragraph({ text: `Tarefas Concluídas: ${stats.prazosConcluidos}` }),
+                    new Paragraph({ text: `Total de Andamentos: ${stats.totalAndamentos}` }),
                 ],
             }],
         });
@@ -88,8 +92,8 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
                     <p className="text-3xl font-bold text-amber-500 mt-2">{stats.prazosPendentes}</p>
                 </div>
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <p className="text-sm text-slate-500 font-medium">Concluídas</p>
-                    <p className="text-3xl font-bold text-emerald-600 mt-2">{stats.prazosConcluidos}</p>
+                    <p className="text-sm text-slate-500 font-medium">Cronologia (Andamentos)</p>
+                    <p className="text-3xl font-bold text-violet-600 mt-2">{stats.totalAndamentos}</p>
                 </div>
             </div>
 
