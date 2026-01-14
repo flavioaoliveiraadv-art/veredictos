@@ -20,7 +20,8 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
 
     // Helper to get the main process number (first in the array or fallback)
     const getNumeroProcesso = (p: Processo): string => {
-        return p.numeros && p.numeros.length > 0 ? p.numeros[0] : 'Sem número';
+        if (!p || !p.numeros || !Array.isArray(p.numeros) || p.numeros.length === 0) return 'Sem número';
+        return p.numeros[0];
     };
 
     // Filter processes for the grid view and sort by client name
@@ -44,7 +45,8 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         });
 
     const getClientName = (id: string): string => {
-        const client = clientes?.find(c => c.id === id);
+        if (!id || !Array.isArray(clientes)) return 'Cliente não encontrado';
+        const client = clientes.find(c => c && c.id === id);
         return client ? client.nome : 'Cliente não encontrado';
     };
 
@@ -92,7 +94,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
             [`Cliente: ${clienteName}`, `Comarca: ${selectedProcesso.comarca || '-'}`],
             [`Parte Adversa: ${selectedProcesso.parteContraria || '-'}`, `Vara: ${selectedProcesso.localTramitacao || '-'}`],
             [`Área: ${selectedProcesso.areaAtuacao || '-'}`, `Fase: ${selectedProcesso.faseProcessual || '-'}`],
-            [`Valor da Causa: R$ ${selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}`, `Status: ${selectedProcesso.status || '-'}`]
+            [`Valor da Causa: R$ ${Number(selectedProcesso.valorCausa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, `Status: ${selectedProcesso.status || '-'}`]
         ];
 
         generalData.forEach(row => {
@@ -399,7 +401,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                     </div>
                                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                                         <label className="text-xs text-slate-500 uppercase font-bold">Valor da Causa</label>
-                                        <p className="font-semibold text-emerald-700 mt-1">R$ {selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}</p>
+                                        <p className="font-semibold text-emerald-700 mt-1">R$ {Number(selectedProcesso.valorCausa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                                     </div>
                                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                                         <label className="text-xs text-slate-500 uppercase font-bold">Gratuidade Justiça</label>

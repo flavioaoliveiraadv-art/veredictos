@@ -12,6 +12,15 @@ import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/LoginPage';
 import NotificationModal from './components/NotificationModal';
 import { Cliente, Processo, Prazo, Financeiro, Recurso, HistoricoAlteracao, Andamento } from './types';
+
+// Extend ImportMeta for Vite environment variables
+interface ImportMeta {
+  readonly env: {
+    readonly VITE_SUPABASE_URL: string;
+    readonly VITE_SUPABASE_ANON_KEY: string;
+    [key: string]: string | boolean | undefined;
+  };
+}
 import { INITIAL_CLIENTES, INITIAL_PROCESSOS, INITIAL_HISTORICO, INITIAL_PRAZOS } from './data/mockData';
 import { getTodayBR, compareDatesBR } from './utils/formatters';
 
@@ -62,15 +71,20 @@ const App: React.FC = () => {
           const savedPrazos = localStorage.getItem('legalpro_prazos');
           const savedFinanceiro = localStorage.getItem('legalpro_financeiro');
           const savedRecursos = localStorage.getItem('legalpro_recursos');
+          const savedAndamentos = localStorage.getItem('legalpro_andamentos');
           const savedHistorico = localStorage.getItem('legalpro_historico');
 
-          setClientes(savedClientes ? JSON.parse(savedClientes) : INITIAL_CLIENTES);
-          setProcessos(savedProcessos ? JSON.parse(savedProcessos) : INITIAL_PROCESSOS);
-          setPrazos(savedPrazos ? JSON.parse(savedPrazos) : INITIAL_PRAZOS);
-          setFinanceiro(savedFinanceiro ? JSON.parse(savedFinanceiro) : []);
-          setRecursos(savedRecursos ? JSON.parse(savedRecursos) : []);
-          setAndamentos(localStorage.getItem('legalpro_andamentos') ? JSON.parse(localStorage.getItem('legalpro_andamentos')!) : []);
-          setHistorico(savedHistorico ? JSON.parse(savedHistorico) : INITIAL_HISTORICO);
+          const safeParse = (data: string | null, fallback: any) => {
+            try { return data ? JSON.parse(data) : fallback; } catch { return fallback; }
+          };
+
+          setClientes(safeParse(savedClientes, INITIAL_CLIENTES));
+          setProcessos(safeParse(savedProcessos, INITIAL_PROCESSOS));
+          setPrazos(safeParse(savedPrazos, INITIAL_PRAZOS));
+          setFinanceiro(safeParse(savedFinanceiro, []));
+          setRecursos(safeParse(savedRecursos, []));
+          setAndamentos(safeParse(savedAndamentos, []));
+          setHistorico(safeParse(savedHistorico, INITIAL_HISTORICO));
         }
       } catch (err) {
         console.error('Error loading data:', err);
