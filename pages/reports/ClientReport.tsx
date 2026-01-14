@@ -15,11 +15,13 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
     const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
 
     // Filter clients
-    const filteredClientes = clientes.filter(c =>
-        c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.cpf && c.cpf.includes(searchTerm)) ||
-        (c.cnpj && c.cnpj.includes(searchTerm))
-    );
+    const filteredClientes = clientes
+        .filter(c =>
+            c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (c.cpf && c.cpf.includes(searchTerm)) ||
+            (c.cnpj && c.cnpj.includes(searchTerm))
+        )
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 
     const openDossier = (cliente: Cliente) => {
         setSelectedCliente(cliente);

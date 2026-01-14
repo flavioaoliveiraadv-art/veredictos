@@ -22,18 +22,24 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
     };
 
     // Filter processes for the grid view
-    const filteredProcessos = (processos || []).filter(p => {
-        if (!p) return false;
-        const searchLower = searchTerm.toLowerCase();
-        const numero = getNumeroProcesso(p);
-        const clientName = clientes?.find(c => c.id === p.clienteId)?.nome || '';
-        return (
-            numero.toLowerCase().includes(searchLower) ||
-            clientName.toLowerCase().includes(searchLower) ||
-            (p.parteContraria && p.parteContraria.toLowerCase().includes(searchLower)) ||
-            (p.objeto && p.objeto.toLowerCase().includes(searchLower))
-        );
-    });
+    const filteredProcessos = (processos || [])
+        .filter(p => {
+            if (!p) return false;
+            const searchLower = searchTerm.toLowerCase();
+            const numero = getNumeroProcesso(p);
+            const clientName = clientes?.find(c => c.id === p.clienteId)?.nome || '';
+            return (
+                numero.toLowerCase().includes(searchLower) ||
+                clientName.toLowerCase().includes(searchLower) ||
+                (p.parteContraria && p.parteContraria.toLowerCase().includes(searchLower)) ||
+                (p.objeto && p.objeto.toLowerCase().includes(searchLower))
+            );
+        })
+        .sort((a, b) => {
+            const nameA = getClientName(a.clienteId);
+            const nameB = getClientName(b.clienteId);
+            return nameA.localeCompare(nameB, 'pt-BR');
+        });
 
     const getClientName = (id: string): string => {
         const client = clientes?.find(c => c.id === id);
