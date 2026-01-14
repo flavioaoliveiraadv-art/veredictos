@@ -348,7 +348,7 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
                                                     <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                                                         <span>{new Date(f.dataVencimento).toLocaleDateString('pt-BR')}</span>
                                                         <span className={`px-2 py-0.5 rounded-full ${f.status === 'Pago' ? 'bg-green-100 text-green-700' :
-                                                            f.status === 'Atrasado' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                                                                f.status === 'Atrasado' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                                                             }`}>{f.status}</span>
                                                         {f.parcela && <span>Parcela {f.parcela}</span>}
                                                     </div>

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Cliente, Processo, Prazo, Recurso, Financeiro } from '../../types';
-import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, Users, Activity } from 'lucide-react';
+import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, Users } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { compareDatesBR } from '../../utils/formatters';
 
 interface ProcessReportProps {
     clientes: Cliente[];
@@ -19,37 +18,25 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
 
     // Helper to get the main process number (first in the array or fallback)
     const getNumeroProcesso = (p: Processo): string => {
-        if (!p || !p.numeros || !Array.isArray(p.numeros) || p.numeros.length === 0) return 'Sem número';
-        return p.numeros[0];
+        return p.numeros && p.numeros.length > 0 ? p.numeros[0] : 'Sem número';
     };
 
-    // Filter processes for the grid view and sort by client name
-    const safeProcessos = Array.isArray(processos) ? processos : [];
-    const safeClientes = Array.isArray(clientes) ? clientes : [];
-
-    const filteredProcessos = safeProcessos
-        .filter(p => {
-            if (!p) return false;
-            const searchLower = (searchTerm || '').toLowerCase();
-            const numero = (getNumeroProcesso(p) || '').toLowerCase();
-            const clientObj = safeClientes.find(c => c && c.id === p.clienteId);
-            const clientName = (clientObj?.nome || '').toLowerCase();
-            return (
-                numero.includes(searchLower) ||
-                clientName.includes(searchLower) ||
-                (p.parteContraria && p.parteContraria.toLowerCase().includes(searchLower)) ||
-                (p.objeto && p.objeto.toLowerCase().includes(searchLower))
-            );
-        })
-        .sort((a, b) => {
-            const nameA = getClientName(a.clienteId) || '';
-            const nameB = getClientName(b.clienteId) || '';
-            return nameA.localeCompare(nameB);
-        });
+    // Filter processes for the grid view
+    const filteredProcessos = (processos || []).filter(p => {
+        if (!p) return false;
+        const searchLower = searchTerm.toLowerCase();
+        const numero = getNumeroProcesso(p);
+        const clientName = clientes?.find(c => c.id === p.clienteId)?.nome || '';
+        return (
+            numero.toLowerCase().includes(searchLower) ||
+            clientName.toLowerCase().includes(searchLower) ||
+            (p.parteContraria && p.parteContraria.toLowerCase().includes(searchLower)) ||
+            (p.objeto && p.objeto.toLowerCase().includes(searchLower))
+        );
+    });
 
     const getClientName = (id: string): string => {
-        if (!id || !Array.isArray(clientes)) return 'Cliente não encontrado';
-        const client = clientes.find(c => c && c.id === id);
+        const client = clientes?.find(c => c.id === id);
         return client ? client.nome : 'Cliente não encontrado';
     };
 
@@ -97,7 +84,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
             [`Cliente: ${clienteName}`, `Comarca: ${selectedProcesso.comarca || '-'}`],
             [`Parte Adversa: ${selectedProcesso.parteContraria || '-'}`, `Vara: ${selectedProcesso.localTramitacao || '-'}`],
             [`Área: ${selectedProcesso.areaAtuacao || '-'}`, `Fase: ${selectedProcesso.faseProcessual || '-'}`],
-            [`Valor da Causa: R$ ${Number(selectedProcesso.valorCausa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, `Status: ${selectedProcesso.status || '-'}`]
+            [`Valor da Causa: R$ ${selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}`, `Status: ${selectedProcesso.status || '-'}`]
         ];
 
         generalData.forEach(row => {
@@ -108,7 +95,6 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         yPos += 5;
 
         // 2. Tarefas e Prazos
-        if (yPos > 240) { doc.addPage(); yPos = 20; }
         doc.setFillColor(241, 245, 249);
         doc.rect(14, yPos, 182, 8, 'F');
         doc.setFontSize(12);
@@ -118,13 +104,13 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
 
         const tasks = (prazos || [])
             .filter(t => t && t.processoId === selectedProcesso.id)
-            .sort((a, b) => compareDatesBR(a.dataVencimento, b.dataVencimento));
+            .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime());
 
         if (tasks.length > 0) {
             const taskRows = tasks.map(t => [
                 new Date(t.dataVencimento).toLocaleDateString('pt-BR'),
                 t.tipo || 'Tarefa',
-                t.observacoesRelatorio ? `${t.descricao}\nObs: ${t.observacoesRelatorio}` : (t.descricao || '-'),
+                t.descricao || '-',
                 t.concluido ? 'Concluída' : 'Pendente'
             ]);
 
@@ -143,8 +129,9 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
             yPos += 15;
         }
 
-        // 4. Recursos
-        if (yPos > 240) { doc.addPage(); yPos = 20; }
+        // 3. Recursos
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+
         doc.setFillColor(241, 245, 249);
         doc.rect(14, yPos, 182, 8, 'F');
         doc.setFontSize(12);
@@ -177,8 +164,9 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
             yPos += 15;
         }
 
-        // 5. Financeiro
-        if (yPos > 240) { doc.addPage(); yPos = 20; }
+        // 4. Financeiro
+        if (yPos > 250) { doc.addPage(); yPos = 20; }
+
         doc.setFillColor(241, 245, 249);
         doc.rect(14, yPos, 182, 8, 'F');
         doc.setFontSize(12);
@@ -223,7 +211,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
     };
 
     // Handle loading state or empty data gracefully
-    if (!Array.isArray(processos) || processos.length === 0) {
+    if (!processos || processos.length === 0) {
         return (
             <div className="space-y-6">
                 <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
@@ -368,7 +356,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                     </div>
                                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                                         <label className="text-xs text-slate-500 uppercase font-bold">Valor da Causa</label>
-                                        <p className="font-semibold text-emerald-700 mt-1">R$ {Number(selectedProcesso.valorCausa || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                                        <p className="font-semibold text-emerald-700 mt-1">R$ {selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}</p>
                                     </div>
                                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                                         <label className="text-xs text-slate-500 uppercase font-bold">Gratuidade Justiça</label>
@@ -377,8 +365,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                 </div>
                             </section>
 
-
-                            {/* 3. TIMELINE DE TAREFAS */}
+                            {/* 2. TIMELINE DE TAREFAS */}
                             <section>
                                 <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
                                     <Calendar className="w-5 h-5 text-indigo-500" />
@@ -387,19 +374,13 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                 <div className="space-y-3">
                                     {(prazos || [])
                                         .filter(t => t && t.processoId === selectedProcesso.id)
-                                        .sort((a, b) => compareDatesBR(a.dataVencimento, b.dataVencimento))
+                                        .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime())
                                         .map(t => (
                                             <div key={t.id} className="flex items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
                                                 <div className={`w-2 h-10 rounded-full mr-4 ${t.concluido ? 'bg-emerald-400' : 'bg-amber-400'}`}></div>
                                                 <div className="flex-1">
                                                     <p className="text-sm font-bold text-slate-800">{t.descricao || 'Sem descrição'}</p>
                                                     <p className="text-xs text-slate-500">{t.tipo} • Vencimento: {new Date(t.dataVencimento).toLocaleDateString('pt-BR')}</p>
-                                                    {t.observacoesRelatorio && (
-                                                        <div className="mt-2 p-2 bg-amber-50 rounded-lg border border-amber-100">
-                                                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">Observações para Relatório</p>
-                                                            <p className="text-xs text-slate-700 font-medium">{t.observacoesRelatorio}</p>
-                                                        </div>
-                                                    )}
                                                 </div>
                                                 <div>
                                                     <span className={`px-2 py-1 rounded text-xs font-bold ${t.concluido ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
@@ -415,7 +396,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                 </div>
                             </section>
 
-                            {/* 4. RECURSOS */}
+                            {/* 3. RECURSOS */}
                             <section>
                                 <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
                                     <Gavel className="w-5 h-5 text-violet-500" />
@@ -443,7 +424,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                 </div>
                             </section>
 
-                            {/* 5. FINANCEIRO */}
+                            {/* 4. FINANCEIRO */}
                             <section>
                                 <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
                                     <DollarSign className="w-5 h-5 text-emerald-500" />

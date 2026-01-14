@@ -65,9 +65,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
   const [isTaskTypeSelectionModalOpen, setIsTaskTypeSelectionModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
   const [selectedPrazo, setSelectedPrazo] = useState<Prazo | null>(null);
-  const [reportObservation, setReportObservation] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   const todayBR = getTodayBR();
@@ -167,31 +165,16 @@ const TasksPage: React.FC<TasksPageProps> = ({
   };
 
   const handleRealizar = (prazo: Prazo) => {
-    setSelectedPrazo(prazo);
-    setReportObservation('');
-    setIsCompletionModalOpen(true);
-  };
-
-  const handleConfirmarRealizacao = () => {
-    if (!selectedPrazo) return;
-
+    const obs = prompt('Observações da realização:');
+    if (obs === null) return;
     const update: Prazo = {
-      ...selectedPrazo,
+      ...prazo,
       concluido: true,
       dataConclusao: getTodayBR(),
-      observacoesRealizacao: 'Tarefa concluída com observações para relatório.',
-      observacoesRelatorio: reportObservation || undefined
+      observacoesRealizacao: obs || ''
     };
-
-    setPrazos(prev => prev.map(p => p.id === selectedPrazo.id ? update : p));
-
-    let historicoMsg = 'Atividade marcada como realizada.';
-    if (reportObservation) {
-      historicoMsg += ` Observações para Relatório: ${reportObservation}`;
-    }
-
-    addHistorico(selectedPrazo.id, historicoMsg);
-    setIsCompletionModalOpen(false);
+    setPrazos(prev => prev.map(p => p.id === prazo.id ? update : p));
+    addHistorico(prazo.id, `Atividade marcada como realizada. Obs: ${obs}`);
     setIsDetailModalOpen(false);
   };
 
@@ -586,13 +569,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
                         {selectedPrazo.concluido ? 'Finalizada' : 'Cancelada'} em {selectedPrazo.dataConclusao || selectedPrazo.dataCancelamento}
                       </h4>
                       <div className="space-y-4">
-                        <p className="text-sm font-bold text-gray-700 italic">"{selectedPrazo.concluido ? (selectedPrazo.observacoesRelatorio || 'Tarefa concluída sem observações específicas para relatório.') : (selectedPrazo.justificativaCancelamento || 'Sem justificativa informada.')}"</p>
-                        {selectedPrazo.concluido && selectedPrazo.observacoesRelatorio && (
-                          <div className="mt-4 pt-4 border-t border-emerald-100">
-                            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Observações para Relatório</p>
-                            <p className="text-xs font-bold text-gray-600">{selectedPrazo.observacoesRelatorio}</p>
-                          </div>
-                        )}
+                        <p className="text-sm font-bold text-gray-700 italic">"{selectedPrazo.observacoesRealizacao || selectedPrazo.justificativaCancelamento || 'Sem notas adicionais.'}"</p>
                       </div>
                     </div>
                   )}
@@ -617,54 +594,6 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Finalização / Observações para Relatório */}
-      {isCompletionModalOpen && selectedPrazo && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4" onClick={() => setIsCompletionModalOpen(false)}>
-          <div className="bg-white rounded-[40px] w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
-            <div className="p-8 border-b border-gray-100 flex items-center justify-between bg-emerald-50/50">
-              <h2 className="text-xl font-black text-gray-800 flex items-center gap-3">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600" /> Finalizar Tarefa
-              </h2>
-              <button onClick={() => setIsCompletionModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X className="w-7 h-7" /></button>
-            </div>
-
-            <div className="p-8 space-y-6">
-              <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Tarefa</p>
-                <p className="text-sm font-bold text-gray-700">{selectedPrazo.descricao}</p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Observações para Relatório</label>
-                <textarea
-                  placeholder="Digite aqui as observações que devem constar nos relatórios institucionais..."
-                  value={reportObservation}
-                  onChange={e => setReportObservation(e.target.value)}
-                  rows={5}
-                  className="w-full px-5 py-4 bg-gray-50 rounded-2xl border border-gray-200 placeholder-gray-400 text-gray-800 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none font-bold text-sm transition-all shadow-inner resize-none"
-                />
-                <p className="text-[10px] text-gray-400 italic mt-1 font-medium">Este campo é opcional. Se preenchido, será incluído automaticamente nos dossiês e relatórios.</p>
-              </div>
-            </div>
-
-            <div className="p-8 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
-              <button
-                onClick={handleConfirmarRealizacao}
-                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase text-xs shadow-xl shadow-emerald-100 transition-all flex items-center justify-center gap-2"
-              >
-                <CheckCircle2 className="w-5 h-5" /> Finalizar {reportObservation.trim() ? 'com Observações' : 'sem Observações'}
-              </button>
-              <button
-                onClick={() => setIsCompletionModalOpen(false)}
-                className="w-full py-3 bg-white border border-gray-200 text-gray-500 rounded-2xl font-black uppercase text-[10px] hover:bg-gray-50 transition-all"
-              >
-                Voltar
-              </button>
             </div>
           </div>
         </div>

@@ -12,7 +12,6 @@ import ReportsPage from './pages/ReportsPage';
 import LoginPage from './pages/LoginPage';
 import NotificationModal from './components/NotificationModal';
 import { Cliente, Processo, Prazo, Financeiro, Recurso, HistoricoAlteracao } from './types';
-
 import { INITIAL_CLIENTES, INITIAL_PROCESSOS, INITIAL_HISTORICO, INITIAL_PRAZOS } from './data/mockData';
 import { getTodayBR, compareDatesBR } from './utils/formatters';
 
@@ -63,16 +62,12 @@ const App: React.FC = () => {
           const savedRecursos = localStorage.getItem('legalpro_recursos');
           const savedHistorico = localStorage.getItem('legalpro_historico');
 
-          const safeParse = (data: string | null, fallback: any) => {
-            try { return data ? JSON.parse(data) : fallback; } catch { return fallback; }
-          };
-
-          setClientes(safeParse(savedClientes, INITIAL_CLIENTES));
-          setProcessos(safeParse(savedProcessos, INITIAL_PROCESSOS));
-          setPrazos(safeParse(savedPrazos, INITIAL_PRAZOS));
-          setFinanceiro(safeParse(savedFinanceiro, []));
-          setRecursos(safeParse(savedRecursos, []));
-          setHistorico(safeParse(savedHistorico, INITIAL_HISTORICO));
+          setClientes(savedClientes ? JSON.parse(savedClientes) : INITIAL_CLIENTES);
+          setProcessos(savedProcessos ? JSON.parse(savedProcessos) : INITIAL_PROCESSOS);
+          setPrazos(savedPrazos ? JSON.parse(savedPrazos) : INITIAL_PRAZOS);
+          setFinanceiro(savedFinanceiro ? JSON.parse(savedFinanceiro) : []);
+          setRecursos(savedRecursos ? JSON.parse(savedRecursos) : []);
+          setHistorico(savedHistorico ? JSON.parse(savedHistorico) : INITIAL_HISTORICO);
         }
       } catch (err) {
         console.error('Error loading data:', err);

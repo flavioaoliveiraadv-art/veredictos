@@ -1,4 +1,4 @@
-
+﻿
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Plus, Search, FileText, Scale, Clock, AlertTriangle,
@@ -124,7 +124,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
 
     if (recFormData.id) {
       setRecursos(prev => prev.map(r => r.id === id ? newRec : r));
-      addHistorico(newRec.processoOriginarioId, `Alterações salvas no recurso ${newRec.tipoRecurso}.`);
+      addHistorico(newRec.processoOriginarioId, `Altera├º├Áes salvas no recurso ${newRec.tipoRecurso}.`);
     } else {
       setRecursos(prev => [...prev, newRec]);
       addHistorico(newRec.processoOriginarioId, `Novo recurso cadastrado: ${newRec.tipoRecurso}.`);
@@ -135,7 +135,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     setSelectedRecurso(null);
   };
 
-  // Vínculo automático de cliente no cadastro de recurso
+  // V├¡nculo autom├ítico de cliente no cadastro de recurso
   useEffect(() => {
     if (recFormData.processoOriginarioId) {
       const pai = processos.find(p => p.id === recFormData.processoOriginarioId);
@@ -145,23 +145,23 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     }
   }, [recFormData.processoOriginarioId, processos]);
 
-  // Função de Exclusão de Recurso Corrigida
+  // Fun├º├úo de Exclus├úo de Recurso Corrigida
   const deleteRecurso = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (confirm('AVISO: Esta é uma exclusão permanente. O registro do recurso será removido definitivamente do sistema. Deseja confirmar a exclusão?')) {
+    if (confirm('AVISO: Esta ├® uma exclus├úo permanente. O registro do recurso ser├í removido definitivamente do sistema. Deseja confirmar a exclus├úo?')) {
       const rec = recursos.find(r => r.id === id);
       if (rec) {
-        addHistorico(rec.processoOriginarioId, `Recurso ${rec.tipoRecurso} excluído definitivamente.`);
+        addHistorico(rec.processoOriginarioId, `Recurso ${rec.tipoRecurso} exclu├¡do definitivamente.`);
         setRecursos(prev => prev.filter(r => r.id !== id));
         setSelectedRecurso(null);
       }
     }
   };
 
-  // Função de Exclusão de Processo Corrigida
+  // Fun├º├úo de Exclus├úo de Processo Corrigida
   const deleteProcesso = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (confirm('AVISO CRÍTICO: Esta é uma exclusão permanente. Ao excluir este processo, TODOS os recursos vinculados a ele também serão removidos definitivamente. Deseja prosseguir com a exclusão?')) {
+    if (confirm('AVISO CR├ìTICO: Esta ├® uma exclus├úo permanente. Ao excluir este processo, TODOS os recursos vinculados a ele tamb├®m ser├úo removidos definitivamente. Deseja prosseguir com a exclus├úo?')) {
       setProcessos(prev => prev.filter(p => p.id !== id));
       setRecursos(prev => prev.filter(r => r.processoOriginarioId !== id));
       setSelectedProcess(null);
@@ -173,7 +173,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#0b1726]">Processos e Recursos</h1>
-          <p className="text-gray-500 font-medium">Gestão unificada de acervo judicial e recursos de 2º grau.</p>
+          <p className="text-gray-500 font-medium">Gest├úo unificada de acervo judicial e recursos de 2┬║ grau.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2">
           <button
@@ -198,7 +198,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
         </div>
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input type="text" placeholder="Buscar por número, cliente ou objeto..." className="w-full pl-12 pr-4 py-3.5 bg-gray-50 rounded-2xl border border-gray-100 outline-none font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+          <input type="text" placeholder="Buscar por n├║mero, cliente ou objeto..." className="w-full pl-12 pr-4 py-3.5 bg-gray-50 rounded-2xl border border-gray-100 outline-none font-medium" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
       </div>
 
@@ -257,7 +257,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="bg-orange-100 text-orange-700 text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest">RECURSO - 2º GRAU</span>
+                      <span className="bg-orange-100 text-orange-700 text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest">RECURSO - 2┬║ GRAU</span>
                       <h3 className="text-lg font-black text-gray-800 leading-tight">{rec.tipoRecurso}</h3>
                     </div>
                     <div className="space-y-1">
@@ -267,7 +267,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-gray-400">
                         <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> {cli?.nome}</span>
-                        <span className="flex items-center gap-1.5 bg-rose-50 text-rose-500 px-2 py-0.5 rounded text-[8px] uppercase font-black tracking-widest">Processo em 2º Grau</span>
+                        <span className="flex items-center gap-1.5 bg-rose-50 text-rose-500 px-2 py-0.5 rounded text-[8px] uppercase font-black tracking-widest">Processo em 2┬║ Grau</span>
                       </div>
                     </div>
                   </div>
@@ -308,7 +308,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={() => setIsHistoryLogModalOpen(true)} className="p-3 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all" title="Ver Histórico"><History className="w-6 h-6" /></button>
+                  <button onClick={() => setIsHistoryLogModalOpen(true)} className="p-3 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all" title="Ver Hist├│rico"><History className="w-6 h-6" /></button>
                   <button onClick={() => { setProcFormData(selectedProcess); setIsProcModalOpen(true); }} className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-2xl transition-all" title="Editar Processo"><Edit className="w-6 h-6" /></button>
                   <button onClick={(e) => deleteProcesso(e, selectedProcess.id)} className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all" title="Excluir Processo"><Trash2 className="w-6 h-6" /></button>
                   <button onClick={() => setSelectedProcess(null)} className="p-3 text-gray-400 hover:text-gray-800 rounded-2xl transition-all ml-4" title="Fechar"><X className="w-8 h-8" /></button>
@@ -317,20 +317,20 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-12">
                   <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Informações Gerais</h3>
+                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Informa├º├Áes Gerais</h3>
                     <div className="grid grid-cols-2 gap-8 text-balance">
                       <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
                       <DetailField label="Polo" value={selectedProcess.polo || '-'} />
-                      <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
+                      <DetailField label="Parte Contr├íria" value={selectedProcess.parteContraria || '-'} />
                       <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
-                      <DetailField label="Área de Atuação" value={selectedProcess.areaAtuacao} />
+                      <DetailField label="├ürea de Atua├º├úo" value={selectedProcess.areaAtuacao} />
                       <DetailField label="Vara / Local" value={selectedProcess.localTramitacao || '-'} />
                       <DetailField label="Comarca" value={selectedProcess.comarca || '-'} />
                       <DetailField label="Tribunal" value={selectedProcess.tribunal || '-'} />
-                      <DetailField label="Distribuição" value={selectedProcess.dataDistribuicao || '-'} />
-                      <DetailField label="Justiça Gratuita" value={selectedProcess.gratuidade ? 'Sim' : 'Não'} />
+                      <DetailField label="Distribui├º├úo" value={selectedProcess.dataDistribuicao || '-'} />
+                      <DetailField label="Justi├ºa Gratuita" value={selectedProcess.gratuidade ? 'Sim' : 'N├úo'} />
                       <DetailField label="Valor da Causa" value={formatCurrency(selectedProcess.valorCausa)} className="font-black" />
-                      <DetailField label="Última Atualização" value={selectedProcess.ultimaAtualizacao} icon={<Clock className="w-3.5 h-3.5" />} />
+                      <DetailField label="├Ültima Atualiza├º├úo" value={selectedProcess.ultimaAtualizacao} icon={<Clock className="w-3.5 h-3.5" />} />
                     </div>
                   </section>
 
@@ -397,10 +397,10 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   </section>
 
-                  {/* Lançamentos Financeiros */}
+                  {/* Lan├ºamentos Financeiros */}
                   <section>
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
-                      <DollarSign className="w-4 h-4" /> Lançamentos Financeiros
+                      <DollarSign className="w-4 h-4" /> Lan├ºamentos Financeiros
                     </h3>
                     <div className="space-y-3">
                       {financeiro.filter(f => f.processoId === selectedProcess.id).length > 0 ? (
@@ -424,7 +424,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs text-gray-400 italic">Nenhum lançamento financeiro vinculado.</p>
+                        <p className="text-xs text-gray-400 italic">Nenhum lan├ºamento financeiro vinculado.</p>
                       )}
                     </div>
                   </section>
@@ -465,7 +465,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     <Scale className="w-9 h-9" />
                   </div>
                   <div>
-                    <span className="bg-orange-100 text-orange-700 text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-widest mb-1 inline-block">DETALHES DO RECURSO - 2º GRAU</span>
+                    <span className="bg-orange-100 text-orange-700 text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-widest mb-1 inline-block">DETALHES DO RECURSO - 2┬║ GRAU</span>
                     <h2 className="text-3xl font-black text-gray-800 tracking-tighter leading-none">{selectedRecurso.tipoRecurso}</h2>
                     <p className="text-base font-bold text-orange-600 mt-1">Ref: {processos.find(p => p.id === selectedRecurso.processoOriginarioId)?.numeros[0]}</p>
                   </div>
@@ -478,12 +478,12 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-12">
-                  <DetailField label="Número do Recurso" value={selectedRecurso.numeroRecurso} />
-                  <DetailField label="Local de Tramitação" value={selectedRecurso.localTramitacao} />
+                  <DetailField label="N├║mero do Recurso" value={selectedRecurso.numeroRecurso} />
+                  <DetailField label="Local de Tramita├º├úo" value={selectedRecurso.localTramitacao} />
                   <DetailField label="Tribunal" value={selectedRecurso.tribunal} />
-                  <DetailField label="Data de Distribuição" value={selectedRecurso.dataDistribuicao} />
+                  <DetailField label="Data de Distribui├º├úo" value={selectedRecurso.dataDistribuicao} />
                   <DetailField label="Cliente Vinculado" value={clientes.find(c => c.id === selectedRecurso.clienteId)?.nome || '-'} />
-                  <DetailField label="Assistência Judiciária" value={selectedRecurso.gratuidade ? 'CONCEDIDA' : 'NEGADA / NÃO REQUERIDA'} />
+                  <DetailField label="Assist├¬ncia Judici├íria" value={selectedRecurso.gratuidade ? 'CONCEDIDA' : 'NEGADA / N├âO REQUERIDA'} />
                 </div>
 
                 <div className="space-y-6">
@@ -528,29 +528,29 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     <option value="">Selecione...</option>
                     {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                   </FormSelect>
-                  <FormSelect label="Polo" required value={procFormData.polo || ''} onChange={e => setProcFormData({ ...procFormData, polo: e.target.value as 'Autor' | 'Réu' })}>
+                  <FormSelect label="Polo" required value={procFormData.polo || ''} onChange={e => setProcFormData({ ...procFormData, polo: e.target.value as 'Autor' | 'R├®u' })}>
                     <option value="">Selecione...</option>
                     <option value="Autor">Autor (Polo Ativo)</option>
-                    <option value="Réu">Réu (Polo Passivo)</option>
+                    <option value="R├®u">R├®u (Polo Passivo)</option>
                   </FormSelect>
-                  <FormInput label="Número do Processo" required placeholder="0000000-00.0000.0.00.0000" value={procFormData.numeros?.[0] || ''} onChange={e => setProcFormData({ ...procFormData, numeros: [e.target.value] })} />
-                  <FormInput label="Parte Contrária" placeholder="Nome da Parte Contrária" value={procFormData.parteContraria} onChange={e => setProcFormData({ ...procFormData, parteContraria: e.target.value.toUpperCase() })} />
-                  <FormSelect label="Justiça Gratuita" value={procFormData.gratuidade ? 'S' : 'N'} onChange={e => setProcFormData({ ...procFormData, gratuidade: e.target.value === 'S' })}>
-                    <option value="N">Não</option>
+                  <FormInput label="N├║mero do Processo" required placeholder="0000000-00.0000.0.00.0000" value={procFormData.numeros?.[0] || ''} onChange={e => setProcFormData({ ...procFormData, numeros: [e.target.value] })} />
+                  <FormInput label="Parte Contr├íria" placeholder="Nome da Parte Contr├íria" value={procFormData.parteContraria} onChange={e => setProcFormData({ ...procFormData, parteContraria: e.target.value.toUpperCase() })} />
+                  <FormSelect label="Justi├ºa Gratuita" value={procFormData.gratuidade ? 'S' : 'N'} onChange={e => setProcFormData({ ...procFormData, gratuidade: e.target.value === 'S' })}>
+                    <option value="N">N├úo</option>
                     <option value="S">Sim</option>
                   </FormSelect>
                   <FormInput label="Valor da Causa" placeholder="R$ 0,00" value={formatCurrency(procFormData.valorCausa || 0)} onChange={e => setProcFormData({ ...procFormData, valorCausa: parseCurrency(e.target.value) })} />
-                  <div className="col-span-2"><FormInput label="Objeto do Processo" required placeholder="Descreva o objeto da ação" value={procFormData.objeto} onChange={e => setProcFormData({ ...procFormData, objeto: e.target.value.toUpperCase() })} /></div>
-                  <FormSelect label="Área de Atuação" value={procFormData.areaAtuacao} onChange={e => setProcFormData({ ...procFormData, areaAtuacao: e.target.value as AreaAtuacao })}>
+                  <div className="col-span-2"><FormInput label="Objeto do Processo" required placeholder="Descreva o objeto da a├º├úo" value={procFormData.objeto} onChange={e => setProcFormData({ ...procFormData, objeto: e.target.value.toUpperCase() })} /></div>
+                  <FormSelect label="├ürea de Atua├º├úo" value={procFormData.areaAtuacao} onChange={e => setProcFormData({ ...procFormData, areaAtuacao: e.target.value as AreaAtuacao })}>
                     {Object.values(AreaAtuacao).map(v => <option key={v} value={v}>{v}</option>)}
                   </FormSelect>
                   <FormSelect label="Fase Processual" value={procFormData.faseProcessual} onChange={e => setProcFormData({ ...procFormData, faseProcessual: e.target.value as FaseProcessual })}>
                     {Object.values(FaseProcessual).map(v => <option key={v} value={v}>{v}</option>)}
                   </FormSelect>
-                  <FormInput label="Vara / Local" placeholder="Ex: 1ª Vara Cível" value={procFormData.localTramitacao} onChange={e => setProcFormData({ ...procFormData, localTramitacao: e.target.value })} />
-                  <FormInput label="Comarca" placeholder="Ex: São Paulo" value={procFormData.comarca} onChange={e => setProcFormData({ ...procFormData, comarca: e.target.value })} />
+                  <FormInput label="Vara / Local" placeholder="Ex: 1┬¬ Vara C├¡vel" value={procFormData.localTramitacao} onChange={e => setProcFormData({ ...procFormData, localTramitacao: e.target.value })} />
+                  <FormInput label="Comarca" placeholder="Ex: S├úo Paulo" value={procFormData.comarca} onChange={e => setProcFormData({ ...procFormData, comarca: e.target.value })} />
                   <FormInput label="Tribunal" placeholder="Ex: TJSP" value={procFormData.tribunal} onChange={e => setProcFormData({ ...procFormData, tribunal: e.target.value })} />
-                  <div className="col-span-2"><FormInput label="Data de Distribuição" type="date" value={toISODate(procFormData.dataDistribuicao || '')} onChange={e => setProcFormData({ ...procFormData, dataDistribuicao: toBRDate(e.target.value) })} /></div>
+                  <div className="col-span-2"><FormInput label="Data de Distribui├º├úo" type="date" value={toISODate(procFormData.dataDistribuicao || '')} onChange={e => setProcFormData({ ...procFormData, dataDistribuicao: toBRDate(e.target.value) })} /></div>
                 </div>
               </form>
             </div>
@@ -573,23 +573,23 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             <div className="flex-1 overflow-y-auto p-10 custom-scroll">
               <form id="recForm" onSubmit={handleSaveRecurso} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                  <FormInput label="Tipo de Recurso" required placeholder="Ex: Apelação, Agravo de Instrumento" value={recFormData.tipoRecurso} onChange={e => setRecFormData({ ...recFormData, tipoRecurso: e.target.value })} />
-                  <FormSelect label="Processo Originário" required value={recFormData.processoOriginarioId} onChange={e => setRecFormData({ ...recFormData, processoOriginarioId: e.target.value })}>
-                    <option value="">Selecione o processo originário...</option>
+                  <FormInput label="Tipo de Recurso" required placeholder="Ex: Apela├º├úo, Agravo de Instrumento" value={recFormData.tipoRecurso} onChange={e => setRecFormData({ ...recFormData, tipoRecurso: e.target.value })} />
+                  <FormSelect label="Processo Origin├írio" required value={recFormData.processoOriginarioId} onChange={e => setRecFormData({ ...recFormData, processoOriginarioId: e.target.value })}>
+                    <option value="">Selecione o processo origin├írio...</option>
                     {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
                   </FormSelect>
                   <div className="space-y-2 opacity-80">
-                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente (Automático)</label>
+                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente (Autom├ítico)</label>
                     <input type="text" readOnly className="w-full px-5 py-3.5 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-gray-400 text-sm cursor-not-allowed" value={clientes.find(c => c.id === recFormData.clienteId)?.nome || 'Selecione o processo para vincular o cliente'} />
                   </div>
-                  <FormInput label="Número do Recurso" placeholder="0000000-00.0000.0.00.0000" value={recFormData.numeroRecurso} onChange={e => setRecFormData({ ...recFormData, numeroRecurso: e.target.value })} />
+                  <FormInput label="N├║mero do Recurso" placeholder="0000000-00.0000.0.00.0000" value={recFormData.numeroRecurso} onChange={e => setRecFormData({ ...recFormData, numeroRecurso: e.target.value })} />
                   <FormSelect label="Gratuidade" value={recFormData.gratuidade ? 'S' : 'N'} onChange={e => setRecFormData({ ...recFormData, gratuidade: e.target.value === 'S' })}>
-                    <option value="N">Não</option>
+                    <option value="N">N├úo</option>
                     <option value="S">Sim</option>
                   </FormSelect>
-                  <FormInput label="Data Distribuição" type="date" value={toISODate(recFormData.dataDistribuicao || '')} onChange={e => setRecFormData({ ...recFormData, dataDistribuicao: toBRDate(e.target.value) })} />
+                  <FormInput label="Data Distribui├º├úo" type="date" value={toISODate(recFormData.dataDistribuicao || '')} onChange={e => setRecFormData({ ...recFormData, dataDistribuicao: toBRDate(e.target.value) })} />
                   <FormInput label="Tribunal" placeholder="Ex: TJSP, STJ" value={recFormData.tribunal} onChange={e => setRecFormData({ ...recFormData, tribunal: e.target.value })} />
-                  <FormInput label="Local de Tramitação" placeholder="Ex: 1ª Câmara de Direito Privado" value={recFormData.localTramitacao} onChange={e => setRecFormData({ ...recFormData, localTramitacao: e.target.value })} />
+                  <FormInput label="Local de Tramita├º├úo" placeholder="Ex: 1┬¬ C├ómara de Direito Privado" value={recFormData.localTramitacao} onChange={e => setRecFormData({ ...recFormData, localTramitacao: e.target.value })} />
                 </div>
               </form>
             </div>
@@ -607,7 +607,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
           <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
             <div className="p-10">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-black text-gray-800 flex items-center gap-3"><History className="w-6 h-6 text-indigo-600" /> Registro de Alterações</h2>
+                <h2 className="text-xl font-black text-gray-800 flex items-center gap-3"><History className="w-6 h-6 text-indigo-600" /> Registro de Altera├º├Áes</h2>
                 <button onClick={() => setIsHistoryLogModalOpen(false)} className="text-gray-400"><X className="w-7 h-7" /></button>
               </div>
               <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scroll">
