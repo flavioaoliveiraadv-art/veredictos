@@ -33,7 +33,7 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
         doc.text(`Processos Arquivados: ${stats.processosArquivados}`, 14, 69);
         doc.text(`Tarefas/Prazos Pendentes: ${stats.prazosPendentes}`, 14, 76);
         doc.text(`Tarefas/Prazos Concluídos: ${stats.prazosConcluidos}`, 14, 83);
-        doc.text(`Tarefas/Prazos Concluídos: ${stats.prazosConcluidos}`, 14, 83);
+
 
         doc.save('relatorio-geral.pdf');
     };
@@ -52,7 +52,7 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
                     new Paragraph({ text: `Processos Arquivados: ${stats.processosArquivados}` }),
                     new Paragraph({ text: `Tarefas Pendentes: ${stats.prazosPendentes}` }),
                     new Paragraph({ text: `Tarefas Concluídas: ${stats.prazosConcluidos}` }),
-                    new Paragraph({ text: `Tarefas Concluídas: ${stats.prazosConcluidos}` }),
+
                 ],
             }],
         });
