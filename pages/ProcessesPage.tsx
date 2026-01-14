@@ -357,7 +357,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
               <div className="flex items-center gap-1 border-b border-gray-100 mb-8 overflow-x-auto custom-scroll pb-1">
                 {[
                   { id: 'DADOS', label: 'Dados do Processo', icon: <FileText className="w-4 h-4" /> },
-                  { id: 'PARTES', label: 'Partes / Cliente', icon: <User className="w-4 h-4" /> },
                   { id: 'TAREFAS', label: 'Tarefas e Prazos', icon: <CheckSquare className="w-4 h-4" /> },
                   { id: 'ANDAMENTOS', label: 'Andamentos', icon: <Activity className="w-4 h-4" /> },
                   { id: 'FINANCEIRO', label: 'Financeiro', icon: <DollarSign className="w-4 h-4" /> },
@@ -379,8 +378,9 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                       <div className="md:col-span-2">
                         <DetailField label="Objeto do Processo" value={selectedProcess.objeto} />
                       </div>
-                      <DetailField label="Polo" value={selectedProcess.polo || '-'} />
+                      <DetailField label="Cliente / Contratante" value={clientes.find(c => c.id === selectedProcess.clienteId)?.nome || '-'} />
                       <DetailField label="Parte Contrária" value={selectedProcess.parteContraria || '-'} />
+                      <DetailField label="Polo" value={selectedProcess.polo || '-'} />
                       <DetailField label="Fase Processual" value={selectedProcess.faseProcessual} />
                       <DetailField label="Área de Atuação" value={selectedProcess.areaAtuacao} />
                       <DetailField label="Vara / Local" value={selectedProcess.localTramitacao || '-'} />
@@ -393,44 +393,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   )}
 
-                  {subTab === 'PARTES' && (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2">
-
-                      <section>
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Cliente / Contratante</h3>
-                        {(() => {
-                          const cli = clientes.find(c => c.id === selectedProcess.clienteId);
-                          if (!cli) return <p className="text-sm text-gray-400 italic">Cliente não encontrado.</p>;
-                          return (
-                            <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-6">
-                              <div className="w-20 h-20 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                <User className="w-10 h-10" />
-                              </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 flex-1">
-                                <DetailField label="Nome / Razão Social" value={cli.nome} />
-                                <DetailField label="CPF / CNPJ" value={cli.documento} />
-                                <DetailField label="E-mail" value={cli.email} />
-                                <DetailField label="Telefone" value={cli.telefone} />
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </section>
-
-                      <section>
-                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Adversário / Parte Contrária</h3>
-                        <div className="bg-rose-50/30 p-6 rounded-3xl border border-rose-100 flex items-center gap-6 text-rose-900">
-                          <div className="w-16 h-16 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center">
-                            <XCircle className="w-8 h-8" />
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-rose-400 mb-1">Nome da Parte Contrária</p>
-                            <p className="text-xl font-black">{selectedProcess.parteContraria || 'NÃO INFORMADO'}</p>
-                          </div>
-                        </div>
-                      </section>
-                    </div>
-                  )}
 
                   {subTab === 'TAREFAS' && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
