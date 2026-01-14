@@ -298,11 +298,11 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <div>
                     <div className="flex items-center gap-2 mb-0.5">
                       <span className="bg-orange-100 text-orange-700 text-[8px] font-black uppercase px-2 py-0.5 rounded tracking-widest">RECURSO - 2º GRAU</span>
-                      <h3 className="text-lg font-black text-gray-800 leading-tight">{rec.tipoRecurso}</h3>
+                      <h3 className="text-lg font-black text-gray-800 leading-tight">{rec.numeroRecurso}</h3>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold text-orange-600">{rec.numeroRecurso}</p>
+                        <p className="text-sm font-bold text-orange-600">{rec.tipoRecurso}</p>
                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Ref: {pai?.numeros[0]}</span>
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-bold text-gray-400">
