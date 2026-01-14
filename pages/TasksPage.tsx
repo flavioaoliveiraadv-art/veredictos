@@ -62,6 +62,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'PENDENTES' | 'REALIZADAS' | 'CANCELADAS'>('PENDENTES');
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isTaskTypeSelectionModalOpen, setIsTaskTypeSelectionModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [selectedPrazo, setSelectedPrazo] = useState<Prazo | null>(null);
@@ -256,7 +257,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
           <p className="text-gray-500 font-medium">Controle central de todas as atividades e prazos do escritório.</p>
         </div>
         <button
-          onClick={() => { setFormData(INITIAL_STATE); setIsVincularProcesso(false); setIsFormModalOpen(true); }}
+          onClick={() => setIsTaskTypeSelectionModalOpen(true)}
           className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-8 py-3 rounded-2xl flex items-center justify-center gap-2 font-black shadow-xl shadow-indigo-100 transition-all"
         >
           <Plus className="w-5 h-5" /> Nova Tarefa
@@ -353,6 +354,45 @@ const TasksPage: React.FC<TasksPageProps> = ({
         </div>
       </div>
 
+      {/* Modal de Seleção do Tipo de Tarefa */}
+      {isTaskTypeSelectionModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onClick={() => setIsTaskTypeSelectionModalOpen(false)}>
+          <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl animate-in zoom-in duration-300 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="p-8 text-center border-b border-gray-100">
+              <h2 className="text-2xl font-black text-gray-800 mb-2">Nova Tarefa</h2>
+              <p className="text-gray-500 font-medium">Selecione o tipo de atividade que deseja cadastrar</p>
+            </div>
+            <div className="p-8 grid grid-cols-2 md:grid-cols-3 gap-4">
+              {[
+                { tipo: TipoPrazo.PRAZO, label: 'Prazo', desc: 'Prazos processuais', icon: <FilePenLine className="w-6 h-6" />, color: 'bg-blue-50 text-blue-600 border-blue-100 hover:border-blue-400' },
+                { tipo: TipoPrazo.AUDIENCIA, label: 'Audiência', desc: 'Audiências judiciais', icon: <GavelWithBase className="w-6 h-6" />, color: 'bg-orange-50 text-orange-600 border-orange-100 hover:border-orange-400' },
+                { tipo: TipoPrazo.DILIGENCIA, label: 'Diligência', desc: 'Diligências externas', icon: <AlertTriangle className="w-6 h-6" />, color: 'bg-blue-50 text-blue-600 border-blue-100 hover:border-blue-400' },
+                { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas', icon: <Activity className="w-6 h-6" />, color: 'bg-gray-100 text-gray-700 border-gray-200 hover:border-gray-400' },
+                { tipo: TipoPrazo.REUNIAO, label: 'Reunião', desc: 'Reuniões e encontros', icon: <UsersIcon className="w-6 h-6" />, color: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-400' },
+                { tipo: TipoPrazo.ATENDIMENTO, label: 'Atendimento', desc: 'Atendimento ao cliente', icon: <MessageSquare className="w-6 h-6" />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:border-emerald-400' },
+              ].map(item => (
+                <button
+                  key={item.tipo}
+                  onClick={() => {
+                    setFormData({ ...INITIAL_STATE, tipo: item.tipo });
+                    setIsVincularProcesso(false);
+                    setIsTaskTypeSelectionModalOpen(false);
+                    setIsFormModalOpen(true);
+                  }}
+                  className={`p-5 rounded-3xl border-2 ${item.color} group transition-all text-left hover:shadow-lg hover:-translate-y-1`}
+                >
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${item.color.split(' ').slice(0, 2).join(' ')}`}>
+                    {item.icon}
+                  </div>
+                  <h3 className="text-sm font-black text-gray-800">{item.label}</h3>
+                  <p className="text-[10px] font-bold text-gray-400 mt-1">{item.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal de Cadastro */}
       {isFormModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4" onClick={() => setIsFormModalOpen(false)}>
@@ -370,7 +410,11 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   <FormSelect label="Tipo de Atividade" required value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value as TipoPrazo })}>
                     {Object.values(TipoPrazo).filter(t => t !== TipoPrazo.TAREFA).map(t => <option key={t} value={t}>{t}</option>)}
                   </FormSelect>
-                  <FormInput label="Responsável" required value={formData.responsavel} onChange={e => setFormData({ ...formData, responsavel: e.target.value })} />
+                  <FormSelect label="Advogado Responsável" required value={formData.responsavel} onChange={e => setFormData({ ...formData, responsavel: e.target.value })}>
+                    <option value="">Selecione...</option>
+                    <option value="Dr. Flávio Oliveira">Dr. Flávio Oliveira</option>
+                    <option value="Dr. Rodrigo Lins">Dr. Rodrigo Lins</option>
+                  </FormSelect>
                 </div>
 
                 <FormInput label="Descrição" required placeholder="Descreva a atividade" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value.toUpperCase() })} />
