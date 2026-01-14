@@ -141,4 +141,6 @@ export interface Financeiro {
   clienteId?: string;
   processoId?: string;
   tarefaVinculadaId?: string;
+  comprovante?: string; // Base64 do arquivo de comprovante
+  comprovanteNome?: string; // Nome original do arquivo
 }

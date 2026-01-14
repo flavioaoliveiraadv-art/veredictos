@@ -21,7 +21,10 @@ import {
   Clock,
   ChevronLeft,
   ArrowUpRight,
-  ArrowDownLeft
+  ArrowDownLeft,
+  Paperclip,
+  Download,
+  Upload
 } from 'lucide-react';
 import { Financeiro, StatusFinanceiro, Cliente, Processo, Prazo, HistoricoAlteracao } from '../types';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
@@ -49,6 +52,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isPaymentConfirmModalOpen, setIsPaymentConfirmModalOpen] = useState(false);
+  const [paymentReceipt, setPaymentReceipt] = useState<{ file: string; name: string } | null>(null);
 
   const [selectedEntry, setSelectedEntry] = useState<Financeiro | null>(null);
 
@@ -143,16 +148,57 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   };
 
   const handleMarkAsPaid = (entry: Financeiro) => {
+    setSelectedEntry(entry);
+    setPaymentReceipt(null);
+    setIsPaymentConfirmModalOpen(true);
+  };
+
+  const handleConfirmPayment = () => {
+    if (!selectedEntry) return;
     const today = getTodayBR();
     const updated: Financeiro = {
-      ...entry,
+      ...selectedEntry,
       status: StatusFinanceiro.PAGO,
-      dataPagamento: today
+      dataPagamento: today,
+      comprovante: paymentReceipt?.file,
+      comprovanteNome: paymentReceipt?.name
     };
-    setFinanceiro(prev => prev.map(f => f.id === entry.id ? updated : f));
-    saveHistory(entry.id, `Status alterado para Pago em ${today}.`);
+    setFinanceiro(prev => prev.map(f => f.id === selectedEntry.id ? updated : f));
+    saveHistory(selectedEntry.id, `Status alterado para Pago em ${today}.${paymentReceipt ? ' Comprovante anexado.' : ''}`);
+    setIsPaymentConfirmModalOpen(false);
     setIsDetailModalOpen(false);
     setSelectedEntry(null);
+    setPaymentReceipt(null);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Tipo de arquivo não permitido. Use PDF, JPG ou PNG.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPaymentReceipt({
+        file: reader.result as string,
+        name: file.name
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDownloadReceipt = (entry: Financeiro) => {
+    if (!entry.comprovante || !entry.comprovanteNome) return;
+    const link = document.createElement('a');
+    link.href = entry.comprovante;
+    link.download = entry.comprovanteNome;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const todayStr = getTodayBR();
@@ -525,6 +571,20 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     </p>
                   </div>
                 )}
+
+                {selectedEntry.comprovante && (
+                  <div className="col-span-2">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Comprovante Anexado</p>
+                    <button
+                      onClick={() => handleDownloadReceipt(selectedEntry)}
+                      className="flex items-center gap-2 px-4 py-3 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition-all"
+                    >
+                      <Paperclip className="w-4 h-4" />
+                      <span className="text-xs font-black truncate max-w-[200px]">{selectedEntry.comprovanteNome}</span>
+                      <Download className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               {selectedEntry.status !== StatusFinanceiro.PAGO && (
@@ -535,6 +595,73 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                   <CheckCircle className="w-5 h-5" /> Marcar como Pago
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação de Pagamento */}
+      {isPaymentConfirmModalOpen && selectedEntry && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 cursor-default" onClick={() => setIsPaymentConfirmModalOpen(false)}>
+          <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
+            <div className="p-8 text-center border-b border-gray-100">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8" />
+              </div>
+              <h2 className="text-xl font-black text-gray-800 mb-2">Confirmar Pagamento</h2>
+              <p className="text-gray-500 font-medium text-sm">Você está marcando este lançamento como pago.</p>
+            </div>
+
+            <div className="p-8 space-y-6">
+              <div className="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                <p className="text-xs font-black text-gray-800 mb-1">{selectedEntry.descricao}</p>
+                <p className="text-lg font-black text-gray-800">{formatCurrency(selectedEntry.valor)}</p>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Anexar Comprovante (Opcional)</p>
+                <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 transition-all">
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  {paymentReceipt ? (
+                    <div className="flex items-center gap-3">
+                      <Paperclip className="w-5 h-5 text-indigo-600" />
+                      <span className="text-sm font-black text-indigo-600 truncate max-w-[200px]">{paymentReceipt.name}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); setPaymentReceipt(null); }}
+                        className="text-rose-500 hover:text-rose-700"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-8 h-8 text-gray-300 mb-2" />
+                      <span className="text-xs font-black text-gray-400">Clique para anexar PDF, JPG ou PNG</span>
+                    </>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            <div className="p-8 border-t border-gray-100 flex gap-4">
+              <button
+                onClick={() => setIsPaymentConfirmModalOpen(false)}
+                className="flex-1 py-4 bg-white border border-gray-300 text-gray-500 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmPayment}
+                className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all"
+              >
+                Confirmar Pagamento
+              </button>
             </div>
           </div>
         </div>
