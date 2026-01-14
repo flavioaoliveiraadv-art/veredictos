@@ -106,6 +106,7 @@ export interface Prazo {
   processoId: string;
   clienteId: string;
   descricao: string;
+  observacao?: string; // Campo de observação livre
   dataVencimento: string; // Data Interna (dd/mm/aaaa)
   horaVencimento?: string; // Hora Interna (hh:mm)
   dataFatal?: string;      // Data Fatal (dd/mm/aaaa)

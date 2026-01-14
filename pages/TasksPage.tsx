@@ -73,6 +73,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
   const INITIAL_STATE: Partial<Prazo> = {
     tipo: TipoPrazo.PRAZO,
     descricao: '',
+    observacao: '',
     processoId: '',
     clienteId: '',
     dataVencimento: todayBR,
@@ -399,7 +400,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
           <div className="bg-white rounded-[40px] w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <div className="p-8 pb-6 border-b border-gray-100 flex items-center justify-between">
               <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
-                <CalendarIcon className="w-7 h-7 text-indigo-600" /> {formData.id ? 'Editar Atividade' : 'Nova Atividade'}
+                <CalendarIcon className="w-7 h-7 text-indigo-600" /> {formData.id ? 'Editar Tarefa' : 'Nova Tarefa'}
               </h2>
               <button onClick={() => setIsFormModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X className="w-8 h-8" /></button>
             </div>
@@ -407,7 +408,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
             <div className="flex-1 overflow-y-auto p-10 space-y-6 custom-scroll">
               <form id="taskForm" onSubmit={handleSave} className="space-y-6">
                 <div className="grid grid-cols-2 gap-6">
-                  <FormSelect label="Tipo de Atividade" required value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value as TipoPrazo })}>
+                  <FormSelect label="Tipo de Tarefa" required value={formData.tipo} onChange={e => setFormData({ ...formData, tipo: e.target.value as TipoPrazo })}>
                     {Object.values(TipoPrazo).filter(t => t !== TipoPrazo.TAREFA).map(t => <option key={t} value={t}>{t}</option>)}
                   </FormSelect>
                   <FormSelect label="Advogado Responsável" required value={formData.responsavel} onChange={e => setFormData({ ...formData, responsavel: e.target.value })}>
@@ -417,7 +418,18 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   </FormSelect>
                 </div>
 
-                <FormInput label="Descrição" required placeholder="Descreva a atividade" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value.toUpperCase() })} />
+                <FormInput label="Descrição" required placeholder="Descreva a tarefa" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value.toUpperCase() })} />
+
+                <div className="space-y-2">
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Observação</label>
+                  <textarea
+                    placeholder="Observações adicionais (opcional)"
+                    value={formData.observacao || ''}
+                    onChange={e => setFormData({ ...formData, observacao: e.target.value })}
+                    rows={3}
+                    className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm resize-none"
+                  />
+                </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <FormSelect label="Cliente" value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
@@ -453,7 +465,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
                 ) : (
                   <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center gap-3">
                     <FileMinus className="w-5 h-5 text-amber-500" />
-                    <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">Atividade Administrativa / Sem Processo Vinculado</p>
+                    <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">Tarefa Administrativa / Sem Processo Vinculado</p>
                   </div>
                 )}
 
@@ -485,7 +497,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
                 <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 transition-all">
                   <input type="checkbox" checked={formData.critico} onChange={e => setFormData({ ...formData, critico: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-indigo-600" />
-                  <span className="text-xs font-black text-gray-700 uppercase tracking-widest">Marcar como Atividade Urgente</span>
+                  <span className="text-xs font-black text-gray-700 uppercase tracking-widest">Marcar como Tarefa Urgente</span>
                 </label>
               </form>
             </div>
@@ -515,8 +527,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => setIsHistoryModalOpen(true)} className="p-3 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all" title="Ver Histórico"><History className="w-6 h-6" /></button>
-                  <button onClick={() => { setFormData(selectedPrazo); setIsFormModalOpen(true); setIsDetailModalOpen(false); }} className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-2xl transition-all" title="Editar Atividade"><Edit className="w-6 h-6" /></button>
-                  <button onClick={() => handleDelete(selectedPrazo.id)} className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all" title="Excluir Atividade"><Trash2 className="w-6 h-6" /></button>
+                  <button onClick={() => { setFormData(selectedPrazo); setIsFormModalOpen(true); setIsDetailModalOpen(false); }} className="p-3 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-2xl transition-all" title="Editar Tarefa"><Edit className="w-6 h-6" /></button>
+                  <button onClick={() => handleDelete(selectedPrazo.id)} className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all" title="Excluir Tarefa"><Trash2 className="w-6 h-6" /></button>
                   <button onClick={() => setIsDetailModalOpen(false)} className="p-3 text-gray-400 hover:text-gray-800 rounded-2xl transition-all ml-4" title="Fechar"><X className="w-8 h-8" /></button>
                 </div>
               </div>
@@ -534,6 +546,13 @@ const TasksPage: React.FC<TasksPageProps> = ({
                       icon={selectedPrazo.processoId ? <Scale className="w-4 h-4" /> : <FileMinus className="w-4 h-4 text-gray-300" />}
                     />
                   </div>
+
+                  {selectedPrazo.observacao && (
+                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Observação</p>
+                      <p className="text-sm font-bold text-gray-700">{selectedPrazo.observacao}</p>
+                    </div>
+                  )}
 
                   {!selectedPrazo.concluido && !selectedPrazo.cancelado ? (
                     <div className="flex gap-4 pt-6 border-t border-gray-100">
