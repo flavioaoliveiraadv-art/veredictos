@@ -66,13 +66,13 @@ export interface Recurso {
 }
 
 export enum TipoAndamento {
-  INTIMACAO = 'Intimação',
+  DECISAO_INTERLOCUTORIA = 'Decisão interlocutória',
   DESPACHO = 'Despacho',
-  DECISAO_INTERLOCUTORIA = 'Decisão Interlocutória',
   SENTENCA = 'Sentença',
   ACORDAO = 'Acórdão',
-  CERTIDAO = 'Certidão',
-  JUNTADA = 'Juntada'
+  DECISAO_MONOCRATICA = 'Decisão monocrática',
+  ALVARA = 'Alvará',
+  CERTIDAO = 'Certidão'
 }
 
 export enum ProvidenciaAndamento {

@@ -72,7 +72,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   const [isAndamentoModalOpen, setIsAndamentoModalOpen] = useState(false);
   const [andamentoFormData, setAndamentoFormData] = useState<Partial<Andamento>>({
     data: getTodayBR(),
-    tipo: TipoAndamento.INTIMACAO,
+    tipo: TipoAndamento.DESPACHO,
     conteudo: '',
     geraPrazo: false,
     providencia: ProvidenciaAndamento.CIENCIA
@@ -459,7 +459,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         </h3>
                         <button
                           onClick={() => {
-                            setAndamentoFormData({ data: getTodayBR(), tipo: TipoAndamento.INTIMACAO, conteudo: '', geraPrazo: false, providencia: ProvidenciaAndamento.CIENCIA });
+                            setAndamentoFormData({ data: getTodayBR(), tipo: TipoAndamento.DESPACHO, conteudo: '', geraPrazo: false, providencia: ProvidenciaAndamento.CIENCIA });
                             setIsAndamentoModalOpen(true);
                           }}
                           className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-2"
