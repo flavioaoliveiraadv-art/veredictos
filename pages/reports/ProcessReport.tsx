@@ -235,6 +235,8 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                     displayContent = `[SENTENÇA] ${and.sentenca.resultado} (${and.sentenca.instancia})\nResumo: ${and.sentenca.resumoDecisao || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria) {
                     displayContent = `[DECISÃO INTERLOCUTÓRIA] ${and.decisaoInterlocutoria.resultado} (${and.decisaoInterlocutoria.instancia})\nResumo: ${and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}`;
+                } else if (and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica) {
+                    displayContent = `[DECISÃO MONOCRÁTICA] ${and.decisaoMonocratica.resultado} (${and.decisaoMonocratica.instancia})\nRelator: ${and.decisaoMonocratica.relator}\nResumo: ${and.decisaoMonocratica.resumoDecisao || and.conteudo}`;
                 }
                 return [
                     and.data,
@@ -558,6 +560,16 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                             <p><b>Publicação:</b> {and.decisaoInterlocutoria.dataPublicacao}</p>
                                                         </div>
                                                         <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}</p>
+                                                    </div>
+                                                ) : and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica ? (
+                                                    <div className="space-y-3">
+                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                            <p><b>Relator:</b> {and.decisaoMonocratica.relator}</p>
+                                                            <p><b>Resultado:</b> {and.decisaoMonocratica.resultado}</p>
+                                                            <p><b>Prolação:</b> {and.decisaoMonocratica.dataProlacao}</p>
+                                                            <p><b>Publicação:</b> {and.decisaoMonocratica.dataPublicacao}</p>
+                                                        </div>
+                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.decisaoMonocratica.resumoDecisao || and.conteudo}</p>
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>

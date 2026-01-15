@@ -129,6 +129,27 @@ export interface DecisaoInterlocutoriaData {
   gerarPrazoTarefaAdm: boolean;
 }
 
+export interface DecisaoMonocraticaData {
+  recursoAnalisado: string;
+  tribunal: string;
+  orgaoJulgador: 'Câmara' | 'Turma';
+  relator: string;
+  parteRecorrente: string;
+  instancia: '1º grau' | '2º grau' | 'Tribunal Superior';
+  numeroJulgamento: string;
+  dataProlacao: string;
+  dataPublicacao: string;
+  resultado: 'Provido' | 'Parcialmente provido' | 'Negado provimento/seguimento' | 'Não conhecido';
+  efeitoPratico: 'Mantida a decisão recorrida' | 'Reformada a decisão' | 'Extinção do recurso';
+  resumoDecisao: string;
+  observacoesEstrategicas: string;
+  honorarios: string;
+  custas: number;
+  multa: number;
+  gratuidadeJustica: 'Sim' | 'Não';
+  gerarPrazoTarefaAdm: boolean;
+}
+
 export interface Andamento {
   id: string;
   data: string;
@@ -140,6 +161,7 @@ export interface Andamento {
   sentenca?: SentencaData;
   acordao?: AcordaoData;
   decisaoInterlocutoria?: DecisaoInterlocutoriaData;
+  decisaoMonocratica?: DecisaoMonocraticaData;
 }
 
 export interface Processo {

@@ -621,6 +621,41 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                         <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
                                       </div>
                                     </div>
+                                  ) : and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica ? (
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resultado</p>
+                                          <p className={`text-[11px] font-bold ${and.decisaoMonocratica.resultado.includes('Provido') ? 'text-emerald-500' : and.decisaoMonocratica.resultado.includes('Negado') ? 'text-rose-500' : 'text-amber-600'}`}>
+                                            {and.decisaoMonocratica.resultado.toUpperCase()}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Relator</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoMonocratica.relator || 'N/C'}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Prolação</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoMonocratica.dataProlacao}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Publicação</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoMonocratica.dataPublicacao}</p>
+                                        </div>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo da Decisão</p>
+                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.decisaoMonocratica.resumoDecisao || and.conteudo}</p>
+                                      </div>
+
+                                      <div className="flex flex-wrap gap-3 pt-2">
+                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.decisaoMonocratica.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.decisaoMonocratica.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
+                                        {and.decisaoMonocratica.efeitoPratico && (
+                                          <span className="text-[9px] font-black px-3 py-1.5 rounded-xl border bg-indigo-50 text-indigo-600 border-indigo-100 uppercase uppercase">{and.decisaoMonocratica.efeitoPratico}</span>
+                                        )}
+                                      </div>
+                                    </div>
                                   ) : (
                                     <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
                                   )}
@@ -952,6 +987,27 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           dataPublicacao: getTodayBR(),
                           resumoObjetivo: '',
                           resultado: 'Deferido',
+                          gerarPrazoTarefaAdm: false
+                        };
+                      } else if (tipo === TipoAndamento.DECISAO_MONOCRATICA) {
+                        initialData.decisaoMonocratica = {
+                          recursoAnalisado: '',
+                          tribunal: '',
+                          orgaoJulgador: 'Câmara',
+                          relator: '',
+                          parteRecorrente: '',
+                          instancia: '1º grau',
+                          numeroJulgamento: '',
+                          dataProlacao: getTodayBR(),
+                          dataPublicacao: getTodayBR(),
+                          resultado: 'Provido',
+                          efeitoPratico: 'Mantida a decisão recorrida',
+                          resumoDecisao: '',
+                          observacoesEstrategicas: '',
+                          honorarios: '',
+                          custas: 0,
+                          multa: 0,
+                          gratuidadeJustica: 'Não',
                           gerarPrazoTarefaAdm: false
                         };
                       }
@@ -1460,79 +1516,230 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   )}
 
-                  {andamentoFormData.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && andamentoFormData.decisaoInterlocutoria && (
+                  {andamentoFormData.tipo === TipoAndamento.DECISAO_MONOCRATICA && andamentoFormData.decisaoMonocratica && (
                     <div className="space-y-8 animate-in slide-in-from-top-4 duration-500">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <FormSelect
-                          label="Instância"
-                          value={andamentoFormData.decisaoInterlocutoria.instancia}
-                          onChange={(e: any) => setAndamentoFormData({
-                            ...andamentoFormData,
-                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, instancia: e.target.value }
-                          })}
-                        >
-                          <option value="1º grau">1º grau</option>
-                          <option value="2º grau">2º grau</option>
-                          <option value="Tribunal Superior">Tribunal Superior</option>
-                        </FormSelect>
-                        <FormSelect
-                          label="Resultado"
-                          value={andamentoFormData.decisaoInterlocutoria.resultado}
-                          onChange={(e: any) => setAndamentoFormData({
-                            ...andamentoFormData,
-                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, resultado: e.target.value }
-                          })}
-                        >
-                          <option value="Deferido">Deferido</option>
-                          <option value="Parcialmente Deferido">Parcialmente Deferido</option>
-                          <option value="Indeferido">Indeferido</option>
-                        </FormSelect>
+                      {/* Identificação do Julgamento */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Identificação do Julgamento</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <FormInput
+                            label="Recurso analisado"
+                            placeholder="Ex: Agravo de Instrumento"
+                            value={andamentoFormData.decisaoMonocratica.recursoAnalisado}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, recursoAnalisado: e.target.value }
+                            })}
+                          />
+                          <FormInput
+                            label="Tribunal"
+                            placeholder="Ex: TJSP"
+                            value={andamentoFormData.decisaoMonocratica.tribunal}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, tribunal: e.target.value }
+                            })}
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                          <FormSelect
+                            label="Órgão julgador"
+                            value={andamentoFormData.decisaoMonocratica.orgaoJulgador}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, orgaoJulgador: e.target.value as 'Câmara' | 'Turma' }
+                            })}
+                          >
+                            <option value="Câmara">Câmara</option>
+                            <option value="Turma">Turma</option>
+                          </FormSelect>
+                          <FormInput
+                            label="Relator"
+                            placeholder="Nome do relator"
+                            value={andamentoFormData.decisaoMonocratica.relator}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, relator: e.target.value }
+                            })}
+                          />
+                          <FormInput
+                            label="Parte recorrente"
+                            placeholder="Nome da parte"
+                            value={andamentoFormData.decisaoMonocratica.parteRecorrente}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, parteRecorrente: e.target.value }
+                            })}
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <FormSelect
+                            label="Instância"
+                            value={andamentoFormData.decisaoMonocratica.instancia}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, instancia: e.target.value as any }
+                            })}
+                          >
+                            <option value="1º grau">1º grau</option>
+                            <option value="2º grau">2º grau</option>
+                            <option value="Tribunal Superior">Tribunal Superior</option>
+                          </FormSelect>
+                          <FormInput
+                            label="Número do julgamento"
+                            placeholder="Nº da decisão/voto"
+                            value={andamentoFormData.decisaoMonocratica.numeroJulgamento}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, numeroJulgamento: e.target.value }
+                            })}
+                          />
+                        </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <FormInput
-                          label="Data da Prolação"
-                          type="date"
-                          value={toISODate(andamentoFormData.decisaoInterlocutoria.dataProlacao)}
-                          onChange={(e: any) => setAndamentoFormData({
-                            ...andamentoFormData,
-                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataProlacao: toBRDate(e.target.value) }
-                          })}
-                        />
-                        <FormInput
-                          label="Data da Publicação"
-                          type="date"
-                          value={toISODate(andamentoFormData.decisaoInterlocutoria.dataPublicacao)}
-                          onChange={(e: any) => setAndamentoFormData({
-                            ...andamentoFormData,
-                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataPublicacao: toBRDate(e.target.value) }
-                          })}
-                        />
+                      {/* Datas */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Datas</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <FormInput
+                            label="Data da Prolação"
+                            type="date"
+                            value={toISODate(andamentoFormData.decisaoMonocratica.dataProlacao)}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, dataProlacao: toBRDate(e.target.value) }
+                            })}
+                          />
+                          <FormInput
+                            label="Data da Publicação"
+                            type="date"
+                            value={toISODate(andamentoFormData.decisaoMonocratica.dataPublicacao)}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, dataPublicacao: toBRDate(e.target.value) }
+                            })}
+                          />
+                        </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Resumo Objetivo</label>
-                        <textarea
-                          placeholder="Digite o resumo da decisão..."
-                          className="w-full p-6 bg-gray-50 border-gray-100 rounded-[30px] text-sm font-medium text-gray-600 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all min-h-[120px] resize-none"
-                          value={andamentoFormData.decisaoInterlocutoria.resumoObjetivo}
-                          onChange={(e: any) => setAndamentoFormData({
-                            ...andamentoFormData,
-                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, resumoObjetivo: e.target.value }
-                          })}
-                        />
+                      {/* Resultado e Efeito */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Resultado e Efeito</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <FormSelect
+                            label="Resultado"
+                            value={andamentoFormData.decisaoMonocratica.resultado}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, resultado: e.target.value as any }
+                            })}
+                          >
+                            <option value="Provido">Provido</option>
+                            <option value="Parcialmente provido">Parcialmente provido</option>
+                            <option value="Negado provimento/seguimento">Negado provimento/seguimento</option>
+                            <option value="Não conhecido">Não conhecido</option>
+                          </FormSelect>
+                          <FormSelect
+                            label="Efeito prático"
+                            value={andamentoFormData.decisaoMonocratica.efeitoPratico}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, efeitoPratico: e.target.value as any }
+                            })}
+                          >
+                            <option value="Mantida a decisão recorrida">Mantida a decisão recorrida</option>
+                            <option value="Reformada a decisão">Reformada a decisão</option>
+                            <option value="Extinção do recurso">Extinção do recurso</option>
+                          </FormSelect>
+                        </div>
                       </div>
 
+                      {/* Conteúdo Jurídico */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Conteúdo Jurídico</h4>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Resumo da Decisão</label>
+                            <textarea
+                              placeholder="Digite o resumo da decisão..."
+                              className="w-full p-6 bg-gray-50 border-gray-100 rounded-[30px] text-sm font-medium text-gray-600 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all min-h-[120px] resize-none"
+                              value={andamentoFormData.decisaoMonocratica.resumoDecisao}
+                              onChange={(e: any) => setAndamentoFormData({
+                                ...andamentoFormData,
+                                decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, resumoDecisao: e.target.value }
+                              })}
+                            />
+                          </div>
+                          <FormInput
+                            label="Observações estratégicas"
+                            placeholder="Notas internas..."
+                            value={andamentoFormData.decisaoMonocratica.observacoesEstrategicas}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, observacoesEstrategicas: e.target.value }
+                            })}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Aspectos Econômicos */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Aspectos Econômicos</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <FormInput
+                            label="Fixação/Majoração de Honorários"
+                            placeholder="Valor ou descrição"
+                            value={andamentoFormData.decisaoMonocratica.honorarios}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, honorarios: e.target.value }
+                            })}
+                          />
+                          <FormSelect
+                            label="Gratuidade de Justiça?"
+                            value={andamentoFormData.decisaoMonocratica.gratuidadeJustica}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, gratuidadeJustica: e.target.value as 'Sim' | 'Não' }
+                            })}
+                          >
+                            <option value="Não">Não</option>
+                            <option value="Sim">Sim</option>
+                          </FormSelect>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <FormInput
+                            label="Custas"
+                            placeholder="R$ 0,00"
+                            value={formatCurrency(andamentoFormData.decisaoMonocratica.custas || 0)}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, custas: parseCurrency(e.target.value) }
+                            })}
+                          />
+                          <FormInput
+                            label="Multa"
+                            placeholder="R$ 0,00"
+                            value={formatCurrency(andamentoFormData.decisaoMonocratica.multa || 0)}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, multa: parseCurrency(e.target.value) }
+                            })}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Providências Administrativas */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 mt-8">
                         <FormSelect
                           label="Gerar prazo/tarefa administrativa?"
-                          value={andamentoFormData.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                          value={andamentoFormData.decisaoMonocratica.gerarPrazoTarefaAdm ? 'S' : 'N'}
                           onChange={(e: any) => {
                             const val = e.target.value === 'S';
                             setAndamentoFormData({
                               ...andamentoFormData,
                               geraPrazo: val,
-                              decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, gerarPrazoTarefaAdm: val }
+                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, gerarPrazoTarefaAdm: val }
                             });
                           }}
                         >
@@ -1543,7 +1750,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   )}
 
-                  {!([TipoAndamento.SENTENCA, TipoAndamento.ACORDAO, TipoAndamento.DECISAO_INTERLOCUTORIA].includes(andamentoFormData.tipo as TipoAndamento)) && (
+                  {!([TipoAndamento.SENTENCA, TipoAndamento.ACORDAO, TipoAndamento.DECISAO_INTERLOCUTORIA, TipoAndamento.DECISAO_MONOCRATICA].includes(andamentoFormData.tipo as TipoAndamento)) && (
                     <div className="space-y-4 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
                       <div className="flex items-center justify-between">
                         <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Classificação Estratégica</h4>
