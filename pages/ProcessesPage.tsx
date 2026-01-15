@@ -1001,9 +1001,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           valorCondenacao: 0,
                           obrigacaoFazerNaoFazer: false,
                           resumoDecisao: '',
-                          honorariosPercentual: 0,
-                          honorariosValorFixo: 0,
-                          custas: 0,
+                          honorariosAdvocaticios: '',
+                          custas: '',
                           gratuidadeJustica: false,
                           gerarPrazoTarefaAdm: false
                         };
@@ -1286,36 +1285,26 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         </FormSelect>
                       </div>
 
-                      {/* Aspectos Acessórios */}
+                      {/* Honorários e Custas */}
                       <div className="space-y-4">
                         <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Honorários e Custas</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <FormInput
-                            label="Honorários (%)"
-                            placeholder="%"
-                            type="number"
-                            value={andamentoFormData.sentenca.honorariosPercentual}
+                            label="Honorários Advocatícios"
+                            placeholder="Ex: R$ 5.000,00 ou 10% sobre o valor da condenação"
+                            value={andamentoFormData.sentenca.honorariosAdvocaticios || ''}
                             onChange={(e: any) => setAndamentoFormData({
                               ...andamentoFormData,
-                              sentenca: { ...andamentoFormData.sentenca!, honorariosPercentual: Number(e.target.value) }
+                              sentenca: { ...andamentoFormData.sentenca!, honorariosAdvocaticios: e.target.value }
                             })}
                           />
                           <FormInput
-                            label="Honorários (R$)"
-                            placeholder="R$ 0,00"
-                            value={formatCurrency(andamentoFormData.sentenca.honorariosValorFixo || 0)}
+                            label="Custas"
+                            placeholder="Ex: R$ 500,00 ou Isenção por gratuidade"
+                            value={andamentoFormData.sentenca.custas || ''}
                             onChange={(e: any) => setAndamentoFormData({
                               ...andamentoFormData,
-                              sentenca: { ...andamentoFormData.sentenca!, honorariosValorFixo: parseCurrency(e.target.value) }
-                            })}
-                          />
-                          <FormInput
-                            label="Custas Judiciais"
-                            placeholder="R$ 0,00"
-                            value={formatCurrency(andamentoFormData.sentenca.custas || 0)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              sentenca: { ...andamentoFormData.sentenca!, custas: parseCurrency(e.target.value) }
+                              sentenca: { ...andamentoFormData.sentenca!, custas: e.target.value }
                             })}
                           />
                         </div>
@@ -1346,7 +1335,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         />
                       </div>
 
-                      {/* Providências Administrativas */}
+                      {/* Providências Administrativas - Último campo do formulário */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
                         <FormSelect
                           label="Gerar prazo/tarefa administrativa?"

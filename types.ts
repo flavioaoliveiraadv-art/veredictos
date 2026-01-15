@@ -93,9 +93,12 @@ export interface SentencaData {
   valorCondenacao?: number;
   obrigacaoFazerNaoFazer: boolean;
   resumoDecisao: string;
+  // Campos unificados de texto livre
+  honorariosAdvocaticios?: string;
+  custas?: string;
+  // Campos legados (mantidos para compatibilidade)
   honorariosPercentual?: number;
   honorariosValorFixo?: number;
-  custas?: number;
   gratuidadeJustica: boolean;
   gerarPrazoTarefaAdm: boolean;
 }
