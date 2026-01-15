@@ -1516,6 +1516,89 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   )}
 
+                  {andamentoFormData.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && andamentoFormData.decisaoInterlocutoria && (
+                    <div className="space-y-8 animate-in slide-in-from-top-4 duration-500">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormSelect
+                          label="Instância"
+                          value={andamentoFormData.decisaoInterlocutoria.instancia}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, instancia: e.target.value as any }
+                          })}
+                        >
+                          <option value="1º grau">1º grau</option>
+                          <option value="2º grau">2º grau</option>
+                          <option value="Tribunal Superior">Tribunal Superior</option>
+                        </FormSelect>
+                        <FormSelect
+                          label="Resultado"
+                          value={andamentoFormData.decisaoInterlocutoria.resultado}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, resultado: e.target.value as any }
+                          })}
+                        >
+                          <option value="Deferido">Deferido</option>
+                          <option value="Parcialmente Deferido">Parcialmente Deferido</option>
+                          <option value="Indeferido">Indeferido</option>
+                        </FormSelect>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormInput
+                          label="Data da Prolação"
+                          type="date"
+                          value={toISODate(andamentoFormData.decisaoInterlocutoria.dataProlacao)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataProlacao: toBRDate(e.target.value) }
+                          })}
+                        />
+                        <FormInput
+                          label="Data da Publicação"
+                          type="date"
+                          value={toISODate(andamentoFormData.decisaoInterlocutoria.dataPublicacao)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataPublicacao: toBRDate(e.target.value) }
+                          })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Resumo Objetivo</label>
+                        <textarea
+                          placeholder="Digite o resumo da decisão..."
+                          className="w-full p-6 bg-gray-50 border-gray-100 rounded-[30px] text-sm font-medium text-gray-600 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all min-h-[120px] resize-none"
+                          value={andamentoFormData.decisaoInterlocutoria.resumoObjetivo}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, resumoObjetivo: e.target.value }
+                          })}
+                        />
+                      </div>
+
+                      <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 mt-8">
+                        <FormSelect
+                          label="Gerar prazo/tarefa administrativa?"
+                          value={andamentoFormData.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                          onChange={(e: any) => {
+                            const val = e.target.value === 'S';
+                            setAndamentoFormData({
+                              ...andamentoFormData,
+                              geraPrazo: val,
+                              decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, gerarPrazoTarefaAdm: val }
+                            });
+                          }}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
+                      </div>
+                    </div>
+                  )}
+
                   {andamentoFormData.tipo === TipoAndamento.DECISAO_MONOCRATICA && andamentoFormData.decisaoMonocratica && (
                     <div className="space-y-8 animate-in slide-in-from-top-4 duration-500">
                       {/* Identificação do Julgamento */}
