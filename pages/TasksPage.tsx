@@ -27,6 +27,7 @@ import {
   FilePenLine,
   Users as UsersIcon
 } from 'lucide-react';
+import { FormInput, FormSelect, FormTextArea } from '../components/FormComponents';
 import {
   Prazo,
   Processo,
@@ -420,16 +421,12 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
                 <FormInput label="Descrição" required placeholder="Descreva a tarefa" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value.toUpperCase() })} />
 
-                <div className="space-y-2">
-                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Observação</label>
-                  <textarea
-                    placeholder="Observações adicionais (opcional)"
-                    value={formData.observacao || ''}
-                    onChange={e => setFormData({ ...formData, observacao: e.target.value })}
-                    rows={3}
-                    className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm resize-none"
-                  />
-                </div>
+                <FormTextArea
+                  label="Observação"
+                  placeholder="Observações adicionais (opcional)"
+                  value={formData.observacao || ''}
+                  onChange={e => setFormData({ ...formData, observacao: e.target.value })}
+                />
 
                 <div className="grid grid-cols-2 gap-6">
                   <FormSelect label="Cliente" value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
@@ -638,20 +635,6 @@ const DetailItem = ({ label, value, icon }: any) => (
       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
       <p className="text-sm font-black text-gray-800">{value}</p>
     </div>
-  </div>
-);
-
-const FormInput = ({ label, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <input {...props} className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 font-bold text-sm outline-none focus:border-indigo-500" />
-  </div>
-);
-
-const FormSelect = ({ label, children, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <select {...props} className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 font-bold text-sm outline-none focus:border-indigo-500 appearance-none">{children}</select>
   </div>
 );
 

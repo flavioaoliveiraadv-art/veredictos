@@ -8,6 +8,7 @@ import {
 import {
   Cliente, Processo, Financeiro, HistoricoAlteracao, StatusProcesso
 } from '../types';
+import { FormInput, FormSelect } from '../components/FormComponents';
 
 interface ClientsPageProps {
   clientes: Cliente[];
@@ -445,8 +446,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                     <div className="space-y-3">
                       {(formData.processosIds || []).map((pid, idx) => (
                         <div key={idx} className="flex gap-2">
-                          <select
-                            className="flex-1 px-5 py-2.5 bg-white rounded-2xl border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-sm transition-all"
+                          <FormSelect
+                            className="flex-1"
                             value={pid}
                             onChange={e => updateProcessId(idx, e.target.value)}
                           >
@@ -454,7 +455,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                             {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => (
                               <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>
                             ))}
-                          </select>
+                          </FormSelect>
                           {idx > 0 && (
                             <button type="button" onClick={() => removeProcessField(idx)} className="text-red-400 hover:text-red-600 p-2 transition-colors">
                               <MinusCircle className="w-6 h-6" />
@@ -554,16 +555,6 @@ const DetailField = ({ label, value, className = "" }: { label: string, value: s
   <div>
     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
     <p className={`text-sm font-black text-gray-800 ${className}`}>{value}</p>
-  </div>
-);
-
-const FormInput = ({ label, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1 ml-1">{label}</label>
-    <input
-      {...props}
-      className="w-full px-5 py-2.5 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none font-bold text-sm transition-all"
-    />
   </div>
 );
 

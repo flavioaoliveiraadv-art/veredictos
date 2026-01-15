@@ -166,6 +166,15 @@ export interface CertidaoData {
   gerarTarefaAdministrativa: boolean;
 }
 
+export interface DespachoData {
+  instancia: '1º grau' | '2º grau' | 'Tribunal Superior';
+  dataProlacao: string;
+  dataPublicacao: string;
+  tipoDespacho: 'Ordinatório ou Mero Expediente' | 'Determinação de diligência' | 'Intimação para manifestação';
+  resumoObjetivo: string;
+  gerarPrazoTarefaAdm: boolean;
+}
+
 export interface Andamento {
   id: string;
   data: string;
@@ -180,6 +189,7 @@ export interface Andamento {
   decisaoMonocratica?: DecisaoMonocraticaData;
   alvara?: AlvaraData;
   certidao?: CertidaoData;
+  despacho?: DespachoData;
 }
 
 export interface Processo {

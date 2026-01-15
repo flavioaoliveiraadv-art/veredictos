@@ -26,6 +26,7 @@ import {
   FilePenLine,
   Users as UsersIcon
 } from 'lucide-react';
+import { FormInput, FormSelect } from '../components/FormComponents';
 import {
   Prazo,
   Processo,
@@ -542,29 +543,6 @@ const DetailItem = ({ label, value, icon }: any) => (
       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
       <p className="text-sm font-black text-gray-800">{value}</p>
     </div>
-  </div>
-);
-
-const FormInput = ({ label, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <input
-      {...props}
-      className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm"
-    />
-  </div>
-);
-
-const FormSelect = ({ label, children, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <select
-      {...props}
-      className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm appearance-none"
-      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1.25rem center', backgroundSize: '1rem' }}
-    >
-      {children}
-    </select>
   </div>
 );
 

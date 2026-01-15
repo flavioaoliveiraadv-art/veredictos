@@ -242,6 +242,8 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                     displayContent = `[ALVARÁ] ${and.alvara.tipoAlvara} - ${and.alvara.dataExpedicao}\nValor: ${and.alvara.valorAutorizado ? formatCurrency(and.alvara.valorAutorizado) : 'N/A'} (${and.alvara.origemValor || 'N/C'})\nResumo: ${and.alvara.resumoObjetivo || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.CERTIDAO && and.certidao) {
                     displayContent = `[CERTIDÃO] ${and.certidao.tipoCertidao} - ${and.certidao.dataPublicacao}\nResumo: ${and.certidao.resumoObjetivo || and.conteudo}`;
+                } else if (and.tipo === TipoAndamento.DESPACHO && and.despacho) {
+                    displayContent = `[DESPACHO] ${and.despacho.tipoDespacho} (${and.despacho.instancia})\nData Publicação: ${and.despacho.dataPublicacao}\nResumo: ${and.despacho.resumoObjetivo || and.conteudo}`;
                 }
                 return [
                     and.data,
@@ -301,7 +303,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                     <input
                         type="text"
                         placeholder="Buscar por número, cliente ou parte..."
-                        className="w-full pl-10 pr-4 py-2 rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
+                        className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 bg-white placeholder-slate-400 text-slate-800 focus:border-blue-500 focus:ring-blue-500 transition-all outline-none"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -593,6 +595,16 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                             <p><b>Publicação:</b> {and.certidao.dataPublicacao}</p>
                                                         </div>
                                                         <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.certidao.resumoObjetivo || and.conteudo}</p>
+                                                    </div>
+                                                ) : and.tipo === TipoAndamento.DESPACHO && and.despacho ? (
+                                                    <div className="space-y-3">
+                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                            <p><b>Tipo:</b> {and.despacho.tipoDespacho}</p>
+                                                            <p><b>Instância:</b> {and.despacho.instancia}</p>
+                                                            <p><b>Prolação:</b> {and.despacho.dataProlacao}</p>
+                                                            <p><b>Publicação:</b> {and.despacho.dataPublicacao}</p>
+                                                        </div>
+                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.despacho.resumoObjetivo || and.conteudo}</p>
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>

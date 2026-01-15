@@ -218,7 +218,7 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
                     <input
                         type="text"
                         placeholder="Buscar por nome ou documento..."
-                        className="w-full pl-10 pr-4 py-2 rounded-xl border-slate-200 focus:border-emerald-500 focus:ring-emerald-500"
+                        className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 bg-white placeholder-slate-400 text-slate-800 focus:border-emerald-500 focus:ring-emerald-500 transition-all outline-none"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />

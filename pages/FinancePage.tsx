@@ -27,6 +27,7 @@ import {
   Upload
 } from 'lucide-react';
 import { Financeiro, StatusFinanceiro, Cliente, Processo, Prazo, HistoricoAlteracao } from '../types';
+import { FormInput, FormSelect } from '../components/FormComponents';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
 
 interface FinancePageProps {
@@ -474,19 +475,16 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     <FormInput label="Parcela" placeholder="1/1" value={formData.parcela} onChange={e => setFormData({ ...formData, parcela: e.target.value })} />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Cliente / Fornecedor</label>
-                    <select
-                      disabled={!!formData.processoId && formData.processoId !== ''}
-                      value={formData.clienteId}
-                      onChange={e => setFormData({ ...formData, clienteId: e.target.value })}
-                      className={`w-full px-5 py-4 rounded-2xl border outline-none font-bold text-sm transition-all shadow-sm appearance-none ${!!formData.processoId && formData.processoId !== '' ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white border-gray-300 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100'}`}
-                      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1.25rem center', backgroundSize: '1rem' }}
-                    >
-                      <option value="">Nome do cliente ou fornecedor</option>
-                      {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                    </select>
-                  </div>
+                  <FormSelect
+                    label="Cliente / Fornecedor"
+                    disabled={!!formData.processoId && formData.processoId !== ''}
+                    value={formData.clienteId}
+                    onChange={e => setFormData({ ...formData, clienteId: e.target.value })}
+                    className={!!formData.processoId && formData.processoId !== '' ? 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed' : ''}
+                  >
+                    <option value="">Nome do cliente ou fornecedor</option>
+                    {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                  </FormSelect>
 
                   <FormInput label="Vencimento" type="date" required value={toISODate(formData.dataVencimento || '')} onChange={e => setFormData({ ...formData, dataVencimento: toBRDate(e.target.value) })} />
 
@@ -712,28 +710,5 @@ const StatCard: React.FC<{ label: string, value: string, icon: React.ReactNode, 
     </div>
   );
 };
-
-const FormInput = ({ label, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <input
-      {...props}
-      className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 placeholder-gray-400 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm"
-    />
-  </div>
-);
-
-const FormSelect = ({ label, children, ...props }: any) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{label}</label>
-    <select
-      {...props}
-      className="w-full px-5 py-4 bg-white rounded-2xl border border-gray-300 text-gray-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none font-bold text-sm transition-all shadow-sm appearance-none"
-      style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1.25rem center', backgroundSize: '1rem' }}
-    >
-      {children}
-    </select>
-  </div>
-);
 
 export default FinancePage;
