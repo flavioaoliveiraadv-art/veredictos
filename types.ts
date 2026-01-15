@@ -82,6 +82,24 @@ export enum ProvidenciaAndamento {
   CIENCIA = 'Apenas ciência'
 }
 
+export interface SentencaData {
+  dataProlacao: string;
+  dataPublicacao: string;
+  instancia: '1º grau' | '2º grau' | 'Tribunal Superior';
+  magistrado: string;
+  resultado: 'Procedente' | 'Parcialmente procedente' | 'Improcedente' | 'Extinção sem resolução do mérito';
+  decisaoFavoravel: boolean;
+  condenacao: boolean;
+  valorCondenacao?: number;
+  obrigacaoFazerNaoFazer: boolean;
+  resumoDecisao: string;
+  honorariosPercentual?: number;
+  honorariosValorFixo?: number;
+  custas?: number;
+  gratuidadeJustica: boolean;
+  gerarPrazoTarefaAdm: boolean;
+}
+
 export interface Andamento {
   id: string;
   data: string;
@@ -90,6 +108,7 @@ export interface Andamento {
   geraPrazo: boolean;
   providencia: ProvidenciaAndamento;
   prazoId?: string;
+  sentenca?: SentencaData;
 }
 
 export interface Processo {

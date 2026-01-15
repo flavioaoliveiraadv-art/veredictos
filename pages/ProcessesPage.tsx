@@ -494,7 +494,55 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                   </div>
                                 </div>
                                 <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
-                                  <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                  {and.tipo === TipoAndamento.SENTENCA && and.sentenca ? (
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resultado</p>
+                                          <p className="text-[11px] font-bold text-indigo-600">{and.sentenca.resultado}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Instância</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.sentenca.instancia}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Favorável</p>
+                                          <p className={`text-[11px] font-bold ${and.sentenca.decisaoFavoravel ? 'text-emerald-600' : 'text-rose-500'}`}>{and.sentenca.decisaoFavoravel ? 'SIM' : 'NÃO'}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Gratuidade</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.sentenca.gratuidadeJustica ? 'SIM' : 'NÃO'}</p>
+                                        </div>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo da Decisão</p>
+                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.sentenca.resumoDecisao || and.conteudo}</p>
+                                      </div>
+
+                                      <div className="flex flex-wrap gap-3 pt-2">
+                                        {and.sentenca.condenacao && (
+                                          <span className="bg-rose-50 text-rose-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-rose-100">CONDENAÇÃO: {formatCurrency(and.sentenca.valorCondenacao || 0)}</span>
+                                        )}
+                                        {(and.sentenca.honorariosPercentual || and.sentenca.honorariosValorFixo) ? (
+                                          <span className="bg-emerald-50 text-emerald-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-emerald-100">
+                                            HONORÁRIOS: {and.sentenca.honorariosPercentual ? `${and.sentenca.honorariosPercentual}%` : formatCurrency(and.sentenca.honorariosValorFixo || 0)}
+                                          </span>
+                                        ) : null}
+                                        {and.sentenca.custas ? (
+                                          <span className="bg-gray-100 text-gray-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-gray-200">CUSTAS: {formatCurrency(and.sentenca.custas)}</span>
+                                        ) : null}
+                                      </div>
+
+                                      <div className="pt-2 flex items-center gap-4 text-[9px] font-bold text-gray-300 uppercase tracking-tighter">
+                                        <span>Magistrado: {and.sentenca.magistrado || 'N/C'}</span>
+                                        <span>Prolação: {and.sentenca.dataProlacao}</span>
+                                        <span>Publicação: {and.sentenca.dataPublicacao}</span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -777,7 +825,27 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <button
                     key={tipo}
                     onClick={() => {
-                      setAndamentoFormData({ ...andamentoFormData, tipo });
+                      const initialData: Partial<Andamento> = { ...andamentoFormData, tipo };
+                      if (tipo === TipoAndamento.SENTENCA) {
+                        initialData.sentenca = {
+                          dataProlacao: getTodayBR(),
+                          dataPublicacao: getTodayBR(),
+                          instancia: '1º grau',
+                          magistrado: '',
+                          resultado: 'Procedente',
+                          decisaoFavoravel: true,
+                          condenacao: false,
+                          valorCondenacao: 0,
+                          obrigacaoFazerNaoFazer: false,
+                          resumoDecisao: '',
+                          honorariosPercentual: 0,
+                          honorariosValorFixo: 0,
+                          custas: 0,
+                          gratuidadeJustica: false,
+                          gerarPrazoTarefaAdm: false
+                        };
+                      }
+                      setAndamentoFormData(initialData);
                       setIsAndamentoTypeModalOpen(false);
                       setIsAndamentoModalOpen(true);
                     }}
@@ -873,28 +941,223 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   </div>
 
-                  <div className="space-y-4 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Classificação Estratégica</h4>
+                  {andamentoFormData.tipo === TipoAndamento.SENTENCA && andamentoFormData.sentenca && (
+                    <div className="space-y-8 p-8 bg-gray-50 rounded-[40px] border border-gray-100 animate-in fade-in slide-in-from-top-4 duration-500">
+                      <div className="border-b border-gray-200 pb-4 mb-6">
+                        <h3 className="text-sm font-black text-gray-800 uppercase tracking-widest flex items-center gap-2">
+                          <Scale className="w-5 h-5 text-indigo-600" /> Detalhes da Sentença
+                        </h3>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormInput
+                          label="Data da Prolação"
+                          type="date"
+                          required
+                          value={toISODate(andamentoFormData.sentenca.dataProlacao)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, dataProlacao: toBRDate(e.target.value) }
+                          })}
+                        />
+                        <FormInput
+                          label="Data da Publicação"
+                          type="date"
+                          required
+                          value={toISODate(andamentoFormData.sentenca.dataPublicacao)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, dataPublicacao: toBRDate(e.target.value) }
+                          })}
+                        />
+                        <FormSelect
+                          label="Instância"
+                          required
+                          value={andamentoFormData.sentenca.instancia}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, instancia: e.target.value as any }
+                          })}
+                        >
+                          <option value="1º grau">1º grau</option>
+                          <option value="2º grau">2º grau</option>
+                          <option value="Tribunal Superior">Tribunal Superior</option>
+                        </FormSelect>
+                        <FormInput
+                          label="Magistrado"
+                          placeholder="Nome do Juiz/Desembargador"
+                          value={andamentoFormData.sentenca.magistrado}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, magistrado: e.target.value }
+                          })}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <FormSelect
+                          label="Resultado"
+                          required
+                          value={andamentoFormData.sentenca.resultado}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, resultado: e.target.value as any }
+                          })}
+                        >
+                          <option value="Procedente">Procedente</option>
+                          <option value="Parcialmente procedente">Parcialmente procedente</option>
+                          <option value="Improcedente">Improcedente</option>
+                          <option value="Extinção sem resolução do mérito">Extinção sem resolução do mérito</option>
+                        </FormSelect>
+                        <FormSelect
+                          label="Decisão Favorável?"
+                          value={andamentoFormData.sentenca.decisaoFavoravel ? 'S' : 'N'}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, decisaoFavoravel: e.target.value === 'S' }
+                          })}
+                        >
+                          <option value="S">Sim</option>
+                          <option value="N">Não</option>
+                        </FormSelect>
+                        <FormSelect
+                          label="Houve Condenação?"
+                          value={andamentoFormData.sentenca.condenacao ? 'S' : 'N'}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, condenacao: e.target.value === 'S' }
+                          })}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
+                      </div>
+
+                      {andamentoFormData.sentenca.condenacao && (
+                        <FormInput
+                          label="Valor da Condenação"
+                          placeholder="R$ 0,00"
+                          value={formatCurrency(andamentoFormData.sentenca.valorCondenacao || 0)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, valorCondenacao: parseCurrency(e.target.value) }
+                          })}
+                        />
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormSelect
+                          label="Obrigação de Fazer/Não Fazer?"
+                          value={andamentoFormData.sentenca.obrigacaoFazerNaoFazer ? 'S' : 'N'}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, obrigacaoFazerNaoFazer: e.target.value === 'S' }
+                          })}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
+                        <FormSelect
+                          label="Gratuidade de Justiça?"
+                          value={andamentoFormData.sentenca.gratuidadeJustica ? 'S' : 'N'}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, gratuidadeJustica: e.target.value === 'S' }
+                          })}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <FormInput
+                          label="Honorários (%)"
+                          placeholder="%"
+                          type="number"
+                          value={andamentoFormData.sentenca.honorariosPercentual}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, honorariosPercentual: Number(e.target.value) }
+                          })}
+                        />
+                        <FormInput
+                          label="Honorários (R$)"
+                          placeholder="R$ 0,00"
+                          value={formatCurrency(andamentoFormData.sentenca.honorariosValorFixo || 0)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, honorariosValorFixo: parseCurrency(e.target.value) }
+                          })}
+                        />
+                        <FormInput
+                          label="Custas Judiciais"
+                          placeholder="R$ 0,00"
+                          value={formatCurrency(andamentoFormData.sentenca.custas || 0)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, custas: parseCurrency(e.target.value) }
+                          })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Resumo da Decisão</label>
+                        <textarea
+                          className="w-full h-32 px-5 py-4 bg-white border border-gray-100 rounded-3xl font-medium text-sm outline-none focus:border-indigo-500 transition-all resize-none"
+                          placeholder="Resumo jurídico da sentença..."
+                          value={andamentoFormData.sentenca.resumoDecisao}
+                          onChange={(e) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            sentenca: { ...andamentoFormData.sentenca!, resumoDecisao: e.target.value }
+                          })}
+                        />
+                      </div>
+
+                      <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
+                        <FormSelect
+                          label="Gerar prazo/tarefa administrativa?"
+                          value={andamentoFormData.sentenca.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                          onChange={(e: any) => {
+                            const val = e.target.value === 'S';
+                            setAndamentoFormData({
+                              ...andamentoFormData,
+                              geraPrazo: val,
+                              sentenca: { ...andamentoFormData.sentenca!, gerarPrazoTarefaAdm: val }
+                            });
+                          }}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <FormSelect
-                        label="Gera Prazo?"
-                        value={andamentoFormData.geraPrazo ? 'S' : 'N'}
-                        onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, geraPrazo: e.target.value === 'S' })}
-                      >
-                        <option value="N">Não</option>
-                        <option value="S">Sim</option>
-                      </FormSelect>
-                      <FormSelect
-                        label="Tipo de Providência"
-                        value={andamentoFormData.providencia}
-                        onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, providencia: e.target.value as ProvidenciaAndamento })}
-                      >
-                        {Object.values(ProvidenciaAndamento).map(p => <option key={p} value={p}>{p}</option>)}
-                      </FormSelect>
+                  )}
+
+                  {andamentoFormData.tipo !== TipoAndamento.SENTENCA && (
+                    <div className="space-y-4 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Classificação Estratégica</h4>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormSelect
+                          label="Gera Prazo?"
+                          value={andamentoFormData.geraPrazo ? 'S' : 'N'}
+                          onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, geraPrazo: e.target.value === 'S' })}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
+                        <FormSelect
+                          label="Tipo de Providência"
+                          value={andamentoFormData.providencia}
+                          onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, providencia: e.target.value as ProvidenciaAndamento })}
+                        >
+                          {Object.values(ProvidenciaAndamento).map(p => <option key={p} value={p}>{p}</option>)}
+                        </FormSelect>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Conteúdo / Descrição</label>
