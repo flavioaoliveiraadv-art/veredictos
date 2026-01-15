@@ -40,3 +40,23 @@ export const FormTextArea = ({ label, error, ...props }: any) => (
         {error && <p className="text-[10px] font-bold text-red-500 ml-1 uppercase">{error}</p>}
     </div>
 );
+
+export const FormCheckbox = ({ label, checked, onChange, description, ...props }: any) => (
+    <label className="flex items-start gap-4 cursor-pointer group">
+        <div className="relative mt-0.5">
+            <input
+                type="checkbox"
+                checked={checked}
+                onChange={onChange}
+                className="sr-only peer"
+                {...props}
+            />
+            <div className="w-12 h-7 bg-gray-200 rounded-full peer-checked:bg-indigo-600 transition-all duration-300"></div>
+            <div className="absolute left-1 top-1 w-5 h-5 bg-white rounded-full shadow-sm peer-checked:translate-x-5 transition-all duration-300"></div>
+        </div>
+        <div className="flex-1">
+            <span className="text-sm font-bold text-gray-700 group-hover:text-indigo-600 transition-colors">{label}</span>
+            {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
+        </div>
+    </label>
+);

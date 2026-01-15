@@ -6,7 +6,7 @@ import {
   Filter, Calendar, Activity, RotateCcw, ArrowUpRight, Briefcase,
   User, DollarSign, CheckSquare, XCircle
 } from 'lucide-react';
-import { FormInput, FormSelect, FormTextArea } from '../components/FormComponents';
+import { FormInput, FormSelect, FormTextArea, FormCheckbox } from '../components/FormComponents';
 import {
   Processo, Cliente, StatusProcesso, Prazo, Recurso, HistoricoAlteracao,
   AreaAtuacao, FaseProcessual, Financeiro, TipoPrazo, Andamento, TipoAndamento, ProvidenciaAndamento
@@ -1335,23 +1335,21 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         />
                       </div>
 
-                      {/* Providências Administrativas - Último campo do formulário */}
+                      {/* Gerar Tarefa - Último campo do formulário */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
-                        <FormSelect
-                          label="Gerar prazo/tarefa administrativa?"
-                          value={andamentoFormData.sentenca.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                        <FormCheckbox
+                          label="Gerar tarefa"
+                          description="Ao marcar, você será redirecionado para criar uma tarefa vinculada a este andamento"
+                          checked={andamentoFormData.geraPrazo}
                           onChange={(e: any) => {
-                            const val = e.target.value === 'S';
+                            const val = e.target.checked;
                             setAndamentoFormData({
                               ...andamentoFormData,
                               geraPrazo: val,
                               sentenca: { ...andamentoFormData.sentenca!, gerarPrazoTarefaAdm: val }
                             });
                           }}
-                        >
-                          <option value="N">Não</option>
-                          <option value="S">Sim</option>
-                        </FormSelect>
+                        />
                       </div>
                     </div>
                   )}
@@ -1540,23 +1538,21 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         </div>
                       </div>
 
-                      {/* Providências Administrativas */}
+                      {/* Gerar Tarefa */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 mt-8">
-                        <FormSelect
-                          label="Gerar prazo/tarefa administrativa?"
-                          value={andamentoFormData.acordao.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                        <FormCheckbox
+                          label="Gerar tarefa"
+                          description="Ao marcar, você será redirecionado para criar uma tarefa vinculada a este andamento"
+                          checked={andamentoFormData.geraPrazo}
                           onChange={(e: any) => {
-                            const val = e.target.value === 'S';
+                            const val = e.target.checked;
                             setAndamentoFormData({
                               ...andamentoFormData,
                               geraPrazo: val,
                               acordao: { ...andamentoFormData.acordao!, gerarPrazoTarefaAdm: val }
                             });
                           }}
-                        >
-                          <option value="N">Não</option>
-                          <option value="S">Sim</option>
-                        </FormSelect>
+                        />
                       </div>
                     </div>
                   )}
@@ -1632,23 +1628,21 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         </div>
                       </div>
 
-                      {/* Providências Administrativas */}
+                      {/* Gerar Tarefa */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
-                        <FormSelect
-                          label="Gerar prazo/tarefa administrativa?"
-                          value={andamentoFormData.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                        <FormCheckbox
+                          label="Gerar tarefa"
+                          description="Ao marcar, você será redirecionado para criar uma tarefa vinculada a este andamento"
+                          checked={andamentoFormData.geraPrazo}
                           onChange={(e: any) => {
-                            const val = e.target.value === 'S';
+                            const val = e.target.checked;
                             setAndamentoFormData({
                               ...andamentoFormData,
                               geraPrazo: val,
                               decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, gerarPrazoTarefaAdm: val }
                             });
                           }}
-                        >
-                          <option value="N">Não</option>
-                          <option value="S">Sim</option>
-                        </FormSelect>
+                        />
                       </div>
                     </div>
                   )}
@@ -1866,23 +1860,21 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         </div>
                       </div>
 
-                      {/* Providências Administrativas */}
+                      {/* Gerar Tarefa */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
-                        <FormSelect
-                          label="Gerar prazo/tarefa administrativa?"
-                          value={andamentoFormData.decisaoMonocratica.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                        <FormCheckbox
+                          label="Gerar tarefa"
+                          description="Ao marcar, você será redirecionado para criar uma tarefa vinculada a este andamento"
+                          checked={andamentoFormData.geraPrazo}
                           onChange={(e: any) => {
-                            const val = e.target.value === 'S';
+                            const val = e.target.checked;
                             setAndamentoFormData({
                               ...andamentoFormData,
                               geraPrazo: val,
                               decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, gerarPrazoTarefaAdm: val }
                             });
                           }}
-                        >
-                          <option value="N">Não</option>
-                          <option value="S">Sim</option>
-                        </FormSelect>
+                        />
                       </div>
                     </div>
                   )}
@@ -1963,23 +1955,21 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         </div>
                       </div>
 
-                      {/* Providências Administrativas */}
+                      {/* Gerar Tarefa */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
-                        <FormSelect
-                          label="Gerar tarefa de acompanhamento?"
-                          value={andamentoFormData.alvara.gerarTarefaAcompanhamento ? 'S' : 'N'}
+                        <FormCheckbox
+                          label="Gerar tarefa"
+                          description="Ao marcar, você será redirecionado para criar uma tarefa vinculada a este andamento"
+                          checked={andamentoFormData.geraPrazo}
                           onChange={(e: any) => {
-                            const val = e.target.value === 'S';
+                            const val = e.target.checked;
                             setAndamentoFormData({
                               ...andamentoFormData,
                               geraPrazo: val,
                               alvara: { ...andamentoFormData.alvara!, gerarTarefaAcompanhamento: val }
                             });
                           }}
-                        >
-                          <option value="N">Não</option>
-                          <option value="S">Sim</option>
-                        </FormSelect>
+                        />
                       </div>
                     </div>
                   )}
@@ -2031,23 +2021,21 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         </div>
                       </div>
 
-                      {/* Providências Administrativas */}
+                      {/* Gerar Tarefa */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
-                        <FormSelect
-                          label="Gerar tarefa administrativa?"
-                          value={andamentoFormData.certidao.gerarTarefaAdministrativa ? 'S' : 'N'}
+                        <FormCheckbox
+                          label="Gerar tarefa"
+                          description="Ao marcar, você será redirecionado para criar uma tarefa vinculada a este andamento"
+                          checked={andamentoFormData.geraPrazo}
                           onChange={(e: any) => {
-                            const val = e.target.value === 'S';
+                            const val = e.target.checked;
                             setAndamentoFormData({
                               ...andamentoFormData,
                               geraPrazo: val,
                               certidao: { ...andamentoFormData.certidao!, gerarTarefaAdministrativa: val }
                             });
                           }}
-                        >
-                          <option value="N">Não</option>
-                          <option value="S">Sim</option>
-                        </FormSelect>
+                        />
                       </div>
                     </div>
                   )}
@@ -2127,23 +2115,21 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         />
                       </div>
 
-                      {/* Providências Administrativas */}
+                      {/* Gerar Tarefa */}
                       <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
-                        <FormSelect
-                          label="Gerar prazo/tarefa administrativa?"
-                          value={andamentoFormData.despacho.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                        <FormCheckbox
+                          label="Gerar tarefa"
+                          description="Ao marcar, você será redirecionado para criar uma tarefa vinculada a este andamento"
+                          checked={andamentoFormData.geraPrazo}
                           onChange={(e: any) => {
-                            const val = e.target.value === 'S';
+                            const val = e.target.checked;
                             setAndamentoFormData({
                               ...andamentoFormData,
                               geraPrazo: val,
                               despacho: { ...andamentoFormData.despacho!, gerarPrazoTarefaAdm: val }
                             });
                           }}
-                        >
-                          <option value="N">Não</option>
-                          <option value="S">Sim</option>
-                        </FormSelect>
+                        />
                       </div>
                     </div>
                   )}
@@ -2154,14 +2140,14 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Classificação Estratégica</h4>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <FormSelect
-                          label="Gera Prazo?"
-                          value={andamentoFormData.geraPrazo ? 'S' : 'N'}
-                          onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, geraPrazo: e.target.value === 'S' })}
-                        >
-                          <option value="N">Não</option>
-                          <option value="S">Sim</option>
-                        </FormSelect>
+                        <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                          <FormCheckbox
+                            label="Gerar tarefa"
+                            description="Ao marcar, você será redirecionado para criar uma tarefa"
+                            checked={andamentoFormData.geraPrazo}
+                            onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, geraPrazo: e.target.checked })}
+                          />
+                        </div>
                         <FormSelect
                           label="Tipo de Providência"
                           value={andamentoFormData.providencia}
