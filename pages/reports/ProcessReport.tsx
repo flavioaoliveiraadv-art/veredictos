@@ -240,6 +240,8 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                     displayContent = `[DECISÃO MONOCRÁTICA] ${and.decisaoMonocratica.resultado} (${and.decisaoMonocratica.instancia})\nRelator: ${and.decisaoMonocratica.relator}\nResumo: ${and.decisaoMonocratica.resumoDecisao || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.ALVARA && and.alvara) {
                     displayContent = `[ALVARÁ] ${and.alvara.tipoAlvara} - ${and.alvara.dataExpedicao}\nValor: ${and.alvara.valorAutorizado ? formatCurrency(and.alvara.valorAutorizado) : 'N/A'} (${and.alvara.origemValor || 'N/C'})\nResumo: ${and.alvara.resumoObjetivo || and.conteudo}`;
+                } else if (and.tipo === TipoAndamento.CERTIDAO && and.certidao) {
+                    displayContent = `[CERTIDÃO] ${and.certidao.tipoCertidao} - ${and.certidao.dataPublicacao}\nResumo: ${and.certidao.resumoObjetivo || and.conteudo}`;
                 }
                 return [
                     and.data,
@@ -583,6 +585,14 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                             <p><b>Origem:</b> {and.alvara.origemValor || 'N/C'}</p>
                                                         </div>
                                                         <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.alvara.resumoObjetivo || and.conteudo}</p>
+                                                    </div>
+                                                ) : and.tipo === TipoAndamento.CERTIDAO && and.certidao ? (
+                                                    <div className="space-y-3">
+                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                            <p><b>Tipo:</b> {and.certidao.tipoCertidao}</p>
+                                                            <p><b>Publicação:</b> {and.certidao.dataPublicacao}</p>
+                                                        </div>
+                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.certidao.resumoObjetivo || and.conteudo}</p>
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>

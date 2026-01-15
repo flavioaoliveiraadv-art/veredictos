@@ -159,6 +159,13 @@ export interface AlvaraData {
   gerarTarefaAcompanhamento: boolean;
 }
 
+export interface CertidaoData {
+  dataPublicacao: string;
+  tipoCertidao: 'Decurso de prazo' | 'Trânsito em julgado' | 'Outros';
+  resumoObjetivo: string;
+  gerarTarefaAdministrativa: boolean;
+}
+
 export interface Andamento {
   id: string;
   data: string;
@@ -172,6 +179,7 @@ export interface Andamento {
   decisaoInterlocutoria?: DecisaoInterlocutoriaData;
   decisaoMonocratica?: DecisaoMonocraticaData;
   alvara?: AlvaraData;
+  certidao?: CertidaoData;
 }
 
 export interface Processo {
