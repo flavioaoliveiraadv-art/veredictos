@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cliente, Processo, Prazo, Recurso, Financeiro } from '../../types';
+import { Cliente, Processo, Prazo, Recurso, Financeiro, TipoAndamento } from '../../types';
 import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, Users, Activity } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -229,11 +229,11 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         if (andamentosList.length > 0) {
             const andRows = [...andamentosList].reverse().map(and => {
                 let displayContent = and.conteudo;
-                if (and.tipo === 'Acórdão' && and.acordao) {
+                if (and.tipo === TipoAndamento.ACORDAO && and.acordao) {
                     displayContent = `[ACÓRDÃO] ${and.acordao.resultado} - ${and.acordao.tribunal} (${and.acordao.orgaoJulgador})\nRelator: ${and.acordao.relator}\nTese: ${and.acordao.resumoTeseVencedora || and.conteudo}`;
-                } else if (and.tipo === 'Sentença' && and.sentenca) {
+                } else if (and.tipo === TipoAndamento.SENTENCA && and.sentenca) {
                     displayContent = `[SENTENÇA] ${and.sentenca.resultado} (${and.sentenca.instancia})\nResumo: ${and.sentenca.resumoDecisao || and.conteudo}`;
-                } else if (and.tipo === 'Decisão Interlocutória' && and.decisaoInterlocutoria) {
+                } else if (and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria) {
                     displayContent = `[DECISÃO INTERLOCUTÓRIA] ${and.decisaoInterlocutoria.resultado} (${and.decisaoInterlocutoria.instancia})\nResumo: ${and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}`;
                 }
                 return [
@@ -549,7 +549,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                         </div>
                                                         <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.sentenca.resumoDecisao || and.conteudo}</p>
                                                     </div>
-                                                ) : and.tipo === 'Decisão Interlocutória' && and.decisaoInterlocutoria ? (
+                                                ) : and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria ? (
                                                     <div className="space-y-3">
                                                         <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
                                                             <p><b>Instância:</b> {and.decisaoInterlocutoria.instancia}</p>

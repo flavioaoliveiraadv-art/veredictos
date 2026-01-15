@@ -66,7 +66,6 @@ export interface Recurso {
 }
 
 export enum TipoAndamento {
-  DECISAO_INTERLOCUTORIA = 'Decisão interlocutória',
   DESPACHO = 'Despacho',
   SENTENCA = 'Sentença',
   ACORDAO = 'Acórdão',
