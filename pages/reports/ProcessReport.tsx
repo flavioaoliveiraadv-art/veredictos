@@ -237,6 +237,8 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                     displayContent = `[DECISÃO INTERLOCUTÓRIA] ${and.decisaoInterlocutoria.resultado} (${and.decisaoInterlocutoria.instancia})\nResumo: ${and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica) {
                     displayContent = `[DECISÃO MONOCRÁTICA] ${and.decisaoMonocratica.resultado} (${and.decisaoMonocratica.instancia})\nRelator: ${and.decisaoMonocratica.relator}\nResumo: ${and.decisaoMonocratica.resumoDecisao || and.conteudo}`;
+                } else if (and.tipo === TipoAndamento.ALVARA && and.alvara) {
+                    displayContent = `[ALVARÁ] ${and.alvara.tipoAlvara} - ${and.alvara.dataExpedicao}\nValor: ${and.alvara.valorAutorizado ? formatCurrency(and.alvara.valorAutorizado) : 'N/A'} (${and.alvara.origemValor || 'N/C'})\nResumo: ${and.alvara.resumoObjetivo || and.conteudo}`;
                 }
                 return [
                     and.data,
@@ -570,6 +572,16 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                             <p><b>Publicação:</b> {and.decisaoMonocratica.dataPublicacao}</p>
                                                         </div>
                                                         <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.decisaoMonocratica.resumoDecisao || and.conteudo}</p>
+                                                    </div>
+                                                ) : and.tipo === TipoAndamento.ALVARA && and.alvara ? (
+                                                    <div className="space-y-3">
+                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                            <p><b>Tipo:</b> {and.alvara.tipoAlvara}</p>
+                                                            <p><b>Expedição:</b> {and.alvara.dataExpedicao}</p>
+                                                            <p><b>Valor:</b> {and.alvara.valorAutorizado ? formatCurrency(and.alvara.valorAutorizado) : 'N/A'}</p>
+                                                            <p><b>Origem:</b> {and.alvara.origemValor || 'N/C'}</p>
+                                                        </div>
+                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.alvara.resumoObjetivo || and.conteudo}</p>
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>

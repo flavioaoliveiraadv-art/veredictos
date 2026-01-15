@@ -656,6 +656,42 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                         )}
                                       </div>
                                     </div>
+                                  ) : and.tipo === TipoAndamento.ALVARA && and.alvara ? (
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Tipo de Alvará</p>
+                                          <p className="text-[11px] font-bold text-indigo-600">
+                                            {and.alvara.tipoAlvara.toUpperCase()}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Expedição</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.alvara.dataExpedicao}</p>
+                                        </div>
+                                        {and.alvara.valorAutorizado !== undefined && (
+                                          <div>
+                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Valor Autorizado</p>
+                                            <p className="text-[11px] font-bold text-emerald-600">{formatCurrency(and.alvara.valorAutorizado)}</p>
+                                          </div>
+                                        )}
+                                        {and.alvara.origemValor && (
+                                          <div>
+                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Origem</p>
+                                            <p className="text-[11px] font-bold text-gray-700">{and.alvara.origemValor}</p>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo do Alvará</p>
+                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.alvara.resumoObjetivo || and.conteudo}</p>
+                                      </div>
+
+                                      <div className="flex flex-wrap gap-3 pt-2">
+                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.alvara.gerarTarefaAcompanhamento ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>TAREFA: {and.alvara.gerarTarefaAcompanhamento ? 'SIM' : 'NÃO'}</span>
+                                      </div>
+                                    </div>
                                   ) : (
                                     <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
                                   )}
@@ -1009,6 +1045,15 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           multa: 0,
                           gratuidadeJustica: 'Não',
                           gerarPrazoTarefaAdm: false
+                        };
+                      } else if (tipo === TipoAndamento.ALVARA) {
+                        initialData.alvara = {
+                          dataExpedicao: getTodayBR(),
+                          tipoAlvara: 'Levantamento de valores',
+                          resumoObjetivo: '',
+                          valorAutorizado: 0,
+                          origemValor: 'Depósito judicial',
+                          gerarTarefaAcompanhamento: false
                         };
                       }
                       setAndamentoFormData(initialData);
@@ -1833,7 +1878,104 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   )}
 
-                  {!([TipoAndamento.SENTENCA, TipoAndamento.ACORDAO, TipoAndamento.DECISAO_INTERLOCUTORIA, TipoAndamento.DECISAO_MONOCRATICA].includes(andamentoFormData.tipo as TipoAndamento)) && (
+                  {andamentoFormData.tipo === TipoAndamento.ALVARA && andamentoFormData.alvara && (
+                    <div className="space-y-8 animate-in slide-in-from-top-4 duration-500">
+                      {/* Identificação do Alvará */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Identificação do Alvará</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <FormInput
+                            label="Data da Expedição"
+                            type="date"
+                            value={toISODate(andamentoFormData.alvara.dataExpedicao)}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              alvara: { ...andamentoFormData.alvara!, dataExpedicao: toBRDate(e.target.value) }
+                            })}
+                          />
+                          <FormSelect
+                            label="Tipo de Alvará"
+                            value={andamentoFormData.alvara.tipoAlvara}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              alvara: { ...andamentoFormData.alvara!, tipoAlvara: e.target.value as any }
+                            })}
+                          >
+                            <option value="Levantamento de valores">Levantamento de valores</option>
+                            <option value="Liberação de bem">Liberação de bem</option>
+                            <option value="Outros">Outros</option>
+                          </FormSelect>
+                        </div>
+                      </div>
+
+                      {/* Conteúdo do Ato */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Conteúdo do Ato</h4>
+                        <div className="space-y-2">
+                          <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Resumo Objetivo</label>
+                          <textarea
+                            placeholder="Descreva o conteúdo do alvará..."
+                            className="w-full p-6 bg-gray-50 border-gray-100 rounded-[30px] text-sm font-medium text-gray-600 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all min-h-[100px] resize-none"
+                            value={andamentoFormData.alvara.resumoObjetivo}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              alvara: { ...andamentoFormData.alvara!, resumoObjetivo: e.target.value }
+                            })}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Aspectos Financeiros */}
+                      <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Aspectos Financeiros</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                          <FormSelect
+                            label="Origem do Valor"
+                            value={andamentoFormData.alvara.origemValor}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              alvara: { ...andamentoFormData.alvara!, origemValor: e.target.value as any }
+                            })}
+                          >
+                            <option value="Depósito judicial">Depósito judicial</option>
+                            <option value="RPV">RPV</option>
+                            <option value="Precatório">Precatório</option>
+                            <option value="Outros">Outros</option>
+                          </FormSelect>
+                          <FormInput
+                            label="Valor Autorizado"
+                            placeholder="R$ 0,00"
+                            value={formatCurrency(andamentoFormData.alvara.valorAutorizado || 0)}
+                            onChange={(e: any) => setAndamentoFormData({
+                              ...andamentoFormData,
+                              alvara: { ...andamentoFormData.alvara!, valorAutorizado: parseCurrency(e.target.value) }
+                            })}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Providências Administrativas */}
+                      <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 mt-8">
+                        <FormSelect
+                          label="Gerar tarefa de acompanhamento?"
+                          value={andamentoFormData.alvara.gerarTarefaAcompanhamento ? 'S' : 'N'}
+                          onChange={(e: any) => {
+                            const val = e.target.value === 'S';
+                            setAndamentoFormData({
+                              ...andamentoFormData,
+                              geraPrazo: val,
+                              alvara: { ...andamentoFormData.alvara!, gerarTarefaAcompanhamento: val }
+                            });
+                          }}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
+                      </div>
+                    </div>
+                  )}
+
+                  {!([TipoAndamento.SENTENCA, TipoAndamento.ACORDAO, TipoAndamento.DECISAO_INTERLOCUTORIA, TipoAndamento.DECISAO_MONOCRATICA, TipoAndamento.ALVARA].includes(andamentoFormData.tipo as TipoAndamento)) && (
                     <div className="space-y-4 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
                       <div className="flex items-center justify-between">
                         <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Classificação Estratégica</h4>

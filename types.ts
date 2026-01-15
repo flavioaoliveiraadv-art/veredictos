@@ -150,6 +150,15 @@ export interface DecisaoMonocraticaData {
   gerarPrazoTarefaAdm: boolean;
 }
 
+export interface AlvaraData {
+  dataExpedicao: string;
+  tipoAlvara: 'Levantamento de valores' | 'Liberação de bem' | 'Outros';
+  resumoObjetivo: string;
+  valorAutorizado?: number;
+  origemValor?: 'Depósito judicial' | 'RPV' | 'Precatório' | 'Outros';
+  gerarTarefaAcompanhamento: boolean;
+}
+
 export interface Andamento {
   id: string;
   data: string;
@@ -162,6 +171,7 @@ export interface Andamento {
   acordao?: AcordaoData;
   decisaoInterlocutoria?: DecisaoInterlocutoriaData;
   decisaoMonocratica?: DecisaoMonocraticaData;
+  alvara?: AlvaraData;
 }
 
 export interface Processo {
