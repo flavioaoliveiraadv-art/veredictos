@@ -117,6 +117,7 @@ export interface AcordaoData {
   custas: number;
   multa: number;
   gratuidadeJustica: boolean;
+  gerarPrazoTarefaAdm: boolean;
 }
 
 export interface Andamento {

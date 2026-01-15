@@ -908,7 +908,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           honorarios: '',
                           custas: 0,
                           multa: 0,
-                          gratuidadeJustica: false
+                          gratuidadeJustica: false,
+                          gerarPrazoTarefaAdm: false
                         };
                       }
                       setAndamentoFormData(initialData);
@@ -1394,6 +1395,24 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                             acordao: { ...andamentoFormData.acordao!, multa: parseCurrency(e.target.value) }
                           })}
                         />
+                      </div>
+
+                      <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 mt-8">
+                        <FormSelect
+                          label="Gerar prazo/tarefa administrativa?"
+                          value={andamentoFormData.acordao.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                          onChange={(e: any) => {
+                            const val = e.target.value === 'S';
+                            setAndamentoFormData({
+                              ...andamentoFormData,
+                              geraPrazo: val,
+                              acordao: { ...andamentoFormData.acordao!, gerarPrazoTarefaAdm: val }
+                            });
+                          }}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
                       </div>
                     </div>
                   )}
