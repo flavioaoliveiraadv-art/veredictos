@@ -1170,25 +1170,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     }
                   }}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <FormInput
-                      label="Data do Andamento"
-                      type="date"
-                      required
-                      value={toISODate(andamentoFormData.data || '')}
-                      onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, data: toBRDate(e.target.value) })}
-                    />
-                    <div className="space-y-2">
-                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Tipo de Andamento</label>
-                      <input
-                        type="text"
-                        readOnly
-                        className="w-full px-5 py-3.5 bg-gray-100 border border-gray-100 rounded-2xl font-bold text-gray-500 text-sm cursor-not-allowed"
-                        value={andamentoFormData.tipo}
-                      />
-                    </div>
-                  </div>
-
                   {andamentoFormData.tipo === TipoAndamento.SENTENCA && andamentoFormData.sentenca && (
                     <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
                       <div className="space-y-4">
