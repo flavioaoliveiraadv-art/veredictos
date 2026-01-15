@@ -70,6 +70,7 @@ export enum TipoAndamento {
   DESPACHO = 'Despacho',
   SENTENCA = 'Sentença',
   ACORDAO = 'Acórdão',
+  DECISAO_INTERLOCUTORIA = 'Decisão Interlocutória',
   DECISAO_MONOCRATICA = 'Decisão monocrática',
   ALVARA = 'Alvará',
   CERTIDAO = 'Certidão'
@@ -120,6 +121,15 @@ export interface AcordaoData {
   gerarPrazoTarefaAdm: boolean;
 }
 
+export interface DecisaoInterlocutoriaData {
+  instancia: '1º grau' | '2º grau' | 'Tribunal Superior';
+  dataProlacao: string;
+  dataPublicacao: string;
+  resumoObjetivo: string;
+  resultado: 'Deferido' | 'Parcialmente Deferido' | 'Indeferido';
+  gerarPrazoTarefaAdm: boolean;
+}
+
 export interface Andamento {
   id: string;
   data: string;
@@ -130,6 +140,7 @@ export interface Andamento {
   prazoId?: string;
   sentenca?: SentencaData;
   acordao?: AcordaoData;
+  decisaoInterlocutoria?: DecisaoInterlocutoriaData;
 }
 
 export interface Processo {

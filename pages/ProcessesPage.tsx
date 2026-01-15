@@ -589,6 +589,38 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                         <span>Publicação: {and.acordao.dataPublicacao}</span>
                                       </div>
                                     </div>
+                                  ) : and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria ? (
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resultado</p>
+                                          <p className={`text-[11px] font-bold ${and.decisaoInterlocutoria.resultado === 'Deferido' ? 'text-emerald-500' : and.decisaoInterlocutoria.resultado === 'Indeferido' ? 'text-rose-500' : 'text-amber-600'}`}>
+                                            {and.decisaoInterlocutoria.resultado.toUpperCase()}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Instância</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoInterlocutoria.instancia}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Prolação</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoInterlocutoria.dataProlacao}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Publicação</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoInterlocutoria.dataPublicacao}</p>
+                                        </div>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo da Decisão</p>
+                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}</p>
+                                      </div>
+
+                                      <div className="flex flex-wrap gap-3 pt-2">
+                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
+                                      </div>
+                                    </div>
                                   ) : (
                                     <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
                                   )}
@@ -911,6 +943,15 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           custas: 0,
                           multa: 0,
                           gratuidadeJustica: false,
+                          gerarPrazoTarefaAdm: false
+                        };
+                      } else if (tipo === TipoAndamento.DECISAO_INTERLOCUTORIA) {
+                        initialData.decisaoInterlocutoria = {
+                          instancia: '1º grau',
+                          dataProlacao: getTodayBR(),
+                          dataPublicacao: getTodayBR(),
+                          resumoObjetivo: '',
+                          resultado: 'Deferido',
                           gerarPrazoTarefaAdm: false
                         };
                       }
@@ -1419,7 +1460,90 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   )}
 
-                  {!([TipoAndamento.SENTENCA, TipoAndamento.ACORDAO].includes(andamentoFormData.tipo as TipoAndamento)) && (
+                  {andamentoFormData.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && andamentoFormData.decisaoInterlocutoria && (
+                    <div className="space-y-8 animate-in slide-in-from-top-4 duration-500">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormSelect
+                          label="Instância"
+                          value={andamentoFormData.decisaoInterlocutoria.instancia}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, instancia: e.target.value }
+                          })}
+                        >
+                          <option value="1º grau">1º grau</option>
+                          <option value="2º grau">2º grau</option>
+                          <option value="Tribunal Superior">Tribunal Superior</option>
+                        </FormSelect>
+                        <FormSelect
+                          label="Resultado"
+                          value={andamentoFormData.decisaoInterlocutoria.resultado}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, resultado: e.target.value }
+                          })}
+                        >
+                          <option value="Deferido">Deferido</option>
+                          <option value="Parcialmente Deferido">Parcialmente Deferido</option>
+                          <option value="Indeferido">Indeferido</option>
+                        </FormSelect>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <FormInput
+                          label="Data da Prolação"
+                          type="date"
+                          value={toISODate(andamentoFormData.decisaoInterlocutoria.dataProlacao)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataProlacao: toBRDate(e.target.value) }
+                          })}
+                        />
+                        <FormInput
+                          label="Data da Publicação"
+                          type="date"
+                          value={toISODate(andamentoFormData.decisaoInterlocutoria.dataPublicacao)}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataPublicacao: toBRDate(e.target.value) }
+                          })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Resumo Objetivo</label>
+                        <textarea
+                          placeholder="Digite o resumo da decisão..."
+                          className="w-full p-6 bg-gray-50 border-gray-100 rounded-[30px] text-sm font-medium text-gray-600 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all min-h-[120px] resize-none"
+                          value={andamentoFormData.decisaoInterlocutoria.resumoObjetivo}
+                          onChange={(e: any) => setAndamentoFormData({
+                            ...andamentoFormData,
+                            decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, resumoObjetivo: e.target.value }
+                          })}
+                        />
+                      </div>
+
+                      <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100 mt-8">
+                        <FormSelect
+                          label="Gerar prazo/tarefa administrativa?"
+                          value={andamentoFormData.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'S' : 'N'}
+                          onChange={(e: any) => {
+                            const val = e.target.value === 'S';
+                            setAndamentoFormData({
+                              ...andamentoFormData,
+                              geraPrazo: val,
+                              decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, gerarPrazoTarefaAdm: val }
+                            });
+                          }}
+                        >
+                          <option value="N">Não</option>
+                          <option value="S">Sim</option>
+                        </FormSelect>
+                      </div>
+                    </div>
+                  )}
+
+                  {!([TipoAndamento.SENTENCA, TipoAndamento.ACORDAO, TipoAndamento.DECISAO_INTERLOCUTORIA].includes(andamentoFormData.tipo as TipoAndamento)) && (
                     <div className="space-y-4 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
                       <div className="flex items-center justify-between">
                         <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Classificação Estratégica</h4>

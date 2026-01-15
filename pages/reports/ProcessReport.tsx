@@ -233,6 +233,8 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                     displayContent = `[ACÓRDÃO] ${and.acordao.resultado} - ${and.acordao.tribunal} (${and.acordao.orgaoJulgador})\nRelator: ${and.acordao.relator}\nTese: ${and.acordao.resumoTeseVencedora || and.conteudo}`;
                 } else if (and.tipo === 'Sentença' && and.sentenca) {
                     displayContent = `[SENTENÇA] ${and.sentenca.resultado} (${and.sentenca.instancia})\nResumo: ${and.sentenca.resumoDecisao || and.conteudo}`;
+                } else if (and.tipo === 'Decisão Interlocutória' && and.decisaoInterlocutoria) {
+                    displayContent = `[DECISÃO INTERLOCUTÓRIA] ${and.decisaoInterlocutoria.resultado} (${and.decisaoInterlocutoria.instancia})\nResumo: ${and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}`;
                 }
                 return [
                     and.data,
@@ -546,6 +548,16 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                             <p><b>Favorável:</b> {and.sentenca.decisaoFavoravel ? 'Sim' : 'Não'}</p>
                                                         </div>
                                                         <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.sentenca.resumoDecisao || and.conteudo}</p>
+                                                    </div>
+                                                ) : and.tipo === 'Decisão Interlocutória' && and.decisaoInterlocutoria ? (
+                                                    <div className="space-y-3">
+                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                            <p><b>Instância:</b> {and.decisaoInterlocutoria.instancia}</p>
+                                                            <p><b>Resultado:</b> {and.decisaoInterlocutoria.resultado}</p>
+                                                            <p><b>Prolação:</b> {and.decisaoInterlocutoria.dataProlacao}</p>
+                                                            <p><b>Publicação:</b> {and.decisaoInterlocutoria.dataPublicacao}</p>
+                                                        </div>
+                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}</p>
                                                     </div>
                                                 ) : (
                                                     <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
