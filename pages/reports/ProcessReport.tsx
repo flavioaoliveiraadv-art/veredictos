@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Cliente, Processo, Prazo, Recurso, Financeiro, TipoAndamento } from '../../types';
+import { formatCurrency } from '../../utils/formatters';
 import { Search, FileDown, X, Scale, Calendar, DollarSign, FileText, Gavel, Users, Activity } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
