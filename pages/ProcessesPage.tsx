@@ -532,6 +532,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                         {and.sentenca.custas ? (
                                           <span className="bg-gray-100 text-gray-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-gray-200">CUSTAS: {formatCurrency(and.sentenca.custas)}</span>
                                         ) : null}
+                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.sentenca.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.sentenca.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
                                       </div>
 
                                       <div className="pt-2 flex items-center gap-4 text-[9px] font-bold text-gray-300 uppercase tracking-tighter">
@@ -576,6 +577,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                         {and.acordao.multa ? (
                                           <span className="bg-rose-50 text-rose-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-rose-100">MULTA: {formatCurrency(and.acordao.multa)}</span>
                                         ) : null}
+                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.acordao.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.acordao.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
                                       </div>
 
                                       <div className="pt-2 grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-4 text-[9px] font-bold text-gray-300 uppercase tracking-tighter">

@@ -227,12 +227,20 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         const andamentosList = selectedProcesso.andamentos || [];
 
         if (andamentosList.length > 0) {
-            const andRows = [...andamentosList].reverse().map(and => [
-                and.data,
-                and.tipo,
-                and.conteudo,
-                and.geraPrazo ? 'Sim' : 'Não'
-            ]);
+            const andRows = [...andamentosList].reverse().map(and => {
+                let displayContent = and.conteudo;
+                if (and.tipo === 'Acórdão' && and.acordao) {
+                    displayContent = `[ACÓRDÃO] ${and.acordao.resultado} - ${and.acordao.tribunal} (${and.acordao.orgaoJulgador})\nRelator: ${and.acordao.relator}\nTese: ${and.acordao.resumoTeseVencedora || and.conteudo}`;
+                } else if (and.tipo === 'Sentença' && and.sentenca) {
+                    displayContent = `[SENTENÇA] ${and.sentenca.resultado} (${and.sentenca.instancia})\nResumo: ${and.sentenca.resumoDecisao || and.conteudo}`;
+                }
+                return [
+                    and.data,
+                    and.tipo,
+                    displayContent,
+                    and.geraPrazo ? 'Sim' : 'Não'
+                ];
+            });
 
             autoTable(doc, {
                 startY: yPos,
@@ -510,7 +518,38 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                                     </div>
                                                     {and.geraPrazo && <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded uppercase font-mono">Gera Prazo</span>}
                                                 </div>
-                                                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                                {and.tipo === 'Acórdão' && and.acordao ? (
+                                                    <div className="space-y-3">
+                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                            <p><b>Tribunal:</b> {and.acordao.tribunal}</p>
+                                                            <p><b>Órgão:</b> {and.acordao.orgaoJulgador}</p>
+                                                            <p><b>Relator:</b> {and.acordao.relator}</p>
+                                                            <p><b>Recurso:</b> {and.acordao.recursoJulgado}</p>
+                                                            <p><b>Resultado:</b> {and.acordao.resultado}</p>
+                                                            <p><b>Modificação:</b> {and.acordao.modificacaoDecisao ? 'Sim' : 'Não'}</p>
+                                                        </div>
+                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Tese:</b> {and.acordao.resumoTeseVencedora || and.conteudo}</p>
+                                                        {(and.acordao.honorarios || and.acordao.custas || and.acordao.multa) && (
+                                                            <div className="flex gap-2 mt-2">
+                                                                {and.acordao.honorarios && <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded">Honorários: {and.acordao.honorarios}</span>}
+                                                                {and.acordao.custas > 0 && <span className="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded">Custas: R$ {and.acordao.custas.toLocaleString('pt-BR')}</span>}
+                                                                {and.acordao.multa > 0 && <span className="text-[9px] font-bold bg-rose-50 text-rose-700 px-2 py-1 rounded">Multa: R$ {and.acordao.multa.toLocaleString('pt-BR')}</span>}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : and.tipo === 'Sentença' && and.sentenca ? (
+                                                    <div className="space-y-2">
+                                                        <div className="grid grid-cols-2 gap-2 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                            <p><b>Instância:</b> {and.sentenca.instancia}</p>
+                                                            <p><b>Magistrado:</b> {and.sentenca.magistrado}</p>
+                                                            <p><b>Resultado:</b> {and.sentenca.resultado}</p>
+                                                            <p><b>Favorável:</b> {and.sentenca.decisaoFavoravel ? 'Sim' : 'Não'}</p>
+                                                        </div>
+                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.sentenca.resumoDecisao || and.conteudo}</p>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                                )}
                                             </div>
                                         ))
                                     ) : (
