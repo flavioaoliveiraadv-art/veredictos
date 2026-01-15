@@ -97,6 +97,32 @@ const TasksPage: React.FC<TasksPageProps> = ({
     }
   }, [isFormModalOpen, formData.id]);
 
+  // Detectar parâmetros de navegação vindos de Andamentos
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('novatarefa=true')) {
+      const params = new URLSearchParams(hash.split('?')[1]);
+      const processoId = params.get('processoId') || '';
+      const clienteId = params.get('clienteId') || '';
+      const descricao = params.get('descricao') ? decodeURIComponent(params.get('descricao')!) : '';
+
+      // Pré-configurar dados do formulário
+      setFormData(prev => ({
+        ...prev,
+        processoId,
+        clienteId,
+        descricao
+      }));
+      setIsVincularProcesso(!!processoId);
+
+      // Abrir modal de seleção de tipo de tarefa
+      setIsTaskTypeSelectionModalOpen(true);
+
+      // Limpar parâmetros da URL para evitar reabrir o modal no refresh
+      window.location.hash = '#/tarefas';
+    }
+  }, []);
+
   const addHistorico = (idReferencia: string, descricao: string) => {
     const entry: HistoricoAlteracao = {
       id: `h-task-${Date.now()}`,

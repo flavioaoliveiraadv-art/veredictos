@@ -1152,20 +1152,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     setIsAndamentoModalOpen(false);
 
                     if (and.geraPrazo) {
-                      setPendingAndamentoId(and.id);
-                      setQuickPrazoData({
-                        descricao: `${and.providencia.toUpperCase()}: ${and.tipo}`,
-                        processoId: selectedProcess.id,
-                        clienteId: selectedProcess.clienteId,
-                        dataVencimento: getTodayBR(),
-                        tipo: TipoPrazo.PRAZO,
-                        responsavel: '',
-                        critico: true,
-                        concluido: false,
-                        cancelado: false,
-                        financeiroIds: []
-                      });
-                      setIsQuickPrazoModalOpen(true);
+                      // Navegar para página de Tarefas com parâmetros para abrir modal de seleção
+                      window.location.hash = `#/tarefas?novatarefa=true&processoId=${selectedProcess.id}&clienteId=${selectedProcess.clienteId}&descricao=${encodeURIComponent(`${and.providencia.toUpperCase()}: ${and.tipo}`)}`;
                     }
                   }}
                 >
