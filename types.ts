@@ -100,6 +100,25 @@ export interface SentencaData {
   gerarPrazoTarefaAdm: boolean;
 }
 
+export interface AcordaoData {
+  tribunal: string;
+  orgaoJulgador: string;
+  relator: string;
+  recursoJulgado: string;
+  parteRecorrente: string;
+  numeroJulgamento: string;
+  dataProlacao: string;
+  dataPublicacao: string;
+  resultado: 'Provido' | 'Parcialmente provido' | 'Negado provimento';
+  modificacaoDecisao: boolean;
+  resumoTeseVencedora: string;
+  observacoesEstrategicas: string;
+  honorarios: string;
+  custas: number;
+  multa: number;
+  gratuidadeJustica: boolean;
+}
+
 export interface Andamento {
   id: string;
   data: string;
@@ -109,6 +128,7 @@ export interface Andamento {
   providencia: ProvidenciaAndamento;
   prazoId?: string;
   sentenca?: SentencaData;
+  acordao?: AcordaoData;
 }
 
 export interface Processo {
