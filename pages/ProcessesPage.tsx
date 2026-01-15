@@ -69,6 +69,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   const [subTab, setSubTab] = useState<'DADOS' | 'PARTES' | 'TAREFAS' | 'ANDAMENTOS' | 'FINANCEIRO'>('DADOS');
 
   // Andamento States
+  const [isAndamentoTypeModalOpen, setIsAndamentoTypeModalOpen] = useState(false);
   const [isAndamentoModalOpen, setIsAndamentoModalOpen] = useState(false);
   const [andamentoFormData, setAndamentoFormData] = useState<Partial<Andamento>>({
     data: getTodayBR(),
@@ -460,7 +461,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         <button
                           onClick={() => {
                             setAndamentoFormData({ data: getTodayBR(), tipo: TipoAndamento.DESPACHO, conteudo: '', geraPrazo: false, providencia: ProvidenciaAndamento.CIENCIA });
-                            setIsAndamentoModalOpen(true);
+                            setIsAndamentoTypeModalOpen(true);
                           }}
                           className="bg-indigo-600 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center gap-2"
                         >
@@ -503,7 +504,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                             <Activity className="w-10 h-10 text-gray-200 mx-auto mb-4" />
                             <p className="text-sm text-gray-400 font-bold italic mb-4">Inicie o registro cronológico dos andamentos.</p>
                             <button
-                              onClick={() => setIsAndamentoModalOpen(true)}
+                              onClick={() => setIsAndamentoTypeModalOpen(true)}
                               className="text-indigo-600 text-xs font-black uppercase tracking-widest hover:underline"
                             >
                               Adicionar primeiro andamento
@@ -754,6 +755,50 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
           </div>
         )
       }
+      {/* MODAL SELEÇÃO DE TIPO DE ANDAMENTO */}
+      {isAndamentoTypeModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4" onClick={() => setIsAndamentoTypeModalOpen(false)}>
+          <div className="bg-white rounded-[40px] w-full max-w-xl shadow-2xl animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
+            <div className="p-10">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
+                    <Activity className="w-8 h-8 text-indigo-600" /> Tipo de Andamento
+                  </h2>
+                  <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Selecione o tipo jurídico obrigatório</p>
+                </div>
+                <button onClick={() => setIsAndamentoTypeModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                  <X className="w-8 h-8" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                {Object.values(TipoAndamento).map((tipo) => (
+                  <button
+                    key={tipo}
+                    onClick={() => {
+                      setAndamentoFormData({ ...andamentoFormData, tipo });
+                      setIsAndamentoTypeModalOpen(false);
+                      setIsAndamentoModalOpen(true);
+                    }}
+                    className="flex items-center justify-between p-5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 hover:border-indigo-200 rounded-2xl transition-all group"
+                  >
+                    <span className="text-sm font-black text-gray-700 group-hover:text-indigo-700">{tipo}</span>
+                    <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-indigo-400" />
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setIsAndamentoTypeModalOpen(false)}
+                className="w-full mt-8 py-4 bg-white border border-gray-200 text-gray-400 rounded-2xl font-black uppercase text-xs hover:bg-gray-50 transition-all"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* MODAL ANDAMENTOS */}
       {
         isAndamentoModalOpen && (
@@ -817,14 +862,15 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                       value={toISODate(andamentoFormData.data || '')}
                       onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, data: toBRDate(e.target.value) })}
                     />
-                    <FormSelect
-                      label="Tipo de Andamento"
-                      required
-                      value={andamentoFormData.tipo}
-                      onChange={(e: any) => setAndamentoFormData({ ...andamentoFormData, tipo: e.target.value as TipoAndamento })}
-                    >
-                      {Object.values(TipoAndamento).map(t => <option key={t} value={t}>{t}</option>)}
-                    </FormSelect>
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Tipo de Andamento</label>
+                      <input
+                        type="text"
+                        readOnly
+                        className="w-full px-5 py-3.5 bg-gray-100 border border-gray-100 rounded-2xl font-bold text-gray-500 text-sm cursor-not-allowed"
+                        value={andamentoFormData.tipo}
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-4 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
