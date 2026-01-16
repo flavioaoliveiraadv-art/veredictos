@@ -438,8 +438,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
               {[
                 { tipo: TipoPrazo.PRAZO, label: 'Prazo', desc: 'Prazos processuais', icon: <FilePenLine className="w-6 h-6" />, color: 'bg-blue-50 text-blue-600 border-blue-100 hover:border-blue-400' },
                 { tipo: TipoPrazo.AUDIENCIA, label: 'Audiência', desc: 'Audiências judiciais', icon: <GavelWithBase className="w-6 h-6" />, color: 'bg-orange-50 text-orange-600 border-orange-100 hover:border-orange-400' },
-                { tipo: TipoPrazo.DILIGENCIA, label: 'Diligência', desc: 'Diligências externas', icon: <AlertTriangle className="w-6 h-6" />, color: 'bg-blue-50 text-blue-600 border-blue-100 hover:border-blue-400' },
-                { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas', icon: <Activity className="w-6 h-6" />, color: 'bg-gray-100 text-gray-700 border-gray-200 hover:border-gray-400' },
+                { tipo: TipoPrazo.DILIGENCIA, label: 'Diligência', desc: 'Diligências externas', icon: <AlertTriangle className="w-6 h-6" />, color: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100 hover:border-fuchsia-400' },
+                { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas', icon: <Activity className="w-6 h-6" />, color: 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8] hover:border-[#a1887f]' },
                 { tipo: TipoPrazo.REUNIAO, label: 'Reunião', desc: 'Reuniões e encontros', icon: <UsersIcon className="w-6 h-6" />, color: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-400' },
                 { tipo: TipoPrazo.ATENDIMENTO, label: 'Atendimento', desc: 'Atendimento ao cliente', icon: <MessageSquare className="w-6 h-6" />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:border-emerald-400' },
               ].map(item => (
