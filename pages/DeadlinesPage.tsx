@@ -192,9 +192,9 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
       case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
       case TipoPrazo.TAREFA: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
       case TipoPrazo.REUNIAO: return 'bg-rose-50 text-rose-600 border-rose-100';
-      case TipoPrazo.DILIGENCIA: return 'bg-blue-50 text-blue-600 border-blue-100';
+      case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
       case TipoPrazo.ATENDIMENTO: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case TipoPrazo.ADMINISTRATIVO: return 'bg-gray-100 text-gray-900 border-gray-200';
+      case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
       default: return 'bg-gray-50 text-gray-600 border-gray-100';
     }
   };
@@ -205,9 +205,9 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
       case TipoPrazo.AUDIENCIA: return 'text-orange-600';
       case TipoPrazo.TAREFA: return 'text-emerald-600';
       case TipoPrazo.REUNIAO: return 'text-rose-600';
-      case TipoPrazo.DILIGENCIA: return 'text-blue-600';
+      case TipoPrazo.DILIGENCIA: return 'text-fuchsia-600';
       case TipoPrazo.ATENDIMENTO: return 'text-emerald-600';
-      case TipoPrazo.ADMINISTRATIVO: return 'text-gray-900';
+      case TipoPrazo.ADMINISTRATIVO: return 'text-[#5d4037]';
       default: return 'text-gray-400';
     }
   };
@@ -288,7 +288,7 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-black text-gray-800 truncate">{prazo.descricao}</h3>
+                      <h3 className={`font-black truncate ${getTypeTextColor(prazo.tipo)}`}>{prazo.descricao}</h3>
                       {prazo.critico && <span className="bg-rose-50 text-rose-500 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-rose-100">Crítico</span>}
                     </div>
                     <div className="flex items-center gap-4 text-[10px] font-bold text-gray-400">

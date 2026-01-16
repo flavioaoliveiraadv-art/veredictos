@@ -93,6 +93,8 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
     switch (event.tipo) {
       case TipoPrazo.PRAZO: return 'bg-rose-50 text-rose-600 border-rose-100';
       case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
+      case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
+      case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
       default: return 'bg-indigo-50 text-indigo-600 border-indigo-100';
     }
   };
