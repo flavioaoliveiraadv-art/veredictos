@@ -57,6 +57,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   const [paymentReceipt, setPaymentReceipt] = useState<{ file: string; name: string } | null>(null);
 
   const [selectedEntry, setSelectedEntry] = useState<Financeiro | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [formData, setFormData] = useState<Partial<Financeiro>>({
     tipo: 'Receita',
@@ -229,16 +230,39 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   }, [financeiro]);
 
   const filteredLançamentos = useMemo(() => {
+    let base = financeiro;
+
     if (activeSubTab === 'PENDENTES') {
-      return financeiro
-        .filter(f => f.status !== StatusFinanceiro.PAGO)
-        .sort((a, b) => compareDatesBR(a.dataVencimento, b.dataVencimento));
+      base = base.filter(f => f.status !== StatusFinanceiro.PAGO);
     } else {
-      return financeiro
-        .filter(f => f.status === StatusFinanceiro.PAGO)
-        .sort((a, b) => compareDatesBR(b.dataVencimento, a.dataVencimento));
+      base = base.filter(f => f.status === StatusFinanceiro.PAGO);
     }
-  }, [financeiro, activeSubTab]);
+
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      base = base.filter(f => {
+        const cli = clientes.find(c => c.id === f.clienteId);
+        const proc = processos.find(p => p.id === f.processoId);
+
+        return (
+          f.descricao.toLowerCase().includes(lowerSearch) ||
+          cli?.nome.toLowerCase().includes(lowerSearch) ||
+          (proc && (
+            proc.numeros.some(n => n.toLowerCase().includes(lowerSearch)) ||
+            proc.objeto.toLowerCase().includes(lowerSearch)
+          ))
+        );
+      });
+    }
+
+    return base.sort((a, b) => {
+      if (activeSubTab === 'PENDENTES') {
+        return compareDatesBR(a.dataVencimento, b.dataVencimento);
+      } else {
+        return compareDatesBR(b.dataVencimento, a.dataVencimento);
+      }
+    });
+  }, [financeiro, activeSubTab, searchTerm, clientes, processos]);
 
   const totalProjetado = useMemo(() => {
     const receitas = financeiro.filter(f => f.tipo === 'Receita').reduce((s, f) => s + f.valor, 0);
@@ -348,7 +372,13 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
               <div className="flex gap-4">
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input type="text" placeholder="Filtrar por descrição..." className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500" />
+                  <input
+                    type="text"
+                    placeholder="Filtrar lançamentos..."
+                    className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
               </div>
             </div>

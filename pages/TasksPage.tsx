@@ -143,10 +143,20 @@ const TasksPage: React.FC<TasksPageProps> = ({
     else if (activeTab === 'CANCELADAS') base = base.filter(p => p.cancelado);
 
     if (searchTerm) {
-      base = base.filter(p =>
-        p.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        clientes.find(c => c.id === p.clienteId)?.nome.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const lowerSearch = searchTerm.toLowerCase();
+      base = base.filter(p => {
+        const cli = clientes.find(c => c.id === p.clienteId);
+        const proc = processos.find(pr => pr.id === p.processoId);
+
+        return (
+          p.descricao.toLowerCase().includes(lowerSearch) ||
+          cli?.nome.toLowerCase().includes(lowerSearch) ||
+          (proc && (
+            proc.numeros.some(n => n.toLowerCase().includes(lowerSearch)) ||
+            proc.objeto.toLowerCase().includes(lowerSearch)
+          ))
+        );
+      });
     }
 
     return base.sort((a, b) => {
