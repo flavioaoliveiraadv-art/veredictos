@@ -84,6 +84,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
     responsavel: '',
     critico: false,
     financeiroIds: [],
+    andamentoId: '',
     concluido: false,
     cancelado: false
   };
@@ -134,6 +135,22 @@ const TasksPage: React.FC<TasksPageProps> = ({
   };
 
   const activeClientes = useMemo(() => clientes.filter(c => c.status === 'Ativo'), [clientes]);
+  const availableAndamentos = useMemo(() => {
+    if (!formData.processoId) return [];
+    const proc = processos.find(p => p.id === formData.processoId);
+    if (!proc || !proc.andamentos) return [];
+
+    return [...proc.andamentos].sort((a, b) => compareDatesBR(b.data, a.data));
+  }, [formData.processoId, processos]);
+
+  const getAndamentoResultado = (and: any) => {
+    if (and.sentenca) return and.sentenca.resultado;
+    if (and.acordao) return and.acordao.resultado;
+    if (and.decisaoInterlocutoria) return and.decisaoInterlocutoria.resultado;
+    if (and.decisaoMonocratica) return and.decisaoMonocratica.resultado;
+    return null;
+  };
+
   const activeProcessos = useMemo(() => {
     return [...processos]
       .filter(p => p.status === StatusProcesso.ATIVO)
@@ -185,6 +202,15 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validação de obrigatoriedade do andamento para Prazo e Audiência
+    if ((formData.tipo === TipoPrazo.PRAZO || formData.tipo === TipoPrazo.AUDIENCIA) && isVincularProcesso) {
+      if (!formData.andamentoId) {
+        alert(`O campo "Andamento vinculado" é obrigatório para tarefas do tipo ${formData.tipo}.`);
+        return;
+      }
+    }
+
     const id = formData.id || `p-${Date.now()}`;
 
     // Se não estiver vinculado, garantir que processoId seja vazio
@@ -509,6 +535,34 @@ const TasksPage: React.FC<TasksPageProps> = ({
                         );
                       })}
                     </FormSelect>
+
+                    {availableAndamentos.length > 0 && (
+                      <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
+                        <FormSelect
+                          label="Andamento Vinculado"
+                          required={(formData.tipo === TipoPrazo.PRAZO || formData.tipo === TipoPrazo.AUDIENCIA)}
+                          value={formData.andamentoId}
+                          onChange={e => setFormData({ ...formData, andamentoId: e.target.value })}
+                        >
+                          <option value="">Selecione o andamento correspondente...</option>
+                          {availableAndamentos.map(and => {
+                            const resultado = getAndamentoResultado(and);
+                            return (
+                              <option key={and.id} value={and.id}>
+                                {and.data} – {and.tipo}{resultado ? ` – ${resultado}` : ''}
+                              </option>
+                            );
+                          })}
+                        </FormSelect>
+                      </div>
+                    )}
+
+                    {isVincularProcesso && availableAndamentos.length === 0 && (
+                      <div className="mt-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 flex items-center gap-3">
+                        <AlertTriangle className="w-5 h-5 text-rose-500" />
+                        <p className="text-[10px] font-bold text-rose-700 uppercase tracking-widest">Este processo não possui andamentos cadastrados.</p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center gap-3">
@@ -593,6 +647,21 @@ const TasksPage: React.FC<TasksPageProps> = ({
                       value={processos.find(p => p.id === selectedPrazo.processoId)?.numeros[0] || 'Sem processo vinculado'}
                       icon={selectedPrazo.processoId ? <Scale className="w-4 h-4" /> : <FileMinus className="w-4 h-4 text-gray-300" />}
                     />
+                    {selectedPrazo.processoId && selectedPrazo.andamentoId && (
+                      <div className="col-span-2">
+                        <DetailItem
+                          label="Andamento Vinculado"
+                          value={(() => {
+                            const proc = processos.find(p => p.id === selectedPrazo.processoId);
+                            const and = proc?.andamentos?.find(a => a.id === selectedPrazo.andamentoId);
+                            if (!and) return 'Andamento não encontrado';
+                            const res = getAndamentoResultado(and);
+                            return `${and.data} – ${and.tipo}${res ? ` – ${res}` : ''}`;
+                          })()}
+                          icon={<Activity className="w-4 h-4" />}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {selectedPrazo.observacao && (

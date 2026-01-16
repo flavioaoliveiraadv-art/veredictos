@@ -253,6 +253,7 @@ export interface Prazo {
   justificativaCancelamento?: string;
   observacoesRealizacao?: string;
   financeiroIds: string[];
+  andamentoId?: string;
 }
 
 export enum StatusFinanceiro {
