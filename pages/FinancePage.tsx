@@ -467,7 +467,14 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
 
                   <FormSelect label="Número do Processo" value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
                     <option value="">Não relacionado a processo</option>
-                    {processos.map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
+                    {processos.map(p => {
+                      const cli = clientes.find(c => c.id === p.clienteId);
+                      return (
+                        <option key={p.id} value={p.id}>
+                          {p.numeros[0]} – {p.objeto} – {cli?.nome || 'Cliente não encontrado'}
+                        </option>
+                      );
+                    })}
                   </FormSelect>
 
                   <div className="grid grid-cols-2 gap-4">
