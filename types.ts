@@ -173,7 +173,7 @@ export interface DespachoData {
   instancia: '1º grau' | '2º grau' | 'Tribunal Superior';
   dataProlacao: string;
   dataPublicacao: string;
-  tipoDespacho: 'Ordinatório ou Mero Expediente' | 'Determinação de diligência' | 'Intimação para manifestação';
+  tipoDespacho: 'Ordinatório ou Mero Expediente' | 'Determinação de diligência' | 'Intimação' | 'Intimação para manifestação';
   resumoObjetivo: string;
   gerarPrazoTarefaAdm: boolean;
 }

@@ -2084,6 +2084,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         >
                           <option value="Ordinatório ou Mero Expediente">Ordinatório ou Mero Expediente</option>
                           <option value="Determinação de diligência">Determinação de diligência</option>
+                          <option value="Intimação">Intimação</option>
                           <option value="Intimação para manifestação">Intimação para manifestação</option>
                         </FormSelect>
                       </div>
