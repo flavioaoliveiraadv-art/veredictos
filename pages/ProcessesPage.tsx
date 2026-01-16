@@ -386,26 +386,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                           <CheckSquare className="w-4 h-4" /> Tarefas e Prazos Judiciais
                         </h3>
-                        <button
-                          onClick={() => {
-                            setQuickPrazoData({
-                              descricao: '',
-                              processoId: selectedProcess.id,
-                              clienteId: selectedProcess.clienteId,
-                              dataVencimento: getTodayBR(),
-                              tipo: TipoPrazo.TAREFA,
-                              responsavel: '',
-                              critico: false,
-                              concluido: false,
-                              cancelado: false,
-                              financeiroIds: []
-                            });
-                            setIsQuickPrazoModalOpen(true);
-                          }}
-                          className="text-indigo-600 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-all"
-                        >
-                          <Plus className="w-3 h-3" /> Nova Tarefa
-                        </button>
                       </div>
                       <div className="space-y-3">
                         {prazos.filter(p => p.processoId === selectedProcess.id).length > 0 ? (
