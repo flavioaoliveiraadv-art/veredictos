@@ -53,7 +53,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   const [recFormData, setRecFormData] = useState<Partial<Recurso>>(INITIAL_REC_STATE);
 
   // Tabs inside Details Modal
-  const [subTab, setSubTab] = useState<'DADOS' | 'PARTES' | 'TAREFAS' | 'ANDAMENTOS' | 'FINANCEIRO'>('DADOS');
+  const [subTab, setSubTab] = useState<'DADOS' | 'PARTES' | 'TAREFAS' | 'ANDAMENTOS'>('DADOS');
 
   // Andamento States
   const [isAndamentoTypeModalOpen, setIsAndamentoTypeModalOpen] = useState(false);
@@ -346,7 +346,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   { id: 'DADOS', label: 'Dados do Processo', icon: <FileText className="w-4 h-4" /> },
                   { id: 'TAREFAS', label: 'Tarefas e Prazos', icon: <CheckSquare className="w-4 h-4" /> },
                   { id: 'ANDAMENTOS', label: 'Andamentos', icon: <Activity className="w-4 h-4" /> },
-                  { id: 'FINANCEIRO', label: 'Financeiro', icon: <DollarSign className="w-4 h-4" /> },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -726,41 +725,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     </div>
                   )}
 
-                  {subTab === 'FINANCEIRO' && (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
-                      <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <DollarSign className="w-4 h-4" /> Lançamentos Financeiros Vinculados
-                      </h3>
-                      <div className="space-y-3">
-                        {financeiro.filter(f => f.processoId === selectedProcess.id).length > 0 ? (
-                          financeiro.filter(f => f.processoId === selectedProcess.id).map(f => (
-                            <div key={f.id} className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-indigo-200 transition-all">
-                              <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
-                                  <DollarSign className="w-5 h-5" />
-                                </div>
-                                <div>
-                                  <p className="text-sm font-black text-gray-800">{f.descricao}</p>
-                                  <p className="text-[10px] font-bold text-gray-400">{f.dataVencimento}</p>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <p className={`text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                                  {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
-                                </p>
-                                <span className={`text-[8px] font-black uppercase tracking-widest ${f.status === 'Pago' ? 'text-emerald-500' : 'text-amber-500'}`}>{f.status}</span>
-                              </div>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-center py-12 bg-gray-50 rounded-[32px] border border-dashed border-gray-200">
-                            <DollarSign className="w-8 h-8 text-gray-200 mx-auto mb-3" />
-                            <p className="text-xs text-gray-400 font-bold italic">Nenhum lançamento financeiro para este processo.</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
                 <div className="space-y-6">
                   <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
