@@ -14,8 +14,8 @@ interface ProcessReportProps {
 }
 
 const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, prazos, recursos, financeiro }) => {
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedProcesso, setSelectedProcesso] = useState<Processo | null>(null);
+    const [activeTab, setActiveTab] = useState<'dados' | 'tarefas' | 'andamentos' | 'financeiro'>('dados');
 
     const getClientName = (id: string): string => {
         const client = clientes?.find(c => c.id === id);
@@ -49,6 +49,7 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
 
     const openDossier = (processo: Processo) => {
         setSelectedProcesso(processo);
+        setActiveTab('dados');
     };
 
     const closeDossier = () => {
@@ -389,234 +390,270 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                             </div>
                         </div>
 
+                        {/* Tabs Navigation */}
+                        <div className="flex border-b border-slate-100 px-6 bg-slate-50/50">
+                            {[
+                                { id: 'dados', label: 'Dados Gerais', icon: <FileText className="w-4 h-4" /> },
+                                { id: 'tarefas', label: 'Tarefas e Prazos', icon: <Calendar className="w-4 h-4" /> },
+                                { id: 'andamentos', label: 'Andamentos', icon: <Activity className="w-4 h-4" /> },
+                                { id: 'financeiro', label: 'Financeiro', icon: <DollarSign className="w-4 h-4" /> }
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-all border-b-2 -mb-px ${activeTab === tab.id
+                                            ? 'border-blue-600 text-blue-600 bg-white'
+                                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                                        }`}
+                                >
+                                    {tab.icon}
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+
                         {/* Modal Content - Scrollable */}
                         <div className="overflow-y-auto p-6 space-y-8 bg-white">
-
-                            {/* 1. DADOS GERAIS */}
-                            <section>
-                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                                    <FileText className="w-5 h-5 text-blue-500" />
-                                    Dados Gerais
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                        <label className="text-xs text-slate-500 uppercase font-bold">Tribunal / Comarca</label>
-                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.tribunal || '-'} / {selectedProcesso.comarca || '-'}</p>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                        <label className="text-xs text-slate-500 uppercase font-bold">Vara / Local</label>
-                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.localTramitacao || '-'}</p>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                        <label className="text-xs text-slate-500 uppercase font-bold">Fase Processual</label>
-                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.faseProcessual || '-'}</p>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                        <label className="text-xs text-slate-500 uppercase font-bold">Parte Adversa</label>
-                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.parteContraria || '-'}</p>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                        <label className="text-xs text-slate-500 uppercase font-bold">Valor da Causa</label>
-                                        <p className="font-semibold text-emerald-700 mt-1">R$ {selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}</p>
-                                    </div>
-                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                        <label className="text-xs text-slate-500 uppercase font-bold">Gratuidade Justiça</label>
-                                        <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.gratuidade ? 'Sim' : 'Não'}</p>
-                                    </div>
-                                </div>
-                            </section>
-
-                            {/* 2. TIMELINE DE TAREFAS */}
-                            <section>
-                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                                    <Calendar className="w-5 h-5 text-indigo-500" />
-                                    Histórico de Tarefas e Prazos
-                                </h3>
-                                <div className="space-y-3">
-                                    {(prazos || [])
-                                        .filter(t => t && t.processoId === selectedProcesso.id)
-                                        .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime())
-                                        .map(t => (
-                                            <div key={t.id} className="flex items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
-                                                <div className={`w-2 h-10 rounded-full mr-4 ${t.concluido ? 'bg-emerald-400' : 'bg-amber-400'}`}></div>
-                                                <div className="flex-1">
-                                                    <p className="text-sm font-bold text-slate-800">{t.descricao || 'Sem descrição'}</p>
-                                                    <p className="text-xs text-slate-500">{t.tipo} • Vencimento: {new Date(t.dataVencimento).toLocaleDateString('pt-BR')}</p>
-                                                </div>
-                                                <div>
-                                                    <span className={`px-2 py-1 rounded text-xs font-bold ${t.concluido ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                                                        {t.concluido ? 'Realizada' : 'Pendente'}
-                                                    </span>
-                                                </div>
+                            {activeTab === 'dados' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    {/* 1. DADOS GERAIS */}
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                            <FileText className="w-5 h-5 text-blue-500" />
+                                            Dados Gerais
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Tribunal / Comarca</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.tribunal || '-'} / {selectedProcesso.comarca || '-'}</p>
                                             </div>
-                                        ))
-                                    }
-                                    {(prazos || []).filter(t => t && t.processoId === selectedProcesso.id).length === 0 && (
-                                        <p className="text-slate-400 italic text-sm">Nenhuma tarefa ou prazo registrado.</p>
-                                    )}
-                                </div>
-                            </section>
-
-                            {/* 3. RECURSOS */}
-                            <section>
-                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                                    <Gavel className="w-5 h-5 text-violet-500" />
-                                    Recursos Vinculados
-                                </h3>
-                                <div className="space-y-2">
-                                    {(recursos || [])
-                                        .filter(r => r && r.processoOriginarioId === selectedProcesso.id)
-                                        .map(r => (
-                                            <div key={r.id} className="bg-violet-50 p-4 rounded-xl border border-violet-100 flex justify-between items-center">
-                                                <div>
-                                                    <p className="font-bold text-violet-900">{r.tipoRecurso}</p>
-                                                    <p className="text-sm text-violet-700">Nº {r.numeroRecurso}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-xs font-bold uppercase text-violet-500">{r.tribunal}</p>
-                                                    <span className="text-xs bg-white px-2 py-1 rounded text-violet-800 border border-violet-200 mt-1 inline-block">{r.status}</span>
-                                                </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Vara / Local</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.localTramitacao || '-'}</p>
                                             </div>
-                                        ))
-                                    }
-                                    {(recursos || []).filter(r => r && r.processoOriginarioId === selectedProcesso.id).length === 0 && (
-                                        <p className="text-slate-400 italic text-sm">Nenhum recurso vinculado.</p>
-                                    )}
-                                </div>
-                            </section>
-
-                            {/* 4. FINANCEIRO */}
-                            <section>
-                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                                    <DollarSign className="w-5 h-5 text-emerald-500" />
-                                    Lançamentos Financeiros
-                                </h3>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {(financeiro || [])
-                                        .filter(f => f && f.processoId === selectedProcesso.id)
-                                        .map(f => (
-                                            <div key={f.id} className="flex justify-between items-center p-3 border-b border-slate-100 last:border-0">
-                                                <div>
-                                                    <p className="font-medium text-slate-800">{f.descricao}</p>
-                                                    <p className="text-xs text-slate-500">{new Date(f.dataVencimento).toLocaleDateString('pt-BR')} • {f.status}</p>
-                                                </div>
-                                                <div className={`font-bold ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                                    {f.tipo === 'Receita' ? '+' : '-'} R$ {f.valor?.toLocaleString('pt-BR') || '0,00'}
-                                                </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Fase Processual</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.faseProcessual || '-'}</p>
                                             </div>
-                                        ))
-                                    }
-                                    {(financeiro || []).filter(f => f && f.processoId === selectedProcesso.id).length === 0 && (
-                                        <p className="text-slate-400 italic text-sm">Nenhum lançamento financeiro.</p>
-                                    )}
-                                </div>
-                            </section>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Parte Adversa</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.parteContraria || '-'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Valor da Causa</label>
+                                                <p className="font-semibold text-emerald-700 mt-1">R$ {selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Gratuidade Justiça</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.gratuidade ? 'Sim' : 'Não'}</p>
+                                            </div>
+                                        </div>
+                                    </section>
 
-                            {/* 5. ANDAMENTOS */}
-                            <section>
-                                <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                                    <Activity className="w-5 h-5 text-indigo-500" />
-                                    Andamentos Processuais
-                                </h3>
-                                <div className="space-y-4">
-                                    {(selectedProcesso.andamentos || []).length > 0 ? (
-                                        [...selectedProcesso.andamentos!].reverse().map((and, idx) => (
-                                            <div key={and.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-black text-slate-800 bg-white px-2 py-1 rounded-lg shadow-sm">{and.data}</span>
-                                                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{and.tipo}</span>
-                                                    </div>
-                                                    {and.geraPrazo && <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded uppercase font-mono">Gera Prazo</span>}
-                                                </div>
-                                                {and.tipo === 'Acórdão' && and.acordao ? (
-                                                    <div className="space-y-3">
-                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
-                                                            <p><b>Tribunal:</b> {and.acordao.tribunal}</p>
-                                                            <p><b>Órgão:</b> {and.acordao.orgaoJulgador}</p>
-                                                            <p><b>Relator:</b> {and.acordao.relator}</p>
-                                                            <p><b>Recurso:</b> {and.acordao.recursoJulgado}</p>
-                                                            <p><b>Resultado:</b> {and.acordao.resultado}</p>
-                                                            <p><b>Modificação:</b> {and.acordao.modificacaoDecisao ? 'Sim' : 'Não'}</p>
+                                    {/* 3. RECURSOS (Movido para dentro de Dados Gerais) */}
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                            <Gavel className="w-5 h-5 text-violet-500" />
+                                            Recursos Vinculados
+                                        </h3>
+                                        <div className="space-y-2">
+                                            {(recursos || [])
+                                                .filter(r => r && r.processoOriginarioId === selectedProcesso.id)
+                                                .map(r => (
+                                                    <div key={r.id} className="bg-violet-50 p-4 rounded-xl border border-violet-100 flex justify-between items-center">
+                                                        <div>
+                                                            <p className="font-bold text-violet-900">{r.tipoRecurso}</p>
+                                                            <p className="text-sm text-violet-700">Nº {r.numeroRecurso}</p>
                                                         </div>
-                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Tese:</b> {and.acordao.resumoTeseVencedora || and.conteudo}</p>
-                                                        {(and.acordao.honorarios || and.acordao.custas || and.acordao.multa) && (
-                                                            <div className="flex gap-2 mt-2">
-                                                                {and.acordao.honorarios && <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded">Honorários: {and.acordao.honorarios}</span>}
-                                                                {and.acordao.custas > 0 && <span className="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded">Custas: R$ {and.acordao.custas.toLocaleString('pt-BR')}</span>}
-                                                                {and.acordao.multa > 0 && <span className="text-[9px] font-bold bg-rose-50 text-rose-700 px-2 py-1 rounded">Multa: R$ {and.acordao.multa.toLocaleString('pt-BR')}</span>}
+                                                        <div className="text-right">
+                                                            <p className="text-xs font-bold uppercase text-violet-500">{r.tribunal}</p>
+                                                            <span className="text-xs bg-white px-2 py-1 rounded text-violet-800 border border-violet-200 mt-1 inline-block">{r.status}</span>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            }
+                                            {(recursos || []).filter(r => r && r.processoOriginarioId === selectedProcesso.id).length === 0 && (
+                                                <p className="text-slate-400 italic text-sm">Nenhum recurso vinculado.</p>
+                                            )}
+                                        </div>
+                                    </section>
+                                </div>
+                            )}
+
+                            {activeTab === 'tarefas' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    {/* 2. TIMELINE DE TAREFAS */}
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                            <Calendar className="w-5 h-5 text-indigo-500" />
+                                            Histórico de Tarefas e Prazos
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {(prazos || [])
+                                                .filter(t => t && t.processoId === selectedProcesso.id)
+                                                .sort((a, b) => new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime())
+                                                .map(t => (
+                                                    <div key={t.id} className="flex items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 transition-colors">
+                                                        <div className={`w-2 h-10 rounded-full mr-4 ${t.concluido ? 'bg-emerald-400' : 'bg-amber-400'}`}></div>
+                                                        <div className="flex-1">
+                                                            <p className="text-sm font-bold text-slate-800">{t.descricao || 'Sem descrição'}</p>
+                                                            <p className="text-xs text-slate-500">{t.tipo} • Vencimento: {new Date(t.dataVencimento).toLocaleDateString('pt-BR')}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className={`px-2 py-1 rounded text-xs font-bold ${t.concluido ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                                                                {t.concluido ? 'Realizada' : 'Pendente'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            }
+                                            {(prazos || []).filter(t => t && t.processoId === selectedProcesso.id).length === 0 && (
+                                                <p className="text-slate-400 italic text-sm">Nenhuma tarefa ou prazo registrado.</p>
+                                            )}
+                                        </div>
+                                    </section>
+                                </div>
+                            )}
+
+                            {activeTab === 'andamentos' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    {/* 5. ANDAMENTOS */}
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                            <Activity className="w-5 h-5 text-indigo-500" />
+                                            Andamentos Processuais
+                                        </h3>
+                                        <div className="space-y-4">
+                                            {(selectedProcesso.andamentos || []).length > 0 ? (
+                                                [...selectedProcesso.andamentos!].reverse().map((and, idx) => (
+                                                    <div key={and.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xs font-black text-slate-800 bg-white px-2 py-1 rounded-lg shadow-sm">{and.data}</span>
+                                                                <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{and.tipo}</span>
                                                             </div>
+                                                            {and.geraPrazo && <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded uppercase font-mono">Gera Prazo</span>}
+                                                        </div>
+                                                        {and.tipo === 'Acórdão' && and.acordao ? (
+                                                            <div className="space-y-3">
+                                                                <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                                    <p><b>Tribunal:</b> {and.acordao.tribunal}</p>
+                                                                    <p><b>Órgão:</b> {and.acordao.orgaoJulgador}</p>
+                                                                    <p><b>Relator:</b> {and.acordao.relator}</p>
+                                                                    <p><b>Recurso:</b> {and.acordao.recursoJulgado}</p>
+                                                                    <p><b>Resultado:</b> {and.acordao.resultado}</p>
+                                                                    <p><b>Modificação:</b> {and.acordao.modificacaoDecisao ? 'Sim' : 'Não'}</p>
+                                                                </div>
+                                                                <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Tese:</b> {and.acordao.resumoTeseVencedora || and.conteudo}</p>
+                                                                {(and.acordao.honorarios || and.acordao.custas || and.acordao.multa) && (
+                                                                    <div className="flex gap-2 mt-2">
+                                                                        {and.acordao.honorarios && <span className="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded">Honorários: {and.acordao.honorarios}</span>}
+                                                                        {and.acordao.custas > 0 && <span className="text-[9px] font-bold bg-slate-100 text-slate-700 px-2 py-1 rounded">Custas: R$ {and.acordao.custas.toLocaleString('pt-BR')}</span>}
+                                                                        {and.acordao.multa > 0 && <span className="text-[9px] font-bold bg-rose-50 text-rose-700 px-2 py-1 rounded">Multa: R$ {and.acordao.multa.toLocaleString('pt-BR')}</span>}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ) : and.tipo === 'Sentença' && and.sentenca ? (
+                                                            <div className="space-y-2">
+                                                                <div className="grid grid-cols-2 gap-2 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                                    <p><b>Instância:</b> {and.sentenca.instancia}</p>
+                                                                    <p><b>Magistrado:</b> {and.sentenca.magistrado}</p>
+                                                                    <p><b>Resultado:</b> {and.sentenca.resultado}</p>
+                                                                    <p><b>Favorável:</b> {and.sentenca.decisaoFavoravel ? 'Sim' : 'Não'}</p>
+                                                                </div>
+                                                                <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.sentenca.resumoDecisao || and.conteudo}</p>
+                                                            </div>
+                                                        ) : and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria ? (
+                                                            <div className="space-y-3">
+                                                                <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                                    <p><b>Instância:</b> {and.decisaoInterlocutoria.instancia}</p>
+                                                                    <p><b>Resultado:</b> {and.decisaoInterlocutoria.resultado}</p>
+                                                                    <p><b>Prolação:</b> {and.decisaoInterlocutoria.dataProlacao}</p>
+                                                                    <p><b>Publicação:</b> {and.decisaoInterlocutoria.dataPublicacao}</p>
+                                                                </div>
+                                                                <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}</p>
+                                                            </div>
+                                                        ) : and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica ? (
+                                                            <div className="space-y-3">
+                                                                <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                                    <p><b>Relator:</b> {and.decisaoMonocratica.relator}</p>
+                                                                    <p><b>Resultado:</b> {and.decisaoMonocratica.resultado}</p>
+                                                                    <p><b>Prolação:</b> {and.decisaoMonocratica.dataProlacao}</p>
+                                                                    <p><b>Publicação:</b> {and.decisaoMonocratica.dataPublicacao}</p>
+                                                                </div>
+                                                                <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.decisaoMonocratica.resumoDecisao || and.conteudo}</p>
+                                                            </div>
+                                                        ) : and.tipo === TipoAndamento.ALVARA && and.alvara ? (
+                                                            <div className="space-y-3">
+                                                                <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                                    <p><b>Tipo:</b> {and.alvara.tipoAlvara}</p>
+                                                                    <p><b>Expedição:</b> {and.alvara.dataExpedicao}</p>
+                                                                    <p><b>Valor:</b> {and.alvara.valorAutorizado ? formatCurrency(and.alvara.valorAutorizado) : 'N/A'}</p>
+                                                                    <p><b>Origem:</b> {and.alvara.origemValor || 'N/C'}</p>
+                                                                </div>
+                                                                <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.alvara.resumoObjetivo || and.conteudo}</p>
+                                                            </div>
+                                                        ) : and.tipo === TipoAndamento.CERTIDAO && and.certidao ? (
+                                                            <div className="space-y-3">
+                                                                <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                                    <p><b>Tipo:</b> {and.certidao.tipoCertidao}</p>
+                                                                    <p><b>Publicação:</b> {and.certidao.dataPublicacao}</p>
+                                                                </div>
+                                                                <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.certidao.resumoObjetivo || and.conteudo}</p>
+                                                            </div>
+                                                        ) : and.tipo === TipoAndamento.DESPACHO && and.despacho ? (
+                                                            <div className="space-y-3">
+                                                                <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
+                                                                    <p><b>Tipo:</b> {and.despacho.tipoDespacho}</p>
+                                                                    <p><b>Instância:</b> {and.despacho.instancia}</p>
+                                                                    <p><b>Prolação:</b> {and.despacho.dataProlacao}</p>
+                                                                    <p><b>Publicação:</b> {and.despacho.dataPublicacao}</p>
+                                                                </div>
+                                                                <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.despacho.resumoObjetivo || and.conteudo}</p>
+                                                            </div>
+                                                        ) : (
+                                                            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
                                                         )}
                                                     </div>
-                                                ) : and.tipo === 'Sentença' && and.sentenca ? (
-                                                    <div className="space-y-2">
-                                                        <div className="grid grid-cols-2 gap-2 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
-                                                            <p><b>Instância:</b> {and.sentenca.instancia}</p>
-                                                            <p><b>Magistrado:</b> {and.sentenca.magistrado}</p>
-                                                            <p><b>Resultado:</b> {and.sentenca.resultado}</p>
-                                                            <p><b>Favorável:</b> {and.sentenca.decisaoFavoravel ? 'Sim' : 'Não'}</p>
-                                                        </div>
-                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.sentenca.resumoDecisao || and.conteudo}</p>
-                                                    </div>
-                                                ) : and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria ? (
-                                                    <div className="space-y-3">
-                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
-                                                            <p><b>Instância:</b> {and.decisaoInterlocutoria.instancia}</p>
-                                                            <p><b>Resultado:</b> {and.decisaoInterlocutoria.resultado}</p>
-                                                            <p><b>Prolação:</b> {and.decisaoInterlocutoria.dataProlacao}</p>
-                                                            <p><b>Publicação:</b> {and.decisaoInterlocutoria.dataPublicacao}</p>
-                                                        </div>
-                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}</p>
-                                                    </div>
-                                                ) : and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica ? (
-                                                    <div className="space-y-3">
-                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
-                                                            <p><b>Relator:</b> {and.decisaoMonocratica.relator}</p>
-                                                            <p><b>Resultado:</b> {and.decisaoMonocratica.resultado}</p>
-                                                            <p><b>Prolação:</b> {and.decisaoMonocratica.dataProlacao}</p>
-                                                            <p><b>Publicação:</b> {and.decisaoMonocratica.dataPublicacao}</p>
-                                                        </div>
-                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.decisaoMonocratica.resumoDecisao || and.conteudo}</p>
-                                                    </div>
-                                                ) : and.tipo === TipoAndamento.ALVARA && and.alvara ? (
-                                                    <div className="space-y-3">
-                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
-                                                            <p><b>Tipo:</b> {and.alvara.tipoAlvara}</p>
-                                                            <p><b>Expedição:</b> {and.alvara.dataExpedicao}</p>
-                                                            <p><b>Valor:</b> {and.alvara.valorAutorizado ? formatCurrency(and.alvara.valorAutorizado) : 'N/A'}</p>
-                                                            <p><b>Origem:</b> {and.alvara.origemValor || 'N/C'}</p>
-                                                        </div>
-                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.alvara.resumoObjetivo || and.conteudo}</p>
-                                                    </div>
-                                                ) : and.tipo === TipoAndamento.CERTIDAO && and.certidao ? (
-                                                    <div className="space-y-3">
-                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
-                                                            <p><b>Tipo:</b> {and.certidao.tipoCertidao}</p>
-                                                            <p><b>Publicação:</b> {and.certidao.dataPublicacao}</p>
-                                                        </div>
-                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.certidao.resumoObjetivo || and.conteudo}</p>
-                                                    </div>
-                                                ) : and.tipo === TipoAndamento.DESPACHO && and.despacho ? (
-                                                    <div className="space-y-3">
-                                                        <div className="grid grid-cols-2 gap-4 text-[10px] border-b border-slate-200/50 pb-2 mb-2">
-                                                            <p><b>Tipo:</b> {and.despacho.tipoDespacho}</p>
-                                                            <p><b>Instância:</b> {and.despacho.instancia}</p>
-                                                            <p><b>Prolação:</b> {and.despacho.dataProlacao}</p>
-                                                            <p><b>Publicação:</b> {and.despacho.dataPublicacao}</p>
-                                                        </div>
-                                                        <p className="text-sm text-slate-600 leading-relaxed font-medium"><b>Resumo:</b> {and.despacho.resumoObjetivo || and.conteudo}</p>
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
-                                                )}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-slate-400 italic text-sm">Nenhum andamento registrado.</p>
-                                    )}
+                                                ))
+                                            ) : (
+                                                <p className="text-slate-400 italic text-sm">Nenhum andamento registrado.</p>
+                                            )}
+                                        </div>
+                                    </section>
                                 </div>
-                            </section>
+                            )}
 
+                            {activeTab === 'financeiro' && (
+                                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                    {/* 4. FINANCEIRO */}
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                            <DollarSign className="w-5 h-5 text-emerald-500" />
+                                            Lançamentos Financeiros
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {(financeiro || [])
+                                                .filter(f => f && f.processoId === selectedProcesso.id)
+                                                .map(f => (
+                                                    <div key={f.id} className="flex justify-between items-center p-3 border-b border-slate-100 last:border-0">
+                                                        <div>
+                                                            <p className="font-medium text-slate-800">{f.descricao}</p>
+                                                            <p className="text-xs text-slate-500">{new Date(f.dataVencimento).toLocaleDateString('pt-BR')} • {f.status}</p>
+                                                        </div>
+                                                        <div className={`font-bold ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                            {f.tipo === 'Receita' ? '+' : '-'} R$ {f.valor?.toLocaleString('pt-BR') || '0,00'}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            }
+                                            {(financeiro || []).filter(f => f && f.processoId === selectedProcesso.id).length === 0 && (
+                                                <p className="text-slate-400 italic text-sm">Nenhum lançamento financeiro.</p>
+                                            )}
+                                        </div>
+                                    </section>
+                                </div>
+                            )}
                         </div>
 
                         {/* Modal Footer */}
