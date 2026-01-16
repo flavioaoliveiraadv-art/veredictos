@@ -3,16 +3,46 @@ import { Cliente, Processo, StatusProcesso, AreaAtuacao, FaseProcessual, Histori
 import { getTodayBR } from '../utils/formatters';
 
 export const INITIAL_CLIENTES: Cliente[] = [
-  { id: '1', nome: 'João Silva', documento: '123.456.789-00', email: 'joao@email.com', telefone: '(11) 98888-7777', tipo: 'PF', status: 'Ativo', createdAt: '01/10/2023', processosIds: ['101'] },
-  { id: '2', nome: 'Tech Soluções LTDA', documento: '12.345.678/0001-90', email: 'contato@tech.com', telefone: '(11) 3333-4444', tipo: 'PJ', status: 'Ativo', createdAt: '15/11/2023', processosIds: [] },
+  {
+    id: '1',
+    nome: 'João Silva',
+    pessoas: [{
+      id: 'p1',
+      nome: 'João Silva',
+      documento: '123.456.789-00',
+      email: 'joao@email.com',
+      telefone: '(11) 98888-7777',
+      tipo: 'PF'
+    }],
+    status: 'Ativo',
+    createdAt: '01/10/2023',
+    processosIds: ['101'],
+    endereco: 'Rua das Flores, 123 - São Paulo/SP'
+  },
+  {
+    id: '2',
+    nome: 'Tech Soluções LTDA',
+    pessoas: [{
+      id: 'p2',
+      nome: 'Tech Soluções LTDA',
+      documento: '12.345.678/0001-90',
+      email: 'contato@tech.com',
+      telefone: '(11) 3333-4444',
+      tipo: 'PJ'
+    }],
+    status: 'Ativo',
+    createdAt: '15/11/2023',
+    processosIds: [],
+    endereco: 'Av. Paulista, 1000 - São Paulo/SP'
+  },
 ];
 
 export const INITIAL_PROCESSOS: Processo[] = [
-  { 
-    id: '101', 
+  {
+    id: '101',
     objeto: 'Indenizatória por Danos Morais',
-    numeros: ['1234567-89.2023.8.26.0100'], 
-    clienteId: '1', 
+    numeros: ['1234567-89.2023.8.26.0100'],
+    clienteId: '1',
     parteContraria: 'Banco Exemplo S/A',
     valorCausa: 50000,
     areaAtuacao: AreaAtuacao.CIVEL,
@@ -21,7 +51,7 @@ export const INITIAL_PROCESSOS: Processo[] = [
     tribunal: 'TJSP',
     localTramitacao: '1ª Vara Cível',
     faseProcessual: FaseProcessual.CONHECIMENTO,
-    status: StatusProcesso.ATIVO, 
+    status: StatusProcesso.ATIVO,
     dataDistribuicao: '15/10/2023',
     ultimaAtualizacao: '15/05/2024'
   },

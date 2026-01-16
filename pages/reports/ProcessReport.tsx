@@ -14,6 +14,7 @@ interface ProcessReportProps {
 }
 
 const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, prazos, recursos, financeiro }) => {
+    const [searchTerm, setSearchTerm] = useState('');
     const [selectedProcesso, setSelectedProcesso] = useState<Processo | null>(null);
     const [activeTab, setActiveTab] = useState<'dados' | 'tarefas' | 'andamentos' | 'financeiro'>('dados');
 
@@ -402,8 +403,8 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id as any)}
                                     className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-all border-b-2 -mb-px ${activeTab === tab.id
-                                            ? 'border-blue-600 text-blue-600 bg-white'
-                                            : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                                        ? 'border-blue-600 text-blue-600 bg-white'
+                                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
                                         }`}
                                 >
                                     {tab.icon}

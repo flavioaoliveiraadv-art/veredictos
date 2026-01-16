@@ -6,7 +6,7 @@ import {
   MinusCircle
 } from 'lucide-react';
 import {
-  Cliente, Processo, Financeiro, HistoricoAlteracao, StatusProcesso
+  Cliente, Processo, Financeiro, HistoricoAlteracao, StatusProcesso, Pessoa
 } from '../types';
 import { FormInput, FormSelect } from '../components/FormComponents';
 
@@ -19,19 +19,25 @@ interface ClientsPageProps {
   setHistorico: React.Dispatch<React.SetStateAction<HistoricoAlteracao[]>>;
 }
 
-const INITIAL_FORM_STATE: Partial<Cliente> = {
+const INITIAL_PERSON_STATE = (tipo: 'PF' | 'PJ'): Pessoa => ({
+  id: `per-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
   nome: '',
-  representanteLegal: '',
   documento: '',
   rg: '',
   email: '',
   telefone: '',
+  tipo,
   estadoCivil: '',
   profissao: '',
-  endereco: '',
+  representanteLegal: ''
+});
+
+const INITIAL_FORM_STATE: Partial<Cliente> = {
+  nome: '',
+  pessoas: [],
   processosIds: [''],
-  tipo: 'PF',
-  status: 'Ativo'
+  status: 'Ativo',
+  endereco: '', // Mantido no nível do cliente para o cadastro único
 };
 
 // Fixed: Corrected typo 'procesos' to 'processos' in props destructuring
@@ -94,11 +100,22 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
     e.preventDefault();
     const id = formData.id || `cli-${Date.now()}`;
     const cleanProcessosIds = (formData.processosIds || []).filter(pid => pid !== '');
+    const pessoas = formData.pessoas || [];
+
+    // Regra de exibição do nome: "Nome do primeiro e outro"
+    let nomeExibicao = '';
+    if (pessoas.length > 0) {
+      nomeExibicao = pessoas[0].nome;
+      if (pessoas.length > 1) {
+        nomeExibicao += ' E OUTRO';
+      }
+    }
 
     const newCliente: Cliente = {
       ...formData,
       id,
-      tipo: formData.tipo || 'PF',
+      nome: nomeExibicao,
+      pessoas,
       createdAt: formData.createdAt || new Date().toISOString().split('T')[0],
       processosIds: cleanProcessosIds
     } as Cliente;
@@ -252,32 +269,35 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-12">
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Qualificação e Identificação</h3>
-                    <div className="grid grid-cols-2 gap-y-8 gap-x-12">
-                      <DetailField label="Representante Legal" value={selectedCliente.representanteLegal || '-'} />
-                      {selectedCliente.tipo !== 'PJ' && (
-                        <>
-                          <DetailField label="Estado Civil" value={selectedCliente.estadoCivil || '-'} />
-                          <DetailField label="Profissão" value={selectedCliente.profissao || '-'} />
-                          <DetailField label="RG" value={selectedCliente.rg || '-'} />
-                        </>
-                      )}
-                      <DetailField label={selectedCliente.tipo === 'PJ' ? 'CNPJ' : 'CPF'} value={selectedCliente.documento || '-'} />
-                    </div>
-                  </section>
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Contato e Localização</h3>
-                    <div className="grid grid-cols-2 gap-y-8 gap-x-12">
-                      {selectedCliente.tipo !== 'PJ' && (
-                        <>
-                          <DetailField label="E-mail" value={selectedCliente.email} className="text-indigo-600" />
-                          <DetailField label="Telefone" value={selectedCliente.telefone} />
-                        </>
-                      )}
-                      <div className="col-span-2">
-                        <DetailField label="Endereço com CEP" value={selectedCliente.endereco || '-'} />
+                  {(selectedCliente.pessoas || []).map((pessoa, idx) => (
+                    <section key={pessoa.id} className="bg-gray-50/30 p-8 rounded-[32px] border border-gray-100">
+                      <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-6 border-b-2 border-indigo-50 pb-3">
+                        {idx === 0 ? 'Pessoa Principal' : `Pessoa Adicional ${idx}`}
+                      </h3>
+                      <div className="grid grid-cols-2 gap-y-8 gap-x-12">
+                        <DetailField label="Nome" value={pessoa.nome} />
+                        <DetailField label="Representante Legal" value={pessoa.representanteLegal || '-'} />
+                        {pessoa.tipo !== 'PJ' && (
+                          <>
+                            <DetailField label="Estado Civil" value={pessoa.estadoCivil || '-'} />
+                            <DetailField label="Profissão" value={pessoa.profissao || '-'} />
+                            <DetailField label="RG" value={pessoa.rg || '-'} />
+                          </>
+                        )}
+                        <DetailField label={pessoa.tipo === 'PJ' ? 'CNPJ' : 'CPF'} value={pessoa.documento || '-'} />
+                        {pessoa.tipo !== 'PJ' && (
+                          <>
+                            <DetailField label="E-mail" value={pessoa.email || '-'} className="text-indigo-600" />
+                            <DetailField label="Telefone" value={pessoa.telefone || '-'} />
+                          </>
+                        )}
                       </div>
+                    </section>
+                  ))}
+                  <section>
+                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Localização Única do Cadastro</h3>
+                    <div className="grid grid-cols-1 gap-y-8 gap-x-12">
+                      <DetailField label="Endereço com CEP" value={selectedCliente.endereco || '-'} />
                     </div>
                   </section>
                 </div>
@@ -319,7 +339,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
               <div className="grid grid-cols-1 gap-4">
                 <button
                   onClick={() => {
-                    const state = { ...INITIAL_FORM_STATE, tipo: 'PF' as const };
+                    const person = INITIAL_PERSON_STATE('PF');
+                    const state = { ...INITIAL_FORM_STATE, pessoas: [person] };
                     setFormData(state);
                     setInitialFormValue(JSON.stringify(state));
                     setIsEditMode(false);
@@ -341,7 +362,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
 
                 <button
                   onClick={() => {
-                    const state = { ...INITIAL_FORM_STATE, tipo: 'PJ' as const };
+                    const person = INITIAL_PERSON_STATE('PJ');
+                    const state = { ...INITIAL_FORM_STATE, pessoas: [person] };
                     setFormData(state);
                     setInitialFormValue(JSON.stringify(state));
                     setIsEditMode(false);
@@ -389,17 +411,155 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 custom-scroll">
-              <form id="clientForm" onSubmit={handleSaveCliente} className="space-y-5">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="md:col-span-2">
-                    <FormInput label="Cliente" required value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value.toUpperCase() })} placeholder="Nome Completo do Cliente" />
-                  </div>
-                  <FormInput label="Representante Legal" value={formData.representanteLegal} onChange={e => setFormData({ ...formData, representanteLegal: e.target.value.toUpperCase() })} placeholder="Nome do Representante" />
+              <form id="clientForm" onSubmit={handleSaveCliente} className="space-y-8">
+                {/* LISTA DE PESSOAS */}
+                <div className="space-y-10">
+                  {(formData.pessoas || []).map((pessoa, idx) => (
+                    <div key={pessoa.id} className="relative p-6 bg-gray-50/50 rounded-[32px] border border-gray-100">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
+                          <User className="w-4 h-4" /> {idx === 0 ? 'Pessoa Principal' : `Pessoa Adicional ${idx}`}
+                        </h3>
+                        {idx > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newPessoas = [...(formData.pessoas || [])];
+                              newPessoas.splice(idx, 1);
+                              setFormData({ ...formData, pessoas: newPessoas });
+                            }}
+                            className="text-red-400 hover:text-red-600 p-2 transition-colors flex items-center gap-1 text-[10px] font-black uppercase"
+                          >
+                            <Trash2 className="w-4 h-4" /> Remover
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2">
+                          <FormInput
+                            label="Nome Completo"
+                            required
+                            value={pessoa.nome}
+                            onChange={e => {
+                              const newPessoas = [...(formData.pessoas || [])];
+                              newPessoas[idx] = { ...pessoa, nome: e.target.value.toUpperCase() };
+                              setFormData({ ...formData, pessoas: newPessoas });
+                            }}
+                            placeholder="Nome da Pessoa"
+                          />
+                        </div>
+                        <FormInput
+                          label="Representante Legal"
+                          value={pessoa.representanteLegal}
+                          onChange={e => {
+                            const newPessoas = [...(formData.pessoas || [])];
+                            newPessoas[idx] = { ...pessoa, representanteLegal: e.target.value.toUpperCase() };
+                            setFormData({ ...formData, pessoas: newPessoas });
+                          }}
+                          placeholder="Rep. Legal (se houver)"
+                        />
+
+                        <FormInput
+                          label={pessoa.tipo === 'PJ' ? "CNPJ" : "CPF"}
+                          value={pessoa.documento}
+                          onChange={e => {
+                            const newPessoas = [...(formData.pessoas || [])];
+                            newPessoas[idx] = { ...pessoa, documento: e.target.value };
+                            setFormData({ ...formData, pessoas: newPessoas });
+                          }}
+                          placeholder={pessoa.tipo === 'PJ' ? "00.000.000/0000-00" : "000.000.000-00"}
+                        />
+
+                        {pessoa.tipo === 'PF' && (
+                          <>
+                            <FormInput
+                              label="RG"
+                              value={pessoa.rg}
+                              onChange={e => {
+                                const newPessoas = [...(formData.pessoas || [])];
+                                newPessoas[idx] = { ...pessoa, rg: e.target.value };
+                                setFormData({ ...formData, pessoas: newPessoas });
+                              }}
+                              placeholder="00.000.000-0"
+                            />
+                            <FormInput
+                              label="Estado Civil"
+                              value={pessoa.estadoCivil}
+                              onChange={e => {
+                                const newPessoas = [...(formData.pessoas || [])];
+                                newPessoas[idx] = { ...pessoa, estadoCivil: e.target.value };
+                                setFormData({ ...formData, pessoas: newPessoas });
+                              }}
+                              placeholder="Solteiro, Casado..."
+                            />
+                            <FormInput
+                              label="Profissão"
+                              value={pessoa.profissao}
+                              onChange={e => {
+                                const newPessoas = [...(formData.pessoas || [])];
+                                newPessoas[idx] = { ...pessoa, profissao: e.target.value };
+                                setFormData({ ...formData, pessoas: newPessoas });
+                              }}
+                              placeholder="Ex: Advogado"
+                            />
+                            <FormInput
+                              label="Telefone"
+                              value={pessoa.telefone}
+                              onChange={e => {
+                                const newPessoas = [...(formData.pessoas || [])];
+                                newPessoas[idx] = { ...pessoa, telefone: e.target.value };
+                                setFormData({ ...formData, pessoas: newPessoas });
+                              }}
+                              placeholder="(00) 00000-0000"
+                            />
+                            <FormInput
+                              label="E-mail"
+                              value={pessoa.email}
+                              onChange={e => {
+                                const newPessoas = [...(formData.pessoas || [])];
+                                newPessoas[idx] = { ...pessoa, email: e.target.value };
+                                setFormData({ ...formData, pessoas: newPessoas });
+                              }}
+                              placeholder="exemplo@email.com"
+                            />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        pessoas: [...(prev.pessoas || []), INITIAL_PERSON_STATE('PF')]
+                      }));
+                    }}
+                    className="w-full py-4 border-2 border-dashed border-gray-200 rounded-[32px] text-gray-400 font-black uppercase tracking-widest text-[10px] hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" /> Adicionar Outra Pessoa (Litisconsórcio/Cônjuge)
+                  </button>
                 </div>
 
-                <div className="space-y-3">
-                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1">Vínculo com Processo Judicial</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="pt-8 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                      Endereço do Cadastro
+                    </h3>
+                    <FormInput
+                      label="Endereço Completo com CEP"
+                      value={formData.endereco}
+                      onChange={e => setFormData({ ...formData, endereco: e.target.value })}
+                      placeholder="Rua, Número, Bairro, Cidade, Estado - CEP"
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                      Vínculo Processual
+                    </h3>
                     <div className="space-y-3">
                       {(formData.processosIds || []).map((pid, idx) => (
                         <div key={idx} className="flex gap-2">
@@ -421,44 +581,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                         </div>
                       ))}
                       <button type="button" onClick={addProcessField} className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase flex items-center gap-1 mt-1 ml-1 transition-colors">
-                        <Plus className="w-4 h-4" /> Adicionar outro processo
+                        <Plus className="w-4 h-4" /> Vincular outro processo
                       </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-6 border-t border-gray-50">
-                  <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                    <Filter className="w-3 h-3" /> Dados de Qualificação
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-                    {/* Campos Específicos para PF */}
-                    {formData.tipo === 'PF' && (
-                      <>
-                        <FormInput label="Estado Civil" value={formData.estadoCivil} onChange={e => setFormData({ ...formData, estadoCivil: e.target.value })} placeholder="Solteiro, Casado..." />
-                        <FormInput label="Profissão" value={formData.profissao} onChange={e => setFormData({ ...formData, profissao: e.target.value })} placeholder="Ex: Advogado, Engenheiro" />
-                        <FormInput label="RG" value={formData.rg} onChange={e => setFormData({ ...formData, rg: e.target.value })} placeholder="00.000.000-0" />
-                      </>
-                    )}
-
-                    {/* Campo CPF/CNPJ (Rótulo Dinâmico) */}
-                    <FormInput
-                      label={formData.tipo === 'PJ' ? "CNPJ" : "CPF"}
-                      value={formData.documento}
-                      onChange={e => setFormData({ ...formData, documento: e.target.value })}
-                      placeholder={formData.tipo === 'PJ' ? "00.000.000/0000-00" : "000.000.000-00"}
-                    />
-
-                    {/* Campos de Contato (Apenas PF) */}
-                    {formData.tipo === 'PF' && (
-                      <>
-                        <FormInput label="Telefone" value={formData.telefone} onChange={e => setFormData({ ...formData, telefone: e.target.value })} placeholder="(00) 00000-0000" />
-                        <FormInput label="E-mail" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="exemplo@email.com" />
-                      </>
-                    )}
-
-                    <div className="md:col-span-3">
-                      <FormInput label="Endereço com CEP" value={formData.endereco} onChange={e => setFormData({ ...formData, endereco: e.target.value })} placeholder="Rua, Número, Bairro, Cidade, Estado - CEP 00000-000" />
                     </div>
                   </div>
                 </div>

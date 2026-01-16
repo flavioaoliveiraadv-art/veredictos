@@ -215,21 +215,36 @@ export interface Processo {
   andamentos?: Andamento[];
 }
 
-export interface Cliente {
+export interface Pessoa {
   id: string;
   nome: string;
-  representanteLegal?: string;
-  documento: string; // CPF
+  documento: string;
   rg?: string;
-  email: string;
-  telefone: string;
+  email?: string;
+  telefone?: string;
   tipo: 'PF' | 'PJ';
+  estadoCivil?: string;
+  profissao?: string;
+  representanteLegal?: string;
+}
+
+export interface Cliente {
+  id: string;
+  nome: string; // Nome de exibição (ex: "Nome e outro")
+  pessoas: Pessoa[]; // Lista completa de pessoas vinculadas
   status: 'Ativo' | 'Inativo';
+  processosIds: string[];
+  createdAt: string;
+  // Campos legados mantidos para compatibilidade inicial
+  representanteLegal?: string;
+  documento?: string;
+  rg?: string;
+  email?: string;
+  telefone?: string;
+  tipo?: 'PF' | 'PJ';
   estadoCivil?: string;
   profissao?: string;
   endereco?: string;
-  processosIds: string[]; // Vínculo com múltiplos processos
-  createdAt: string;
 }
 
 export interface Prazo {
