@@ -214,7 +214,7 @@ const App: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <Routes>
             <Route path="/" element={<DashboardPage clientes={sortedClientes} processos={processos} prazos={prazos} financeiro={financeiro} />} />
-            <Route path="/clientes" element={<ClientsPage clientes={sortedClientes} setClientes={setClientes} processos={processos} setProcessos={setProcessos} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />
+            <Route path="/clientes" element={<ClientsPage clientes={sortedClientes} setClientes={setClientes} processos={processos} setProcessos={setProcessos} historico={historico} setHistorico={setHistorico} />} />
             <Route path="/processos" element={<ProcessesPage processos={processos} setProcessos={setProcessos} clientes={sortedClientes} setPrazos={setPrazos} prazos={prazos} recursos={recursos} setRecursos={setRecursos} historico={historico} setHistorico={setHistorico} financeiro={financeiro} />} />
             <Route path="/agenda" element={<AgendaPage prazos={prazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} />} />
             <Route path="/tarefas" element={<TasksPage prazos={prazos} setPrazos={setPrazos} processos={processos} clientes={sortedClientes} financeiro={financeiro} historico={historico} setHistorico={setHistorico} />} />

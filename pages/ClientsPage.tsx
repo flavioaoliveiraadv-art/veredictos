@@ -2,8 +2,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import {
   Plus, Search, Mail, Phone, User, Trash2, Edit, History, X,
-  CheckCircle2, ChevronRight, Save, DollarSign, Filter,
-  MinusCircle, FileText
+  CheckCircle2, ChevronRight, Save, Filter,
+  MinusCircle
 } from 'lucide-react';
 import {
   Cliente, Processo, Financeiro, HistoricoAlteracao, StatusProcesso
@@ -15,7 +15,6 @@ interface ClientsPageProps {
   setClientes: React.Dispatch<React.SetStateAction<Cliente[]>>;
   processos: Processo[];
   setProcessos: React.Dispatch<React.SetStateAction<Processo[]>>;
-  financeiro: Financeiro[];
   historico: HistoricoAlteracao[];
   setHistorico: React.Dispatch<React.SetStateAction<HistoricoAlteracao[]>>;
 }
@@ -37,7 +36,7 @@ const INITIAL_FORM_STATE: Partial<Cliente> = {
 
 // Fixed: Corrected typo 'procesos' to 'processos' in props destructuring
 const ClientsPage: React.FC<ClientsPageProps> = ({
-  clientes, setClientes, processos, setProcessos, financeiro, historico, setHistorico
+  clientes, setClientes, processos, setProcessos, historico, setHistorico
 }) => {
   const [activeTab, setActiveTab] = useState<'ATIVO' | 'INATIVO'>('ATIVO');
   const [searchTerm, setSearchTerm] = useState('');
@@ -281,28 +280,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                       </div>
                     </div>
                   </section>
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3 flex items-center gap-2">
-                      <FileText className="w-4 h-4" /> Processos Vinculados
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {getProcessosDoCliente(selectedCliente.id).length > 0 ? (
-                        getProcessosDoCliente(selectedCliente.id).map(p => (
-                          <div key={p.id} className="p-5 bg-gray-50 rounded-3xl border border-gray-100 flex items-center justify-between group hover:border-indigo-300 transition-all">
-                            <div>
-                              <p className="text-sm font-black text-gray-800">{p.objeto}</p>
-                              <p className="text-xs font-bold text-indigo-600">{p.numeros[0]}</p>
-                            </div>
-                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${p.status === StatusProcesso.ATIVO ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-200 text-gray-500'}`}>
-                              {p.status}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm font-bold text-gray-300 italic py-4">Nenhum processo vinculado a este cliente.</p>
-                      )}
-                    </div>
-                  </section>
                 </div>
                 <div className="space-y-6">
                   <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
@@ -316,26 +293,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                         <input type="checkbox" checked={selectedCliente.status === 'Ativo'} onChange={() => toggleInativar(selectedCliente)} className="sr-only peer" />
                         <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                       </label>
-                    </div>
-                  </div>
-                  <div className="bg-white p-8 rounded-[40px] border border-gray-100">
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2"><DollarSign className="w-4 h-4" /> Lançamentos Financeiros</h4>
-                    <div className="space-y-4">
-                      {financeiro.filter(f => f.clienteId === selectedCliente.id).length > 0 ? (
-                        financeiro.filter(f => f.clienteId === selectedCliente.id).map(f => (
-                          <div key={f.id} className="p-4 bg-gray-50 rounded-2xl flex justify-between items-center">
-                            <div>
-                              <p className="text-xs font-black text-gray-800">{f.descricao}</p>
-                              <p className="text-[10px] font-bold text-gray-400">{f.dataVencimento}</p>
-                            </div>
-                            <span className={`text-xs font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-red-500'}`}>
-                              R$ {f.valor.toLocaleString('pt-BR')}
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-gray-300 font-bold italic">Nenhum lançamento vinculado.</p>
-                      )}
                     </div>
                   </div>
                 </div>
