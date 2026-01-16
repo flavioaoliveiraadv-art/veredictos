@@ -482,7 +482,14 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   <div className="animate-in slide-in-from-top-2 duration-300">
                     <FormSelect label="Número do Processo" required={isVincularProcesso} value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
                       <option value="">Selecione o processo ativo...</option>
-                      {activeProcessos.map(p => <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>)}
+                      {activeProcessos.map(p => {
+                        const cli = clientes.find(c => c.id === p.clienteId);
+                        return (
+                          <option key={p.id} value={p.id}>
+                            {p.numeros[0]} – {p.objeto} – {cli?.nome || 'Cliente não encontrado'}
+                          </option>
+                        );
+                      })}
                     </FormSelect>
                   </div>
                 ) : (
