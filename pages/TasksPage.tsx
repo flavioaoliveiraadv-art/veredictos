@@ -134,7 +134,15 @@ const TasksPage: React.FC<TasksPageProps> = ({
   };
 
   const activeClientes = useMemo(() => clientes.filter(c => c.status === 'Ativo'), [clientes]);
-  const activeProcessos = useMemo(() => processos.filter(p => p.status === StatusProcesso.ATIVO), [processos]);
+  const activeProcessos = useMemo(() => {
+    return [...processos]
+      .filter(p => p.status === StatusProcesso.ATIVO)
+      .sort((a, b) => {
+        const cliA = clientes.find(c => c.id === a.clienteId)?.nome || '';
+        const cliB = clientes.find(c => c.id === b.clienteId)?.nome || '';
+        return cliA.localeCompare(cliB, 'pt-BR');
+      });
+  }, [processos, clientes]);
 
   const filteredItems = useMemo(() => {
     let base = prazos;

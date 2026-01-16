@@ -264,6 +264,14 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
     });
   }, [financeiro, activeSubTab, searchTerm, clientes, processos]);
 
+  const sortedProcessos = useMemo(() => {
+    return [...processos].sort((a, b) => {
+      const cliA = clientes.find(c => c.id === a.clienteId)?.nome || '';
+      const cliB = clientes.find(c => c.id === b.clienteId)?.nome || '';
+      return cliA.localeCompare(cliB, 'pt-BR');
+    });
+  }, [processos, clientes]);
+
   const totalProjetado = useMemo(() => {
     const receitas = financeiro.filter(f => f.tipo === 'Receita').reduce((s, f) => s + f.valor, 0);
     const despesas = financeiro.filter(f => f.tipo === 'Despesa').reduce((s, f) => s + f.valor, 0);
@@ -497,7 +505,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
 
                   <FormSelect label="Número do Processo" value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
                     <option value="">Não relacionado a processo</option>
-                    {processos.map(p => {
+                    {sortedProcessos.map(p => {
                       const cli = clientes.find(c => c.id === p.clienteId);
                       return (
                         <option key={p.id} value={p.id}>
