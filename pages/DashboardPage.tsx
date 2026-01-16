@@ -110,7 +110,14 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
       {/* Primary Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
-          title="Tarefas"
+          title="Prazos"
+          icon={<FilePenLine className="w-5 h-5" />}
+          iconColor="text-blue-500 bg-blue-50"
+          stats={statsPrazos}
+          onClick={() => navigate('/tarefas')}
+        />
+        <StatCard
+          title="Tarefas Internas"
           icon={<CheckSquare className="w-5 h-5" />}
           iconColor="text-blue-500 bg-blue-50"
           stats={statsTarefas}
@@ -123,13 +130,6 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
           iconColor="text-orange-500 bg-orange-50"
           stats={statsAudiencias}
           isFeminine={true}
-          onClick={() => navigate('/tarefas')}
-        />
-        <StatCard
-          title="Prazos"
-          icon={<FilePenLine className="w-5 h-5" />}
-          iconColor="text-blue-500 bg-blue-50"
-          stats={statsPrazos}
           onClick={() => navigate('/tarefas')}
         />
       </div>
