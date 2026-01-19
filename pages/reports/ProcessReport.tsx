@@ -88,18 +88,25 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
 
+        const client = clientes?.find(c => c.id === selectedProcesso.clienteId);
+        const clientDoc = client?.documento || (client?.pessoas && client.pessoas.length > 0 ? client.pessoas[0].documento : '-');
+        const clientType = client?.tipo || (client?.pessoas && client.pessoas.length > 0 ? client.pessoas[0].tipo : '-');
+
         const generalData = [
             [`Processo: ${numero}`, `Tribunal: ${selectedProcesso.tribunal || '-'}`],
-            [`Cliente: ${clienteName}`, `Comarca: ${selectedProcesso.comarca || '-'}`],
-            [`Parte Adversa: ${selectedProcesso.parteContraria || '-'}`, `Vara: ${selectedProcesso.localTramitacao || '-'}`],
-            [`Área: ${selectedProcesso.areaAtuacao || '-'}`, `Fase: ${selectedProcesso.faseProcessual || '-'}`],
-            [`Valor da Causa: R$ ${selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}`, `Status: ${selectedProcesso.status || '-'}`]
+            [`Objeto: ${selectedProcesso.objeto?.toUpperCase() || '-'}`, `Comarca: ${selectedProcesso.comarca || '-'}`],
+            [`Cliente: ${clienteName}`, `Vara/Local: ${selectedProcesso.localTramitacao || '-'}`],
+            [`Doc. Cliente: ${clientDoc}`, `Fase: ${selectedProcesso.faseProcessual || '-'}`],
+            [`Tipo Cliente: ${clientType}`, `Área: ${selectedProcesso.areaAtuacao || '-'}`],
+            [`Polo: ${selectedProcesso.polo || '-'}`, `Gratuita: ${selectedProcesso.gratuidade ? 'Sim' : 'Não'}`],
+            [`Parte Adversa: ${selectedProcesso.parteContraria || '-'}`, `Distribuição: ${selectedProcesso.dataDistribuicao || '-'}`],
+            [`Valor da Causa: R$ ${selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}`, `Atualização: ${selectedProcesso.ultimaAtualizacao || '-'}`]
         ];
 
         generalData.forEach(row => {
             doc.text(row[0], 16, yPos);
             doc.text(row[1], 110, yPos);
-            yPos += 6;
+            yPos += 7;
         });
         yPos += 5;
 
@@ -417,37 +424,101 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
                         <div className="overflow-y-auto p-6 space-y-8 bg-white">
                             {activeTab === 'dados' && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                    {/* 1. DADOS GERAIS */}
+                                    {/* 1. DADOS DO PROCESSO */}
                                     <section>
                                         <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
-                                            <FileText className="w-5 h-5 text-blue-500" />
-                                            Dados Gerais
+                                            <Scale className="w-5 h-5 text-blue-500" />
+                                            Dados do Processo
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                                <label className="text-xs text-slate-500 uppercase font-bold">Tribunal / Comarca</label>
-                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.tribunal || '-'} / {selectedProcesso.comarca || '-'}</p>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 lg:col-span-3">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Número do Processo</label>
+                                                <p className="font-bold text-slate-900 text-lg mt-1">{getNumeroProcesso(selectedProcesso)}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 lg:col-span-3">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Objeto do Processo</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.objeto?.toUpperCase() || '-'}</p>
                                             </div>
                                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                                <label className="text-xs text-slate-500 uppercase font-bold">Vara / Local</label>
-                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.localTramitacao || '-'}</p>
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Polo</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.polo || '-'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Parte Contrária</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.parteContraria || '-'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Área de Atuação</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.areaAtuacao || '-'}</p>
                                             </div>
                                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                                                 <label className="text-xs text-slate-500 uppercase font-bold">Fase Processual</label>
                                                 <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.faseProcessual || '-'}</p>
                                             </div>
                                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                                <label className="text-xs text-slate-500 uppercase font-bold">Parte Adversa</label>
-                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.parteContraria || '-'}</p>
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Tribunal</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.tribunal || '-'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Comarca</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.comarca || '-'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Vara / Local</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.localTramitacao || '-'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Data de Distribuição</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.dataDistribuicao || '-'}</p>
                                             </div>
                                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                                                 <label className="text-xs text-slate-500 uppercase font-bold">Valor da Causa</label>
-                                                <p className="font-semibold text-emerald-700 mt-1">R$ {selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}</p>
+                                                <p className="font-bold text-emerald-700 mt-1">R$ {selectedProcesso.valorCausa?.toLocaleString('pt-BR') || '0,00'}</p>
                                             </div>
                                             <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                                                <label className="text-xs text-slate-500 uppercase font-bold">Gratuidade Justiça</label>
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Justiça Gratuita</label>
                                                 <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.gratuidade ? 'Sim' : 'Não'}</p>
                                             </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Última Atualização</label>
+                                                <p className="font-semibold text-slate-800 mt-1">{selectedProcesso.ultimaAtualizacao || '-'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <label className="text-xs text-slate-500 uppercase font-bold">Status Atual</label>
+                                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest mt-1 ${selectedProcesso.status === 'Ativo' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>{selectedProcesso.status}</span>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* 2. DADOS DO CLIENTE */}
+                                    <section>
+                                        <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100">
+                                            <Users className="w-5 h-5 text-indigo-500" />
+                                            Dados do Cliente
+                                        </h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            {(() => {
+                                                const client = clientes?.find(c => c.id === selectedProcesso.clienteId);
+                                                const doc = client?.documento || (client?.pessoas && client.pessoas.length > 0 ? client.pessoas[0].documento : '-');
+                                                const type = client?.tipo || (client?.pessoas && client.pessoas.length > 0 ? client.pessoas[0].tipo : '-');
+
+                                                return (
+                                                    <>
+                                                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 lg:col-span-2">
+                                                            <label className="text-xs text-slate-500 uppercase font-bold">Nome do Cliente</label>
+                                                            <p className="font-bold text-slate-900 mt-1">{client?.nome || 'Não informado'}</p>
+                                                        </div>
+                                                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                            <label className="text-xs text-slate-500 uppercase font-bold">Tipo</label>
+                                                            <p className="font-semibold text-slate-800 mt-1">{type === 'PF' ? 'Pessoa Física' : type === 'PJ' ? 'Pessoa Jurídica' : type}</p>
+                                                        </div>
+                                                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                            <label className="text-xs text-slate-500 uppercase font-bold">Documento (CPF/CNPJ)</label>
+                                                            <p className="font-semibold text-slate-800 mt-1">{doc}</p>
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     </section>
 
