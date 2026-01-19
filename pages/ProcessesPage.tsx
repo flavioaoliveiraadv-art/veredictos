@@ -199,6 +199,26 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     }
   };
 
+  // Função de Exclusão de Andamento
+  const deleteAndamento = (e: React.MouseEvent, andamentoId: string) => {
+    e.stopPropagation();
+    if (!selectedProcess) return;
+    if (confirm('AVISO: Esta é uma exclusão permanente. O andamento será removido definitivamente do histórico do processo. Deseja confirmar a exclusão?')) {
+      const updatedAndamentos = (selectedProcess.andamentos || []).filter(a => a.id !== andamentoId);
+      const updatedProcess = { ...selectedProcess, andamentos: updatedAndamentos };
+      setProcessos(prev => prev.map(p => p.id === selectedProcess.id ? updatedProcess : p));
+      setSelectedProcess(updatedProcess);
+      addHistorico(selectedProcess.id, 'Andamento excluído do processo.');
+    }
+  };
+
+  // Função de Edição de Andamento
+  const editAndamento = (e: React.MouseEvent, andamento: Andamento) => {
+    e.stopPropagation();
+    setAndamentoFormData(andamento);
+    setIsAndamentoModalOpen(true);
+  };
+
   // Janela de Detalhes do Andamento
   const AndamentoDetailModal = () => {
     if (!selectedAndamento) return null;
@@ -552,6 +572,22 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                       </span>
                                       <span className="text-[8px] font-black text-gray-300 uppercase tracking-tighter">— {and.providencia}</span>
                                     </div>
+                                  </div>
+                                  <div className="flex items-center gap-1 opacity-0 group-hover/and:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={(e) => editAndamento(e, and)}
+                                      className="p-2 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-xl transition-all"
+                                      title="Editar Andamento"
+                                    >
+                                      <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={(e) => deleteAndamento(e, and.id)}
+                                      className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                                      title="Excluir Andamento"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
                                   </div>
                                 </div>
                                 <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
