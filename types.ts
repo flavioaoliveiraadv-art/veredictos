@@ -35,6 +35,8 @@ export enum TipoPrazo {
   ATENDIMENTO = 'Atendimento',
   REUNIAO = 'Reunião',
   ADMINISTRATIVO = 'Administrativo',
+  PROTOCOLO = 'Protocolo',
+  OUTROS = 'Outros',
   // Added TAREFA member to resolve property access errors
   TAREFA = 'Tarefa'
 }

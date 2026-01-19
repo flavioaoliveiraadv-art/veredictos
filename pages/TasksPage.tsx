@@ -203,6 +203,15 @@ const TasksPage: React.FC<TasksPageProps> = ({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const id = formData.id || `p-${Date.now()}`;
+    const isProtocolo = formData.tipo === TipoPrazo.PROTOCOLO;
+
+    // Validação de obrigatoriedade do cliente para Protocolo
+    if (isProtocolo && !formData.clienteId) {
+      alert('O campo "Cliente" é obrigatório para tarefas do tipo Protocolo.');
+      return;
+    }
+
     // Validação de obrigatoriedade do andamento para Prazo e Audiência
     if ((formData.tipo === TipoPrazo.PRAZO || formData.tipo === TipoPrazo.AUDIENCIA) && isVincularProcesso) {
       if (!formData.andamentoId) {
@@ -211,14 +220,14 @@ const TasksPage: React.FC<TasksPageProps> = ({
       }
     }
 
-    const id = formData.id || `p-${Date.now()}`;
-
-    // Se não estiver vinculado, garantir que processoId seja vazio
-    const finalProcessoId = isVincularProcesso ? formData.processoId : '';
+    // Se não estiver vinculado ou se for Protocolo, garantir que processoId seja vazio
+    const finalProcessoId = (isVincularProcesso && !isProtocolo) ? formData.processoId : '';
+    const finalAndamentoId = !isProtocolo ? formData.andamentoId : '';
 
     const newPrazo: Prazo = {
       ...formData,
       processoId: finalProcessoId,
+      andamentoId: finalAndamentoId,
       id,
       concluido: formData.concluido || false,
       cancelado: formData.cancelado || false,
@@ -288,6 +297,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
       case TipoPrazo.REUNIAO: return 'bg-rose-50 text-rose-600 border-rose-100';
       case TipoPrazo.ATENDIMENTO: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
       case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
+      case TipoPrazo.PROTOCOLO: return 'bg-slate-50 text-slate-400 border-slate-100';
+      case TipoPrazo.OUTROS: return 'bg-slate-100 text-slate-950 border-slate-200';
       default: return 'bg-gray-50 text-gray-600 border-gray-100';
     }
   };
@@ -300,6 +311,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
       case TipoPrazo.REUNIAO: return 'text-rose-600';
       case TipoPrazo.ATENDIMENTO: return 'text-emerald-600';
       case TipoPrazo.ADMINISTRATIVO: return 'text-[#5d4037]';
+      case TipoPrazo.PROTOCOLO: return 'text-slate-400';
+      case TipoPrazo.OUTROS: return 'text-slate-950';
       default: return 'text-gray-400';
     }
   };
@@ -312,6 +325,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
       case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
       case TipoPrazo.ATENDIMENTO: return <MessageSquare className={className} />;
       case TipoPrazo.ADMINISTRATIVO: return <Activity className={className} />;
+      case TipoPrazo.PROTOCOLO: return <ScrollText className={className} />;
+      case TipoPrazo.OUTROS: return <Activity className={className} />;
       default: return <CheckSquare className={className} />;
     }
   };
@@ -442,6 +457,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
                 { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas', icon: <Activity className="w-6 h-6" />, color: 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8] hover:border-[#a1887f]' },
                 { tipo: TipoPrazo.REUNIAO, label: 'Reunião', desc: 'Reuniões e encontros', icon: <UsersIcon className="w-6 h-6" />, color: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-400' },
                 { tipo: TipoPrazo.ATENDIMENTO, label: 'Atendimento', desc: 'Atendimento ao cliente', icon: <MessageSquare className="w-6 h-6" />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:border-emerald-400' },
+                { tipo: TipoPrazo.PROTOCOLO, label: 'Protocolo', desc: 'Protocolos de petições', icon: <ScrollText className="w-6 h-6" />, color: 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300' },
+                { tipo: TipoPrazo.OUTROS, label: 'Outros', desc: 'Casos não previstos', icon: <Activity className="w-6 h-6" />, color: 'bg-slate-100 text-slate-950 border-slate-200 hover:border-slate-400' },
               ].map(item => (
                 <button
                   key={item.tipo}
@@ -498,76 +515,89 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   onChange={e => setFormData({ ...formData, observacao: e.target.value })}
                 />
 
-                <div className="grid grid-cols-2 gap-6">
-                  <FormSelect label="Cliente" value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
-                    <option value="">Nenhum cliente vinculado</option>
-                    {activeClientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                  </FormSelect>
+                {formData.tipo !== TipoPrazo.PROTOCOLO && (
+                  <>
+                    <div className="grid grid-cols-2 gap-6">
+                      <FormSelect label="Cliente" value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
+                        <option value="">Nenhum cliente vinculado</option>
+                        {activeClientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                      </FormSelect>
 
-                  <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Vínculo com Processo</label>
-                    <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-200">
-                      <input
-                        type="checkbox"
-                        id="checkVincularProcesso"
-                        checked={isVincularProcesso}
-                        onChange={(e) => {
-                          setIsVincularProcesso(e.target.checked);
-                          if (!e.target.checked) setFormData(prev => ({ ...prev, processoId: '' }));
-                        }}
-                        className="w-5 h-5 rounded border-gray-300 text-indigo-600"
-                      />
-                      <label htmlFor="checkVincularProcesso" className="text-xs font-bold text-gray-700 cursor-pointer">Vincular a um processo judicial</label>
+                      <div className="space-y-2">
+                        <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Vínculo com Processo</label>
+                        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                          <input
+                            type="checkbox"
+                            id="checkVincularProcesso"
+                            checked={isVincularProcesso}
+                            onChange={(e) => {
+                              setIsVincularProcesso(e.target.checked);
+                              if (!e.target.checked) setFormData(prev => ({ ...prev, processoId: '' }));
+                            }}
+                            className="w-5 h-5 rounded border-gray-300 text-indigo-600"
+                          />
+                          <label htmlFor="checkVincularProcesso" className="text-xs font-bold text-gray-700 cursor-pointer">Vincular a um processo judicial</label>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
 
-                {isVincularProcesso ? (
-                  <div className="animate-in slide-in-from-top-2 duration-300">
-                    <FormSelect label="Número do Processo" required={isVincularProcesso} value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
-                      <option value="">Selecione o processo ativo...</option>
-                      {activeProcessos.map(p => {
-                        const cli = clientes.find(c => c.id === p.clienteId);
-                        return (
-                          <option key={p.id} value={p.id}>
-                            {p.numeros[0]} – {p.objeto} – {cli?.nome || 'Cliente não encontrado'}
-                          </option>
-                        );
-                      })}
-                    </FormSelect>
-
-                    {availableAndamentos.length > 0 && (
-                      <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
-                        <FormSelect
-                          label="Andamento Vinculado"
-                          required={(formData.tipo === TipoPrazo.PRAZO || formData.tipo === TipoPrazo.AUDIENCIA)}
-                          value={formData.andamentoId}
-                          onChange={e => setFormData({ ...formData, andamentoId: e.target.value })}
-                        >
-                          <option value="">Selecione o andamento correspondente...</option>
-                          {availableAndamentos.map(and => {
-                            const resultado = getAndamentoResultado(and);
+                    {isVincularProcesso ? (
+                      <div className="animate-in slide-in-from-top-2 duration-300">
+                        <FormSelect label="Número do Processo" required={isVincularProcesso} value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
+                          <option value="">Selecione o processo ativo...</option>
+                          {activeProcessos.map(p => {
+                            const cli = clientes.find(c => c.id === p.clienteId);
                             return (
-                              <option key={and.id} value={and.id}>
-                                {and.data} – {and.tipo}{resultado ? ` – ${resultado}` : ''}
+                              <option key={p.id} value={p.id}>
+                                {p.numeros[0]} – {p.objeto} – {cli?.nome || 'Cliente não encontrado'}
                               </option>
                             );
                           })}
                         </FormSelect>
-                      </div>
-                    )}
 
-                    {isVincularProcesso && availableAndamentos.length === 0 && (
-                      <div className="mt-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 flex items-center gap-3">
-                        <AlertTriangle className="w-5 h-5 text-rose-500" />
-                        <p className="text-[10px] font-bold text-rose-700 uppercase tracking-widest">Este processo não possui andamentos cadastrados.</p>
+                        {availableAndamentos.length > 0 && (
+                          <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
+                            <FormSelect
+                              label="Andamento Vinculado"
+                              required={(formData.tipo === TipoPrazo.PRAZO || formData.tipo === TipoPrazo.AUDIENCIA)}
+                              value={formData.andamentoId}
+                              onChange={e => setFormData({ ...formData, andamentoId: e.target.value })}
+                            >
+                              <option value="">Selecione o andamento correspondente...</option>
+                              {availableAndamentos.map(and => {
+                                const resultado = getAndamentoResultado(and);
+                                return (
+                                  <option key={and.id} value={and.id}>
+                                    {and.data} – {and.tipo}{resultado ? ` – ${resultado}` : ''}
+                                  </option>
+                                );
+                              })}
+                            </FormSelect>
+                          </div>
+                        )}
+
+                        {isVincularProcesso && availableAndamentos.length === 0 && (
+                          <div className="mt-4 p-4 bg-rose-50 rounded-2xl border border-rose-100 flex items-center gap-3">
+                            <AlertTriangle className="w-5 h-5 text-rose-500" />
+                            <p className="text-[10px] font-bold text-rose-700 uppercase tracking-widest">Este processo não possui andamentos cadastrados.</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center gap-3">
+                        <FileMinus className="w-5 h-5 text-amber-500" />
+                        <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">Tarefa Administrativa / Sem Processo Vinculado</p>
                       </div>
                     )}
-                  </div>
-                ) : (
-                  <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-center gap-3">
-                    <FileMinus className="w-5 h-5 text-amber-500" />
-                    <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest">Tarefa Administrativa / Sem Processo Vinculado</p>
+                  </>
+                )}
+
+                {formData.tipo === TipoPrazo.PROTOCOLO && (
+                  <div className="animate-in slide-in-from-top-2 duration-300">
+                    <FormSelect label="Cliente" required value={formData.clienteId} onChange={e => setFormData({ ...formData, clienteId: e.target.value })}>
+                      <option value="">Selecione o Cliente...</option>
+                      {activeClientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                    </FormSelect>
                   </div>
                 )}
 
@@ -580,14 +610,16 @@ const TasksPage: React.FC<TasksPageProps> = ({
                       <FormInput label="Hora" type="time" value={formData.horaVencimento} onChange={e => setFormData({ ...formData, horaVencimento: e.target.value })} />
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 col-span-1">
-                    <div className="col-span-2">
-                      <FormInput label="Data Fatal" type="date" value={toISODate(formData.dataFatal || '')} onChange={e => setFormData({ ...formData, dataFatal: toBRDate(e.target.value) })} />
+                  {formData.tipo !== TipoPrazo.PROTOCOLO && (
+                    <div className="grid grid-cols-3 gap-2 col-span-1">
+                      <div className="col-span-2">
+                        <FormInput label="Data Fatal" type="date" value={toISODate(formData.dataFatal || '')} onChange={e => setFormData({ ...formData, dataFatal: toBRDate(e.target.value) })} />
+                      </div>
+                      <div className="col-span-1">
+                        <FormInput label="Hora" type="time" value={formData.horaFatal} onChange={e => setFormData({ ...formData, horaFatal: e.target.value })} />
+                      </div>
                     </div>
-                    <div className="col-span-1">
-                      <FormInput label="Hora" type="time" value={formData.horaFatal} onChange={e => setFormData({ ...formData, horaFatal: e.target.value })} />
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {formData.tipo === TipoPrazo.AUDIENCIA && (
@@ -597,10 +629,12 @@ const TasksPage: React.FC<TasksPageProps> = ({
                   </FormSelect>
                 )}
 
-                <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 transition-all">
-                  <input type="checkbox" checked={formData.critico} onChange={e => setFormData({ ...formData, critico: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-indigo-600" />
-                  <span className="text-xs font-black text-gray-700 uppercase tracking-widest">Marcar como Tarefa Urgente</span>
-                </label>
+                {formData.tipo !== TipoPrazo.PROTOCOLO && (
+                  <label className="flex items-center gap-3 cursor-pointer p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:bg-indigo-50 hover:border-indigo-200 transition-all">
+                    <input type="checkbox" checked={formData.critico} onChange={e => setFormData({ ...formData, critico: e.target.checked })} className="w-5 h-5 rounded border-gray-300 text-indigo-600" />
+                    <span className="text-xs font-black text-gray-700 uppercase tracking-widest">Marcar como Tarefa Urgente</span>
+                  </label>
+                )}
               </form>
             </div>
 
