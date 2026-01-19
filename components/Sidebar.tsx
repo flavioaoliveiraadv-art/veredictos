@@ -35,10 +35,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         <img
           src="/logo_oliveira_lins.png"
           alt="Logo Oliveira & Lins"
-          className="w-28 h-auto object-contain"
+          className="w-56 h-auto object-contain"
         />
         <div className="text-center">
-          <span className="block text-white font-bold text-sm leading-tight tracking-wide">
+          <span className="block text-white font-bold text-xl leading-tight tracking-wide">
             Oliveira & Lins
           </span>
           <span className="block text-indigo-400 font-bold text-[9px] uppercase tracking-[0.2em] mt-0.5">
