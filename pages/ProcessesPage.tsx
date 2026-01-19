@@ -58,6 +58,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   // Andamento States
   const [isAndamentoTypeModalOpen, setIsAndamentoTypeModalOpen] = useState(false);
   const [isAndamentoModalOpen, setIsAndamentoModalOpen] = useState(false);
+  const [isAndamentoDetailModalOpen, setIsAndamentoDetailModalOpen] = useState(false);
+  const [selectedAndamento, setSelectedAndamento] = useState<Andamento | null>(null);
   const [andamentoFormData, setAndamentoFormData] = useState<Partial<Andamento>>({
     data: getTodayBR(),
     tipo: TipoAndamento.DESPACHO,
@@ -196,9 +198,98 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     }
   };
 
+  // Janela de Detalhes do Andamento
+  const AndamentoDetailModal = () => {
+    if (!selectedAndamento) return null;
+    const and = selectedAndamento;
+
+    return (
+      <div className="fixed inset-0 bg-[#0b1726]/40 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4">
+        <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
+            <div>
+              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Detalhes do Andamento</p>
+              <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">{and.tipo}</h3>
+            </div>
+            <button onClick={() => setIsAndamentoDetailModalOpen(false)} className="p-3 hover:bg-white rounded-2xl transition-all shadow-sm group">
+              <X className="w-5 h-5 text-gray-400 group-hover:text-rose-500" />
+            </button>
+          </div>
+
+          <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scroll">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+              <DetailField label="Data de Registro" value={and.data} icon={<Calendar className="w-3 h-3" />} />
+              <DetailField label="Providência" value={and.providencia} icon={<Activity className="w-3 h-3" />} />
+
+              {and.tipo === TipoAndamento.DESPACHO && and.despacho && (
+                <>
+                  <DetailField label="Tipo de Despacho" value={and.despacho.tipoDespacho} className="text-indigo-600" />
+                  <DetailField label="Instância" value={and.despacho.instancia} />
+                  <DetailField label="Publicação" value={and.despacho.dataPublicacao} />
+                  <DetailField label="Prolação" value={and.despacho.dataProlacao} />
+                </>
+              )}
+
+              {and.tipo === TipoAndamento.SENTENCA && and.sentenca && (
+                <>
+                  <DetailField label="Resultado" value={and.sentenca.resultado} className="text-indigo-600" />
+                  <DetailField label="Instância" value={and.sentenca.instancia} />
+                  <DetailField label="Publicação" value={and.sentenca.dataPublicacao} />
+                  <DetailField label="Magistrado" value={and.sentenca.magistrado || 'N/C'} />
+                </>
+              )}
+
+              {and.tipo === TipoAndamento.ACORDAO && and.acordao && (
+                <>
+                  <DetailField label="Resultado" value={and.acordao.resultado} className="text-indigo-600" />
+                  <DetailField label="Tribunal" value={and.acordao.tribunal} />
+                  <DetailField label="Publicação" value={and.acordao.dataPublicacao} />
+                  <DetailField label="Relator" value={and.acordao.relator || 'N/C'} />
+                </>
+              )}
+
+              {and.tipo === TipoAndamento.ALVARA && and.alvara && (
+                <>
+                  <DetailField label="Tipo de Alvará" value={and.alvara.tipoAlvara} className="text-indigo-600" />
+                  <DetailField label="Expedição" value={and.alvara.dataExpedicao} />
+                  {and.alvara.valorAutorizado && (
+                    <DetailField label="Valor" value={formatCurrency(and.alvara.valorAutorizado)} className="text-emerald-600" />
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3 h-3" /> Conteúdo do Ato</p>
+              <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">
+                {and.conteudo || (and.tipo === TipoAndamento.DESPACHO ? and.despacho?.resumoObjetivo : and.tipo === TipoAndamento.SENTENCA ? and.sentenca?.resumoDecisao : 'Sem conteúdo detalhado.')}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className={`text-[10px] font-black px-4 py-2 rounded-xl border ${and.geraPrazo ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
+                {and.geraPrazo ? 'GERA PRAZO: SIM' : 'GERA PRAZO: NÃO'}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-8 bg-gray-50/50 border-t border-gray-50 flex justify-end">
+            <button
+              onClick={() => setIsAndamentoDetailModalOpen(false)}
+              className="bg-white border border-gray-200 text-gray-700 px-8 py-3 rounded-2xl font-bold hover:bg-gray-50 transition-all shadow-sm"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {isAndamentoDetailModalOpen && <AndamentoDetailModal />}
         <div>
           <h1 className="text-3xl font-bold text-[#0b1726]">Processos e Recursos</h1>
           <p className="text-gray-500 font-medium">Gestão unificada de acervo judicial e recursos de 2º grau.</p>
@@ -444,7 +535,10 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                               </div>
                               {idx !== selectedProcess.andamentos!.length - 1 && <div className="absolute left-3.5 top-8 bottom-[-24px] w-0.5 bg-indigo-50"></div>}
 
-                              <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all">
+                              <div
+                                onClick={() => { setSelectedAndamento(and); setIsAndamentoDetailModalOpen(true); }}
+                                className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all cursor-pointer group/and"
+                              >
                                 <div className="flex items-start justify-between mb-4">
                                   <div>
                                     <div className="flex items-center gap-3 mb-1">
