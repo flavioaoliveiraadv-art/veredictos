@@ -48,6 +48,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   const [selectedProcess, setSelectedProcess] = useState<Processo | null>(null);
   const [selectedRecurso, setSelectedRecurso] = useState<Recurso | null>(null);
   const [isHistoryLogModalOpen, setIsHistoryLogModalOpen] = useState(false);
+  const [andamentoErrors, setAndamentoErrors] = useState<Record<string, string>>({});
 
   // Form States
   const [procFormData, setProcFormData] = useState<Partial<Processo>>(INITIAL_PROC_STATE);
@@ -947,6 +948,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         };
                       }
                       setAndamentoFormData(initialData);
+                      setAndamentoErrors({});
                       setIsAndamentoTypeModalOpen(false);
                       setIsAndamentoModalOpen(true);
                     }}
@@ -999,6 +1001,34 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   onSubmit={(e) => {
                     e.preventDefault();
                     if (!selectedProcess) return;
+
+                    // Validação de Datas Obrigatórias por Tipo
+                    const errors: Record<string, string> = {};
+                    const type = andamentoFormData.tipo;
+
+                    if (type === TipoAndamento.SENTENCA && andamentoFormData.sentenca) {
+                      if (!andamentoFormData.sentenca.dataProlacao) errors.sentenca_dataProlacao = 'Obrigatório';
+                      if (!andamentoFormData.sentenca.dataPublicacao) errors.sentenca_dataPublicacao = 'Obrigatório';
+                    } else if (type === TipoAndamento.ACORDAO && andamentoFormData.acordao) {
+                      if (!andamentoFormData.acordao.dataProlacao) errors.acordao_dataProlacao = 'Obrigatório';
+                      if (!andamentoFormData.acordao.dataPublicacao) errors.acordao_dataPublicacao = 'Obrigatório';
+                    } else if (type === TipoAndamento.DECISAO_INTERLOCUTORIA && andamentoFormData.decisaoInterlocutoria) {
+                      if (!andamentoFormData.decisaoInterlocutoria.dataProlacao) errors.decisao_dataProlacao = 'Obrigatório';
+                      if (!andamentoFormData.decisaoInterlocutoria.dataPublicacao) errors.decisao_dataPublicacao = 'Obrigatório';
+                    } else if (type === TipoAndamento.DECISAO_MONOCRATICA && andamentoFormData.decisaoMonocratica) {
+                      if (!andamentoFormData.decisaoMonocratica.dataProlacao) errors.decisaoMon_dataProlacao = 'Obrigatório';
+                      if (!andamentoFormData.decisaoMonocratica.dataPublicacao) errors.decisaoMon_dataPublicacao = 'Obrigatório';
+                    } else if (type === TipoAndamento.DESPACHO && andamentoFormData.despacho) {
+                      if (!andamentoFormData.despacho.dataProlacao) errors.despacho_dataProlacao = 'Obrigatório';
+                      if (!andamentoFormData.despacho.dataPublicacao) errors.despacho_dataPublicacao = 'Obrigatório';
+                    } else if (type === TipoAndamento.CERTIDAO && andamentoFormData.certidao) {
+                      if (!andamentoFormData.certidao.dataPublicacao) errors.certidao_dataPublicacao = 'Obrigatório';
+                    }
+
+                    if (Object.keys(errors).length > 0) {
+                      setAndamentoErrors(errors);
+                      return;
+                    }
                     const and: Andamento = {
                       ...andamentoFormData,
                       id: `and-${Date.now()}`
@@ -1031,21 +1061,29 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                             label="Data da Prolação"
                             type="date"
                             required
+                            error={andamentoErrors.sentenca_dataProlacao}
                             value={toISODate(andamentoFormData.sentenca.dataProlacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              sentenca: { ...andamentoFormData.sentenca!, dataProlacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                sentenca: { ...andamentoFormData.sentenca!, dataProlacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, sentenca_dataProlacao: '' }));
+                            }}
                           />
                           <FormInput
                             label="Data da Publicação"
                             type="date"
                             required
+                            error={andamentoErrors.sentenca_dataPublicacao}
                             value={toISODate(andamentoFormData.sentenca.dataPublicacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              sentenca: { ...andamentoFormData.sentenca!, dataPublicacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                sentenca: { ...andamentoFormData.sentenca!, dataPublicacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, sentenca_dataPublicacao: '' }));
+                            }}
                           />
                           <FormSelect
                             label="Instância"
@@ -1277,21 +1315,29 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                             label="Data da Prolação"
                             type="date"
                             required
+                            error={andamentoErrors.acordao_dataProlacao}
                             value={toISODate(andamentoFormData.acordao.dataProlacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              acordao: { ...andamentoFormData.acordao!, dataProlacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                acordao: { ...andamentoFormData.acordao!, dataProlacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, acordao_dataProlacao: '' }));
+                            }}
                           />
                           <FormInput
                             label="Data da Publicação"
                             type="date"
                             required
+                            error={andamentoErrors.acordao_dataPublicacao}
                             value={toISODate(andamentoFormData.acordao.dataPublicacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              acordao: { ...andamentoFormData.acordao!, dataPublicacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                acordao: { ...andamentoFormData.acordao!, dataPublicacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, acordao_dataPublicacao: '' }));
+                            }}
                           />
                           <FormSelect
                             label="Resultado"
@@ -1445,20 +1491,30 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           <FormInput
                             label="Data da Prolação"
                             type="date"
+                            required
+                            error={andamentoErrors.decisao_dataProlacao}
                             value={toISODate(andamentoFormData.decisaoInterlocutoria.dataProlacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataProlacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataProlacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, decisao_dataProlacao: '' }));
+                            }}
                           />
                           <FormInput
                             label="Data da Publicação"
                             type="date"
+                            required
+                            error={andamentoErrors.decisao_dataPublicacao}
                             value={toISODate(andamentoFormData.decisaoInterlocutoria.dataPublicacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataPublicacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                decisaoInterlocutoria: { ...andamentoFormData.decisaoInterlocutoria!, dataPublicacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, decisao_dataPublicacao: '' }));
+                            }}
                           />
                         </div>
                       </div>
@@ -1587,20 +1643,30 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           <FormInput
                             label="Data da Prolação"
                             type="date"
+                            required
+                            error={andamentoErrors.decisaoMon_dataProlacao}
                             value={toISODate(andamentoFormData.decisaoMonocratica.dataProlacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, dataProlacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, dataProlacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, decisaoMon_dataProlacao: '' }));
+                            }}
                           />
                           <FormInput
                             label="Data da Publicação"
                             type="date"
+                            required
+                            error={andamentoErrors.decisaoMon_dataPublicacao}
                             value={toISODate(andamentoFormData.decisaoMonocratica.dataPublicacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, dataPublicacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                decisaoMonocratica: { ...andamentoFormData.decisaoMonocratica!, dataPublicacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, decisaoMon_dataPublicacao: '' }));
+                            }}
                           />
                         </div>
                       </div>
@@ -1740,6 +1806,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           <FormInput
                             label="Data da Expedição"
                             type="date"
+                            required
                             value={toISODate(andamentoFormData.alvara.dataExpedicao)}
                             onChange={(e: any) => setAndamentoFormData({
                               ...andamentoFormData,
@@ -1835,11 +1902,16 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           <FormInput
                             label="Data da Publicação"
                             type="date"
+                            required
+                            error={andamentoErrors.certidao_dataPublicacao}
                             value={toISODate(andamentoFormData.certidao.dataPublicacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              certidao: { ...andamentoFormData.certidao!, dataPublicacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                certidao: { ...andamentoFormData.certidao!, dataPublicacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, certidao_dataPublicacao: '' }));
+                            }}
                           />
                           <FormSelect
                             label="Tipo de Certidão"
@@ -1915,21 +1987,29 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                             label="Data da Prolação"
                             type="date"
                             required
+                            error={andamentoErrors.despacho_dataProlacao}
                             value={toISODate(andamentoFormData.despacho.dataProlacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              despacho: { ...andamentoFormData.despacho!, dataProlacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                despacho: { ...andamentoFormData.despacho!, dataProlacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, despacho_dataProlacao: '' }));
+                            }}
                           />
                           <FormInput
                             label="Data da Publicação"
                             type="date"
                             required
+                            error={andamentoErrors.despacho_dataPublicacao}
                             value={toISODate(andamentoFormData.despacho.dataPublicacao)}
-                            onChange={(e: any) => setAndamentoFormData({
-                              ...andamentoFormData,
-                              despacho: { ...andamentoFormData.despacho!, dataPublicacao: toBRDate(e.target.value) }
-                            })}
+                            onChange={(e: any) => {
+                              setAndamentoFormData({
+                                ...andamentoFormData,
+                                despacho: { ...andamentoFormData.despacho!, dataPublicacao: toBRDate(e.target.value) }
+                              });
+                              setAndamentoErrors(prev => ({ ...prev, despacho_dataPublicacao: '' }));
+                            }}
                           />
                         </div>
                       </div>
