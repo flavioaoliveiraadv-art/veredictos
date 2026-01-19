@@ -298,7 +298,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
       case TipoPrazo.REUNIAO: return 'bg-rose-50 text-rose-600 border-rose-100';
       case TipoPrazo.ATENDIMENTO: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
       case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
-      case TipoPrazo.PROTOCOLO: return 'bg-slate-50 text-slate-400 border-slate-100';
+      case TipoPrazo.PROTOCOLO: return 'bg-indigo-50 text-indigo-600 border-indigo-100';
       case TipoPrazo.OUTROS: return 'bg-slate-100 text-slate-950 border-slate-200';
       default: return 'bg-gray-50 text-gray-600 border-gray-100';
     }
@@ -312,7 +312,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
       case TipoPrazo.REUNIAO: return 'text-rose-600';
       case TipoPrazo.ATENDIMENTO: return 'text-emerald-600';
       case TipoPrazo.ADMINISTRATIVO: return 'text-[#5d4037]';
-      case TipoPrazo.PROTOCOLO: return 'text-slate-400';
+      case TipoPrazo.PROTOCOLO: return 'text-indigo-600';
       case TipoPrazo.OUTROS: return 'text-slate-950';
       default: return 'text-gray-400';
     }
@@ -458,7 +458,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
                 { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas', icon: <CheckSquare className="w-6 h-6" />, color: 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8] hover:border-[#a1887f]' },
                 { tipo: TipoPrazo.REUNIAO, label: 'Reunião', desc: 'Reuniões e encontros', icon: <UsersIcon className="w-6 h-6" />, color: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-400' },
                 { tipo: TipoPrazo.ATENDIMENTO, label: 'Atendimento', desc: 'Atendimento ao cliente', icon: <MessageSquare className="w-6 h-6" />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:border-emerald-400' },
-                { tipo: TipoPrazo.PROTOCOLO, label: 'Protocolo', desc: 'Protocolos de petições', icon: <ScrollText className="w-6 h-6" />, color: 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300' },
+                { tipo: TipoPrazo.PROTOCOLO, label: 'Protocolo', desc: 'Protocolos de petições', icon: <ScrollText className="w-6 h-6" />, color: 'bg-indigo-50 text-indigo-600 border-indigo-100 hover:border-indigo-400' },
                 { tipo: TipoPrazo.OUTROS, label: 'Outros', desc: 'Casos não previstos', icon: <MessageSquare className="w-6 h-6" />, color: 'bg-slate-100 text-slate-950 border-slate-200 hover:border-slate-400' },
               ].map(item => (
                 <button
