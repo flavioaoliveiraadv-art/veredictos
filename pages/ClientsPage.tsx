@@ -35,7 +35,6 @@ const INITIAL_PERSON_STATE = (tipo: 'PF' | 'PJ'): Pessoa => ({
 const INITIAL_FORM_STATE: Partial<Cliente> = {
   nome: '',
   pessoas: [],
-  processosIds: [''],
   status: 'Ativo',
   endereco: '', // Mantido no nível do cliente para o cadastro único
 };
@@ -99,7 +98,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
   const handleSaveCliente = (e: React.FormEvent) => {
     e.preventDefault();
     const id = formData.id || `cli-${Date.now()}`;
-    const cleanProcessosIds = (formData.processosIds || []).filter(pid => pid !== '');
     const pessoas = formData.pessoas || [];
 
     // Regra de exibição do nome: "Nome do primeiro e outro"
@@ -116,8 +114,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
       id,
       nome: nomeExibicao,
       pessoas,
-      createdAt: formData.createdAt || new Date().toISOString().split('T')[0],
-      processosIds: cleanProcessosIds
+      createdAt: formData.createdAt || new Date().toISOString().split('T')[0]
     } as Cliente;
 
     if (formData.id) {
@@ -126,14 +123,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
     } else {
       setClientes(prev => [...prev, newCliente]);
       addHistorico(id, 'Cliente cadastrado no sistema.');
-    }
-
-    if (cleanProcessosIds.length > 0) {
-      setProcessos(prev => prev.map(p => {
-        if (cleanProcessosIds.includes(p.id)) return { ...p, clienteId: id };
-        if (formData.id && p.clienteId === id && !cleanProcessosIds.includes(p.id)) return { ...p, clienteId: '' };
-        return p;
-      }));
     }
 
     setIsNewClientModalOpen(false);
@@ -154,22 +143,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
       setProcessos(prev => prev.map(p => p.clienteId === id ? { ...p, clienteId: '' } : p));
       setSelectedCliente(null);
     }
-  };
-
-  const addProcessField = () => {
-    setFormData(prev => ({ ...prev, processosIds: [...(prev.processosIds || []), ''] }));
-  };
-
-  const removeProcessField = (index: number) => {
-    const newIds = [...(formData.processosIds || [])];
-    newIds.splice(index, 1);
-    setFormData(prev => ({ ...prev, processosIds: newIds }));
-  };
-
-  const updateProcessId = (index: number, value: string) => {
-    const newIds = [...(formData.processosIds || [])];
-    newIds[index] = value;
-    setFormData(prev => ({ ...prev, processosIds: newIds }));
   };
 
   return (
@@ -255,8 +228,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                 <div className="flex items-center gap-2">
                   <button onClick={() => setIsHistoryModalOpen(true)} className="p-3 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all"><History className="w-6 h-6" /></button>
                   <button onClick={() => {
-                    const procsIds = getProcessosDoCliente(selectedCliente.id).map(p => p.id);
-                    const state = { ...selectedCliente, processosIds: procsIds.length > 0 ? procsIds : [''] };
+                    const state = { ...selectedCliente };
                     setFormData(state);
                     setInitialFormValue(JSON.stringify(state));
                     setIsEditMode(true);
@@ -543,7 +515,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                   </button>
                 </div>
 
-                <div className="pt-8 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="pt-8 border-t border-gray-100">
                   <div className="space-y-4">
                     <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
                       Endereço do Cadastro
@@ -554,36 +526,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                       onChange={e => setFormData({ ...formData, endereco: e.target.value })}
                       placeholder="Rua, Número, Bairro, Cidade, Estado - CEP"
                     />
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                      Vínculo Processual
-                    </h3>
-                    <div className="space-y-3">
-                      {(formData.processosIds || []).map((pid, idx) => (
-                        <div key={idx} className="flex gap-2">
-                          <FormSelect
-                            className="flex-1"
-                            value={pid}
-                            onChange={e => updateProcessId(idx, e.target.value)}
-                          >
-                            <option value="">Vincular processo existente...</option>
-                            {processos.filter(p => p.status === StatusProcesso.ATIVO).map(p => (
-                              <option key={p.id} value={p.id}>{p.numeros[0]} - {p.objeto}</option>
-                            ))}
-                          </FormSelect>
-                          {idx > 0 && (
-                            <button type="button" onClick={() => removeProcessField(idx)} className="text-red-400 hover:text-red-600 p-2 transition-colors">
-                              <MinusCircle className="w-6 h-6" />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      <button type="button" onClick={addProcessField} className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 uppercase flex items-center gap-1 mt-1 ml-1 transition-colors">
-                        <Plus className="w-4 h-4" /> Vincular outro processo
-                      </button>
-                    </div>
                   </div>
                 </div>
               </form>
