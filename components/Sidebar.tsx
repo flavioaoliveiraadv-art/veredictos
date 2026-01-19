@@ -21,11 +21,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const menuItems = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Processos', path: '/processos', icon: Briefcase },
+    { name: 'Relatórios', path: '/relatorios', icon: FileText },
     { name: 'Clientes', path: '/clientes', icon: Users },
     { name: 'Tarefas', path: '/tarefas', icon: CheckSquare },
     { name: 'Agenda', path: '/agenda', icon: Calendar },
     { name: 'Financeiro', path: '/financeiro', icon: DollarSign },
-    { name: 'Relatórios', path: '/relatorios', icon: FileText },
   ];
 
   return (
