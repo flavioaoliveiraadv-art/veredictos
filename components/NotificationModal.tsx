@@ -2,6 +2,7 @@
 import React from 'react';
 import { X, AlertTriangle, Calendar, Clock, ArrowRight, Bell } from 'lucide-react';
 import { Prazo, Cliente, Processo } from '../types';
+import { getTaskIcon, getTaskStyle, getTaskTextColor } from './TaskIcon';
 
 interface NotificationModalProps {
     overdue: Prazo[];
@@ -98,21 +99,22 @@ const ActivityItem = ({ item, clientes, processos, variant }: any) => {
     const proc = processos.find((p: any) => p.id === item.processoId);
 
     return (
-        <div className={`p-4 rounded-2xl border transition-all ${variant === 'overdue' ? 'bg-rose-50/50 border-rose-100' : 'bg-indigo-50/50 border-indigo-100'
+        <div className={`p-4 rounded-2xl border transition-all flex items-center gap-4 ${variant === 'overdue' ? 'bg-rose-50/50 border-rose-100' : 'bg-indigo-50/50 border-indigo-100'
             }`}>
-            <div className="flex justify-between items-start gap-4">
-                <div>
-                    <h4 className="text-sm font-black text-gray-800 leading-tight mb-1">{item.descricao}</h4>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {item.dataVencimento} {item.horaVencimento ? ` às ${item.horaVencimento}` : ''}</span>
-                        {cli && <span>• {cli.nome}</span>}
-                        {proc && <span>• {proc.numeros[0]}</span>}
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center border shadow-sm ${getTaskStyle(item.tipo)}`}>
+                {getTaskIcon(item.tipo, "w-6 h-6")}
+            </div>
+            <div className="flex-1">
+                <div className="flex justify-between items-start gap-4">
+                    <div>
+                        <h4 className="text-sm font-black text-gray-800 leading-tight mb-1">{item.descricao}</h4>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {item.dataVencimento} {item.horaVencimento ? ` às ${item.horaVencimento}` : ''}</span>
+                            {cli && <span>• {cli.nome}</span>}
+                            {proc && <span>• {proc.numeros[0]}</span>}
+                        </div>
                     </div>
                 </div>
-                <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter ${variant === 'overdue' ? 'bg-rose-100 text-rose-600' : 'bg-indigo-100 text-indigo-600'
-                    }`}>
-                    {item.tipo}
-                </span>
             </div>
         </div>
     );

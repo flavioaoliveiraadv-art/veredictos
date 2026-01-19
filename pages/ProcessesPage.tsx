@@ -12,6 +12,7 @@ import {
   AreaAtuacao, FaseProcessual, Financeiro, TipoPrazo, Andamento, TipoAndamento, ProvidenciaAndamento
 } from '../types';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
+import { getTaskIcon, getTaskStyle, getTaskTextColor } from '../components/TaskIcon';
 
 interface ProcessesPageProps {
   processos: Processo[];
@@ -483,8 +484,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           prazos.filter(p => p.processoId === selectedProcess.id).map(p => (
                             <div key={p.id} className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-indigo-200 transition-all">
                               <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${p.concluido ? 'bg-emerald-50 text-emerald-500' : p.cancelado ? 'bg-rose-50 text-rose-500' : 'bg-indigo-50 text-indigo-500'}`}>
-                                  {p.concluido ? <CheckCircle2 className="w-5 h-5" /> : p.cancelado ? <XCircle className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm ${getTaskStyle(p.tipo)}`}>
+                                  {getTaskIcon(p.tipo, "w-5 h-5")}
                                 </div>
                                 <div>
                                   <p className="text-sm font-black text-gray-800">{p.descricao}</p>

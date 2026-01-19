@@ -1,43 +1,36 @@
-
 import React, { useState, useMemo } from 'react';
 import { GavelWithBase } from '../components/CustomIcons';
 import {
-  CheckCircle2,
   Plus,
-  Trash2,
+  Search,
+  ChevronRight,
+  ChevronLeft,
+  Calendar,
   X,
   Activity,
-  History,
-  Edit,
-  Clock,
   User,
   Scale,
-  ChevronRight,
-  AlertTriangle,
   Info,
-  Calendar,
-  CheckSquare,
+  AlertTriangle,
+  Clock,
+  CheckCircle2,
   XCircle,
   FileText,
-  DollarSign,
-  ArrowRight,
-  ScrollText,
   FilePenLine,
-  Users as UsersIcon,
   Briefcase,
-  MessageSquare
+  Users as UsersIcon,
+  MessageSquare,
+  CheckSquare,
+  ScrollText,
+  ArrowUpRight,
+  History,
+  Trash2,
+  Edit,
+  DollarSign
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { FormInput, FormSelect } from '../components/FormComponents';
-import {
-  Prazo,
-  Processo,
-  Cliente,
-  TipoPrazo,
-  ModalidadeAudiencia,
-  HistoricoAlteracao,
-  Financeiro,
-  StatusProcesso
-} from '../types';
+import { Prazo, TipoPrazo, Cliente, Processo, StatusProcesso, HistoricoAlteracao, ModalidadeAudiencia, Financeiro } from '../types';
 import {
   formatCurrency,
   maskDate,
@@ -46,20 +39,10 @@ import {
   toBRDate,
   toISODate
 } from '../utils/formatters';
+import { getTaskIcon, getTaskStyle, getTaskTextColor } from '../components/TaskIcon';
 
-interface DeadlinesPageProps {
-  prazos: Prazo[];
-  setPrazos: React.Dispatch<React.SetStateAction<Prazo[]>>;
-  processos: Processo[];
-  clientes: Cliente[];
-  financeiro: Financeiro[];
-  historico: HistoricoAlteracao[];
-  setHistorico: React.Dispatch<React.SetStateAction<HistoricoAlteracao[]>>;
-}
 
-const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
-  prazos, setPrazos, processos, clientes, financeiro, historico, setHistorico
-}) => {
+const DeadlinesPage = ({ prazos, setPrazos, processos, clientes, financeiro, historico, setHistorico }: any) => {
   const [activeTab, setActiveTab] = useState<'PENDENTES' | 'REALIZADAS' | 'CANCELADAS'>('PENDENTES');
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -187,44 +170,9 @@ const DeadlinesPage: React.FC<DeadlinesPageProps> = ({
     return { label: 'Em Dia', color: 'bg-emerald-100 text-emerald-600' };
   };
 
-  const getTypeStyle = (tipo: TipoPrazo) => {
-    switch (tipo) {
-      case TipoPrazo.PRAZO: return 'bg-blue-50 text-blue-600 border-blue-100';
-      case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
-      case TipoPrazo.TAREFA: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case TipoPrazo.REUNIAO: return 'bg-rose-50 text-rose-600 border-rose-100';
-      case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
-      case TipoPrazo.ATENDIMENTO: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
-      default: return 'bg-gray-50 text-gray-600 border-gray-100';
-    }
-  };
-
-  const getTypeTextColor = (tipo: TipoPrazo) => {
-    switch (tipo) {
-      case TipoPrazo.PRAZO: return 'text-blue-600';
-      case TipoPrazo.AUDIENCIA: return 'text-orange-600';
-      case TipoPrazo.TAREFA: return 'text-emerald-600';
-      case TipoPrazo.REUNIAO: return 'text-rose-600';
-      case TipoPrazo.DILIGENCIA: return 'text-fuchsia-600';
-      case TipoPrazo.ATENDIMENTO: return 'text-emerald-600';
-      case TipoPrazo.ADMINISTRATIVO: return 'text-[#5d4037]';
-      default: return 'text-gray-400';
-    }
-  };
-
-  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => {
-    switch (tipo) {
-      case TipoPrazo.AUDIENCIA: return <GavelWithBase className={className} />;
-      case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
-      case TipoPrazo.DILIGENCIA: return <Briefcase className={className} />;
-      case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
-      case TipoPrazo.ATENDIMENTO: return <Activity className={className} />;
-      case TipoPrazo.ADMINISTRATIVO: return <CheckSquare className={className} />;
-      case TipoPrazo.OUTROS: return <MessageSquare className={className} />;
-      default: return <CheckSquare className={className} />;
-    }
-  };
+  const getTypeStyle = (tipo: TipoPrazo) => getTaskStyle(tipo);
+  const getTypeTextColor = (tipo: TipoPrazo) => getTaskTextColor(tipo);
+  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => getTaskIcon(tipo, className);
 
   const linkedFinances = useMemo(() => {
     if (!selectedPrazo) return [];

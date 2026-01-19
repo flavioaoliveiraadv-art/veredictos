@@ -15,11 +15,13 @@ import {
   FilePenLine,
   Users as UsersIcon,
   Briefcase,
-  MessageSquare
+  MessageSquare,
+  ExternalLink
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Cliente, Processo, Prazo, TipoPrazo } from '../types';
+import { Cliente, Processo, Prazo, TipoPrazo, StatusProcesso } from '../types';
 import { getTodayBR, compareDatesBR } from '../utils/formatters';
+import { getTaskIcon, getTaskStyle, getTaskTextColor } from '../components/TaskIcon';
 
 interface DashboardProps {
   clientes: Cliente[];
@@ -93,14 +95,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
 
   const getEventColor = (event: any) => {
     if (event.eventType === 'FINANCE') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-    switch (event.tipo) {
-      case TipoPrazo.PRAZO: return 'bg-rose-50 text-rose-600 border-rose-100';
-      case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
-      case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
-      case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
-      case TipoPrazo.OUTROS: return 'bg-indigo-50 text-indigo-600 border-indigo-100';
-      default: return 'bg-indigo-50 text-indigo-600 border-indigo-100';
-    }
+    return getTaskStyle(event.tipo);
   };
 
   return (
@@ -117,29 +112,29 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Prazos"
-          icon={<FilePenLine className="w-5 h-5" />}
-          iconColor="text-blue-500 bg-blue-50"
+          icon={getTaskIcon(TipoPrazo.PRAZO, "w-5 h-5")}
+          iconColor="text-rose-500 bg-rose-50"
           stats={statsPrazos}
           onClick={() => navigate('/tarefas')}
         />
         <StatCard
           title="Tarefas Internas"
-          icon={<CheckSquare className="w-5 h-5" />}
-          iconColor="text-blue-500 bg-blue-50"
+          icon={getTaskIcon(TipoPrazo.ADMINISTRATIVO, "w-5 h-5")}
+          iconColor="text-amber-700 bg-[#efebe9]"
           stats={statsTarefas}
           isFeminine={true}
           onClick={() => navigate('/tarefas')}
         />
         <StatCard
           title="Protocolos"
-          icon={<ScrollText className="w-5 h-5" />}
+          icon={getTaskIcon(TipoPrazo.PROTOCOLO, "w-5 h-5")}
           iconColor="text-indigo-500 bg-indigo-50"
           stats={statsProtocolos}
           onClick={() => navigate('/tarefas')}
         />
         <StatCard
           title="Audiências"
-          icon={<GavelWithBase className="w-5 h-5" />}
+          icon={getTaskIcon(TipoPrazo.AUDIENCIA, "w-5 h-5")}
           iconColor="text-orange-500 bg-orange-50"
           stats={statsAudiencias}
           isFeminine={true}

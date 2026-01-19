@@ -1,6 +1,4 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
-import { GavelWithBase } from '../components/CustomIcons';
 import {
   CheckCircle2,
   Plus,
@@ -22,7 +20,9 @@ import {
   Search,
   MessageSquare,
   FileMinus,
+  FileText,
   ScrollText,
+  ArrowUpRight,
   FilePenLine,
   Users as UsersIcon,
   Briefcase
@@ -47,20 +47,11 @@ import {
   toBRDate,
   toISODate
 } from '../utils/formatters';
+import { getTaskIcon, getTaskStyle, getTaskTextColor } from '../components/TaskIcon';
 
-interface TasksPageProps {
-  prazos: Prazo[];
-  setPrazos: React.Dispatch<React.SetStateAction<Prazo[]>>;
-  processos: Processo[];
-  clientes: Cliente[];
-  financeiro: Financeiro[];
-  historico: HistoricoAlteracao[];
-  setHistorico: React.Dispatch<React.SetStateAction<HistoricoAlteracao[]>>;
-}
-
-const TasksPage: React.FC<TasksPageProps> = ({
+const TasksPage = ({
   prazos, setPrazos, processos, clientes, financeiro, historico, setHistorico
-}) => {
+}: any) => {
   const [activeTab, setActiveTab] = useState<'PENDENTES' | 'REALIZADAS' | 'CANCELADAS'>('PENDENTES');
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isTaskTypeSelectionModalOpen, setIsTaskTypeSelectionModalOpen] = useState(false);
@@ -126,7 +117,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
   const addHistorico = (idReferencia: string, descricao: string) => {
     const entry: HistoricoAlteracao = {
-      id: `h-task-${Date.now()}`,
+      id: `h - task - ${Date.now()} `,
       idReferencia,
       dataHora: new Date().toLocaleString('pt-BR'),
       descricao
@@ -204,7 +195,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const id = formData.id || `p-${Date.now()}`;
+    const id = formData.id || `p - ${Date.now()} `;
     const isProtocolo = formData.tipo === TipoPrazo.PROTOCOLO;
 
     // Validação de obrigatoriedade do cliente para Protocolo
@@ -236,7 +227,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
 
     if (formData.id) {
       setPrazos(prev => prev.map(p => p.id === id ? newPrazo : p));
-      addHistorico(id, `Atividade editada. Nova descrição: ${newPrazo.descricao}`);
+      addHistorico(id, `Atividade editada.Nova descrição: ${newPrazo.descricao} `);
     } else {
       setPrazos(prev => [...prev, newPrazo]);
       addHistorico(id, 'Atividade cadastrada no sistema.');
@@ -255,7 +246,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
       observacoesRealizacao: obs || ''
     };
     setPrazos(prev => prev.map(p => p.id === prazo.id ? update : p));
-    addHistorico(prazo.id, `Atividade marcada como realizada. Obs: ${obs}`);
+    addHistorico(prazo.id, `Atividade marcada como realizada.Obs: ${obs} `);
     setIsDetailModalOpen(false);
   };
 
@@ -270,7 +261,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
       justificativaCancelamento: jus
     };
     setPrazos(prev => prev.map(p => p.id === prazo.id ? update : p));
-    addHistorico(prazo.id, `Atividade cancelada. Justificativa: ${jus}`);
+    addHistorico(prazo.id, `Atividade cancelada.Justificativa: ${jus} `);
     setIsDetailModalOpen(false);
   };
 
@@ -290,47 +281,11 @@ const TasksPage: React.FC<TasksPageProps> = ({
     return <span className="text-indigo-600">Em {diff} {diff === 1 ? 'dia' : 'dias'}</span>;
   };
 
-  const getTypeStyle = (tipo: TipoPrazo) => {
-    switch (tipo) {
-      case TipoPrazo.PRAZO: return 'bg-blue-50 text-blue-600 border-blue-100';
-      case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
-      case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
-      case TipoPrazo.REUNIAO: return 'bg-rose-50 text-rose-600 border-rose-100';
-      case TipoPrazo.ATENDIMENTO: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
-      case TipoPrazo.PROTOCOLO: return 'bg-slate-50 text-slate-400 border-slate-100';
-      case TipoPrazo.OUTROS: return 'bg-slate-100 text-slate-950 border-slate-200';
-      default: return 'bg-gray-50 text-gray-600 border-gray-100';
-    }
-  };
+  const getTypeStyle = (tipo: TipoPrazo) => getTaskStyle(tipo);
 
-  const getTypeTextColor = (tipo: TipoPrazo) => {
-    switch (tipo) {
-      case TipoPrazo.PRAZO: return 'text-blue-600';
-      case TipoPrazo.AUDIENCIA: return 'text-orange-600';
-      case TipoPrazo.DILIGENCIA: return 'text-fuchsia-600';
-      case TipoPrazo.REUNIAO: return 'text-rose-600';
-      case TipoPrazo.ATENDIMENTO: return 'text-emerald-600';
-      case TipoPrazo.ADMINISTRATIVO: return 'text-[#5d4037]';
-      case TipoPrazo.PROTOCOLO: return 'text-slate-400';
-      case TipoPrazo.OUTROS: return 'text-slate-950';
-      default: return 'text-gray-400';
-    }
-  };
+  const getTypeTextColor = (tipo: TipoPrazo) => getTaskTextColor(tipo);
 
-  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => {
-    switch (tipo) {
-      case TipoPrazo.AUDIENCIA: return <GavelWithBase className={className} />;
-      case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
-      case TipoPrazo.DILIGENCIA: return <Briefcase className={className} />;
-      case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
-      case TipoPrazo.ATENDIMENTO: return <MessageSquare className={className} />;
-      case TipoPrazo.ADMINISTRATIVO: return <CheckSquare className={className} />;
-      case TipoPrazo.PROTOCOLO: return <ScrollText className={className} />;
-      case TipoPrazo.OUTROS: return <MessageSquare className={className} />;
-      default: return <CheckSquare className={className} />;
-    }
-  };
+  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => getTaskIcon(tipo, className);
 
   const linkedFinances = useMemo(() => {
     if (!selectedPrazo) return [];
@@ -358,7 +313,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
-              className={`flex-1 md:flex-none px-8 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'}`}
+              className={`flex - 1 md: flex - none px - 8 py - 2.5 rounded - xl text - [10px] font - black uppercase tracking - widest transition - all ${activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500'} `}
             >
               {tab}
               {tab === 'PENDENTES' && (
@@ -392,19 +347,19 @@ const TasksPage: React.FC<TasksPageProps> = ({
                 className="p-6 px-10 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-all group"
               >
                 <div className="flex items-center gap-6 flex-1 min-w-0">
-                  <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shadow-sm ${getTypeStyle(item.tipo)} transition-transform group-hover:scale-110`}>
+                  <div className={`w - 14 h - 14 rounded - 2xl border flex items - center justify - center shadow - sm ${getTypeStyle(item.tipo)} transition - transform group - hover: scale - 110`}>
                     {getActivityIcon(item.tipo)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className={`text-lg font-black truncate ${getTypeTextColor(item.tipo)}`}>{item.descricao}</h3>
+                      <h3 className={`text - lg font - black truncate ${getTypeTextColor(item.tipo)} `}>{item.descricao}</h3>
                       {item.critico && <span className="bg-rose-50 text-rose-500 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-rose-100">Urgente</span>}
                       {item.tipo === TipoPrazo.AUDIENCIA && item.modalidade && (
                         <span className="bg-orange-50 text-orange-600 text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-orange-100">{item.modalidade}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-4 text-[10px] font-bold text-gray-400">
-                      <span className={`flex items-center gap-1 uppercase tracking-widest ${getTypeTextColor(item.tipo)}`}>{item.tipo}</span>
+                      <span className={`flex items - center gap - 1 uppercase tracking - widest ${getTypeTextColor(item.tipo)} `}>{item.tipo}</span>
                       <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
                       <span className="flex items-center gap-1 truncate"><User className="w-3 h-3" /> {cli?.nome || 'Sem Cliente'}</span>
                       <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
@@ -425,8 +380,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
                     </p>
                     <p className="text-[10px] font-black uppercase tracking-widest mt-1">
                       {activeTab === 'PENDENTES' ? renderDaysCountdown(item.dataVencimento) :
-                        activeTab === 'REALIZADAS' ? `Realizada em ${item.dataConclusao}` :
-                          `Cancelada em ${item.dataCancelamento}`}
+                        activeTab === 'REALIZADAS' ? `Realizada em ${item.dataConclusao} ` :
+                          `Cancelada em ${item.dataCancelamento} `}
                     </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-200 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
@@ -452,14 +407,15 @@ const TasksPage: React.FC<TasksPageProps> = ({
             </div>
             <div className="p-8 grid grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { tipo: TipoPrazo.PRAZO, label: 'Prazo', desc: 'Prazos processuais', icon: <FilePenLine className="w-6 h-6" />, color: 'bg-blue-50 text-blue-600 border-blue-100 hover:border-blue-400' },
-                { tipo: TipoPrazo.AUDIENCIA, label: 'Audiência', desc: 'Audiências judiciais', icon: <GavelWithBase className="w-6 h-6" />, color: 'bg-orange-50 text-orange-600 border-orange-100 hover:border-orange-400' },
-                { tipo: TipoPrazo.DILIGENCIA, label: 'Diligência', desc: 'Diligências externas', icon: <AlertTriangle className="w-6 h-6" />, color: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100 hover:border-fuchsia-400' },
-                { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas', icon: <Activity className="w-6 h-6" />, color: 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8] hover:border-[#a1887f]' },
-                { tipo: TipoPrazo.REUNIAO, label: 'Reunião', desc: 'Reuniões e encontros', icon: <UsersIcon className="w-6 h-6" />, color: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-400' },
-                { tipo: TipoPrazo.ATENDIMENTO, label: 'Atendimento', desc: 'Atendimento ao cliente', icon: <MessageSquare className="w-6 h-6" />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:border-emerald-400' },
-                { tipo: TipoPrazo.PROTOCOLO, label: 'Protocolo', desc: 'Protocolos de petições', icon: <ScrollText className="w-6 h-6" />, color: 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300' },
-                { tipo: TipoPrazo.OUTROS, label: 'Outros', desc: 'Casos não previstos', icon: <Activity className="w-6 h-6" />, color: 'bg-slate-100 text-slate-950 border-slate-200 hover:border-slate-400' },
+                { tipo: TipoPrazo.PRAZO, label: 'Prazo', desc: 'Prazos processuais', icon: getTaskIcon(TipoPrazo.PRAZO, "w-6 h-6"), color: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-400' },
+                { tipo: TipoPrazo.AUDIENCIA, label: 'Audiência', desc: 'Audiências judiciais', icon: getTaskIcon(TipoPrazo.AUDIENCIA, "w-6 h-6"), color: 'bg-orange-50 text-orange-600 border-orange-100 hover:border-orange-400' },
+                { tipo: TipoPrazo.DILIGENCIA, label: 'Diligência', desc: 'Diligências externas', icon: getTaskIcon(TipoPrazo.DILIGENCIA, "w-6 h-6"), color: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100 hover:border-fuchsia-400' },
+                { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas', icon: getTaskIcon(TipoPrazo.ADMINISTRATIVO, "w-6 h-6"), color: 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8] hover:border-[#a1887f]' },
+                { tipo: TipoPrazo.REUNIAO, label: 'Reunião', desc: 'Reuniões e encontros', icon: getTaskIcon(TipoPrazo.REUNIAO, "w-6 h-6"), color: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-400' },
+                { tipo: TipoPrazo.ATENDIMENTO, label: 'Atendimento', desc: 'Atendimento ao cliente', icon: getTaskIcon(TipoPrazo.ATENDIMENTO, "w-6 h-6"), color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:border-emerald-400' },
+                { tipo: TipoPrazo.PROTOCOLO, label: 'Protocolo', desc: 'Protocolos de petições', icon: getTaskIcon(TipoPrazo.PROTOCOLO, "w-6 h-6"), color: 'bg-indigo-50 text-indigo-600 border-indigo-100 hover:border-indigo-400' },
+                { tipo: TipoPrazo.DESPACHO, label: 'Despacho', desc: 'Despachos e citações', icon: getTaskIcon(TipoPrazo.DESPACHO, "w-6 h-6"), color: 'bg-indigo-50 text-indigo-600 border-indigo-100 hover:border-indigo-400' },
+                { tipo: TipoPrazo.OUTROS, label: 'Outros', desc: 'Casos não previstos', icon: getTaskIcon(TipoPrazo.OUTROS, "w-6 h-6"), color: 'bg-slate-100 text-slate-600 border-slate-200 hover:border-slate-400' },
               ].map(item => (
                 <button
                   key={item.tipo}
@@ -469,9 +425,9 @@ const TasksPage: React.FC<TasksPageProps> = ({
                     setIsTaskTypeSelectionModalOpen(false);
                     setIsFormModalOpen(true);
                   }}
-                  className={`p-5 rounded-3xl border-2 ${item.color} group transition-all text-left hover:shadow-lg hover:-translate-y-1`}
+                  className={`p - 5 rounded - 3xl border - 2 ${item.color} group transition - all text - left hover: shadow - lg hover: -translate - y - 1`}
                 >
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${item.color.split(' ').slice(0, 2).join(' ')}`}>
+                  <div className={`w - 12 h - 12 rounded - 2xl flex items - center justify - center mb - 3 ${item.color.split(' ').slice(0, 2).join(' ')} `}>
                     {item.icon}
                   </div>
                   <h3 className="text-sm font-black text-gray-800">{item.label}</h3>
@@ -569,7 +525,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
                                 const resultado = getAndamentoResultado(and);
                                 return (
                                   <option key={and.id} value={and.id}>
-                                    {and.data} – {and.tipo}{resultado ? ` – ${resultado}` : ''}
+                                    {and.data} – {and.tipo}{resultado ? ` – ${resultado} ` : ''}
                                   </option>
                                 );
                               })}
@@ -654,7 +610,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
             <div className="p-10">
               <div className="flex items-start justify-between mb-10">
                 <div className="flex items-center gap-5">
-                  <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center shadow-lg ${getTypeStyle(selectedPrazo.tipo)}`}>
+                  <div className={`w - 16 h - 16 rounded - 2xl border flex items - center justify - center shadow - lg ${getTypeStyle(selectedPrazo.tipo)} `}>
                     {getActivityIcon(selectedPrazo.tipo, "w-9 h-9")}
                   </div>
                   <div>
@@ -673,8 +629,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-8">
                   <div className="grid grid-cols-2 gap-8">
-                    <DetailItem label="Data Interna" value={`${selectedPrazo.dataVencimento}${selectedPrazo.horaVencimento ? ` às ${selectedPrazo.horaVencimento}` : ''}`} icon={<Clock className="w-4 h-4" />} />
-                    <DetailItem label="Data Fatal" value={`${selectedPrazo.dataFatal || '-'}${selectedPrazo.horaFatal ? ` às ${selectedPrazo.horaFatal}` : ''}`} icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} />
+                    <DetailItem label="Data Interna" value={`${selectedPrazo.dataVencimento}${selectedPrazo.horaVencimento ? ` às ${selectedPrazo.horaVencimento}` : ''} `} icon={<Clock className="w-4 h-4" />} />
+                    <DetailItem label="Data Fatal" value={`${selectedPrazo.dataFatal || '-'}${selectedPrazo.horaFatal ? ` às ${selectedPrazo.horaFatal}` : ''} `} icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} />
                     <DetailItem label="Responsável" value={selectedPrazo.responsavel} icon={<User className="w-4 h-4" />} />
                     <DetailItem label="Cliente" value={clientes.find(c => c.id === selectedPrazo.clienteId)?.nome || '-'} icon={<User className="w-4 h-4" />} />
                     <DetailItem
@@ -691,7 +647,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
                             const and = proc?.andamentos?.find(a => a.id === selectedPrazo.andamentoId);
                             if (!and) return 'Andamento não encontrado';
                             const res = getAndamentoResultado(and);
-                            return `${and.data} – ${and.tipo}${res ? ` – ${res}` : ''}`;
+                            return `${and.data} – ${and.tipo}${res ? ` – ${res}` : ''} `;
                           })()}
                           icon={<Activity className="w-4 h-4" />}
                         />
@@ -716,8 +672,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
                       </button>
                     </div>
                   ) : (
-                    <div className={`p-8 rounded-[32px] border ${selectedPrazo.concluido ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
-                      <h4 className={`text-xs font-black uppercase tracking-widest mb-4 ${selectedPrazo.concluido ? 'text-emerald-700' : 'text-rose-700'}`}>
+                    <div className={`p - 8 rounded - [32px] border ${selectedPrazo.concluido ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'} `}>
+                      <h4 className={`text - xs font - black uppercase tracking - widest mb - 4 ${selectedPrazo.concluido ? 'text-emerald-700' : 'text-rose-700'} `}>
                         {selectedPrazo.concluido ? 'Finalizada' : 'Cancelada'} em {selectedPrazo.dataConclusao || selectedPrazo.dataCancelamento}
                       </h4>
                       <div className="space-y-4">

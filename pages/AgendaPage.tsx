@@ -9,38 +9,20 @@ import {
   Scale,
   DollarSign,
   X,
-  FilePenLine,
-  ScrollText,
   AlertTriangle,
+  FilePenLine,
+  Search,
+  CheckCircle2,
+  XCircle,
   Users as UsersIcon,
-  MessageSquare,
-  Activity as ActivityIcon,
-  CheckSquare,
   Briefcase
 } from 'lucide-react';
+import { Prazo, TipoPrazo, Cliente, Processo, Financeiro } from '../types';
+import { getTodayBR, compareDatesBR, formatCurrency } from '../utils/formatters';
 import { GavelWithBase } from '../components/CustomIcons';
-import {
-  Prazo,
-  Processo,
-  Cliente,
-  TipoPrazo,
-  Financeiro
-} from '../types';
-import {
-  formatCurrency,
-  getTodayBR
-} from '../utils/formatters';
+import { getTaskIcon, getTaskStyle, getTaskTextColor } from '../components/TaskIcon';
 
-interface AgendaPageProps {
-  prazos: Prazo[];
-  processos: Processo[];
-  clientes: Cliente[];
-  financeiro: Financeiro[];
-}
-
-const AgendaPage: React.FC<AgendaPageProps> = ({
-  prazos, processos, clientes, financeiro
-}) => {
+const AgendaPage = ({ prazos, clientes, processos, financeiro }: any) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
 
@@ -69,7 +51,7 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
         const taskEvents = prazos.filter(p => p.dataVencimento === dateStr);
 
         // Coletar Financeiro
-        const financialEvents = financeiro.filter(f => f.dataVencimento === dateStr);
+        const financialEvents = financeiro.filter((f: any) => f.dataVencimento === dateStr);
 
         return {
           dayNum,
@@ -88,17 +70,8 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
   const monthsBr = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
   const weekdaysBr = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => {
-    switch (tipo) {
-      case TipoPrazo.AUDIENCIA: return <GavelWithBase className={className} />;
-      case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
-      case TipoPrazo.DILIGENCIA: return <Briefcase className={className} />;
-      case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
-      case TipoPrazo.ATENDIMENTO: return <MessageSquare className={className} />;
-      case TipoPrazo.ADMINISTRATIVO: return <CheckSquare className={className} />;
-      default: return <CheckSquare className={className} />;
-    }
-  };
+  const getEventStyle = (tipo: TipoPrazo) => getTaskStyle(tipo);
+  const getActivityIcon = (tipo: TipoPrazo, className = "w-4 h-4") => getTaskIcon(tipo, className);
 
   const changeMonth = (delta: number) => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
