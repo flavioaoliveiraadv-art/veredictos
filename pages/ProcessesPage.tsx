@@ -563,14 +563,18 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                 <div className="flex items-start justify-between mb-4">
                                   <div>
                                     <div className="flex items-center gap-3 mb-1">
-                                      <span className="text-xs font-black text-gray-800">{and.data}</span>
-                                      <span className="bg-indigo-50 text-indigo-600 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest">{and.tipo}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className={`text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded ${and.geraPrazo ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>
-                                        {and.geraPrazo ? 'Gera Prazo' : 'Sem Prazo'}
+                                      <span className="text-xs font-black text-gray-800">
+                                        {(and.tipo === TipoAndamento.SENTENCA && and.sentenca?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.ACORDAO && and.acordao?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.ALVARA && and.alvara?.dataExpedicao) ||
+                                          (and.tipo === TipoAndamento.CERTIDAO && and.certidao?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.DESPACHO && and.despacho?.dataPublicacao) ||
+                                          and.data
+                                        }
                                       </span>
-                                      <span className="text-[8px] font-black text-gray-300 uppercase tracking-tighter">— {and.providencia}</span>
+                                      <span className="bg-indigo-50 text-indigo-600 text-[9px] font-black px-2 py-0.5 rounded uppercase tracking-widest">{and.tipo}</span>
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-1 opacity-0 group-hover/and:opacity-100 transition-opacity">
@@ -593,21 +597,6 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                 <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
                                   {/* Renderização Simplificada Padronizada */}
                                   <div className="flex flex-col gap-2">
-                                    <div className="flex items-center gap-4">
-                                      <span className="text-xs font-black text-gray-800 uppercase tracking-tighter">
-                                        Data de Publicação: {
-                                          (and.tipo === TipoAndamento.SENTENCA && and.sentenca?.dataPublicacao) ||
-                                          (and.tipo === TipoAndamento.ACORDAO && and.acordao?.dataPublicacao) ||
-                                          (and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria?.dataPublicacao) ||
-                                          (and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica?.dataPublicacao) ||
-                                          (and.tipo === TipoAndamento.ALVARA && and.alvara?.dataExpedicao) ||
-                                          (and.tipo === TipoAndamento.CERTIDAO && and.certidao?.dataPublicacao) ||
-                                          (and.tipo === TipoAndamento.DESPACHO && and.despacho?.dataPublicacao) ||
-                                          and.data
-                                        }
-                                      </span>
-                                    </div>
-
                                     {and.tipo === TipoAndamento.DESPACHO && and.despacho && (
                                       <div className="flex items-center gap-2 mt-1">
                                         <span className="bg-indigo-50 text-indigo-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-indigo-100 uppercase uppercase shadow-sm">
