@@ -281,7 +281,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             </div>
 
             <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3 h-3" /> Conteúdo do Ato</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3 h-3" /> Observações estratégicas</p>
               <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">
                 {and.conteudo || (and.tipo === TipoAndamento.DESPACHO ? and.despacho?.resumoObjetivo : and.tipo === TipoAndamento.SENTENCA ? and.sentenca?.resumoDecisao : 'Sem conteúdo detalhado.')}
               </p>
@@ -2026,11 +2026,11 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                   <div className="space-y-4">
                     <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Conteúdo do Andamento</h4>
                     <div className="space-y-2">
-                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Descrição Detalhada</label>
+                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Observações estratégicas</label>
                       <textarea
                         required
                         className="w-full h-32 px-5 py-4 bg-gray-50 border border-gray-100 rounded-3xl font-medium text-sm outline-none focus:border-indigo-500 transition-all resize-none"
-                        placeholder="Descreva o conteúdo do andamento processual..."
+                        placeholder="Descreva as observações estratégicas do andamento..."
                         value={andamentoFormData.conteudo}
                         onChange={(e) => setAndamentoFormData({ ...andamentoFormData, conteudo: e.target.value })}
                       />
