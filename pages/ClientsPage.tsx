@@ -249,20 +249,12 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                       <div className="grid grid-cols-2 gap-y-8 gap-x-12">
                         <DetailField label="Nome" value={pessoa.nome} />
                         <DetailField label="Representante Legal" value={pessoa.representanteLegal || '-'} />
-                        {pessoa.tipo !== 'PJ' && (
-                          <>
-                            <DetailField label="Estado Civil" value={pessoa.estadoCivil || '-'} />
-                            <DetailField label="Profissão" value={pessoa.profissao || '-'} />
-                            <DetailField label="RG" value={pessoa.rg || '-'} />
-                          </>
-                        )}
                         <DetailField label={pessoa.tipo === 'PJ' ? 'CNPJ' : 'CPF'} value={pessoa.documento || '-'} />
-                        {pessoa.tipo !== 'PJ' && (
-                          <>
-                            <DetailField label="E-mail" value={pessoa.email || '-'} className="text-indigo-600" />
-                            <DetailField label="Telefone" value={pessoa.telefone || '-'} />
-                          </>
-                        )}
+                        <DetailField label="RG" value={pessoa.rg || '-'} />
+                        <DetailField label="Estado Civil" value={pessoa.estadoCivil || '-'} />
+                        <DetailField label="Profissão" value={pessoa.profissao || '-'} />
+                        <DetailField label="E-mail" value={pessoa.email || '-'} className="text-indigo-600" />
+                        <DetailField label="Telefone" value={pessoa.telefone || '-'} />
                       </div>
                     </section>
                   ))}
@@ -275,16 +267,22 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                 </div>
                 <div className="space-y-6">
                   <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
-                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Controle de Status</h4>
-                    <div className="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100 mb-4">
-                      <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-6 h-6 text-emerald-500" />
-                        <span className="text-sm font-black text-gray-700">Status Ativo</span>
+                    <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Informações do Registro</h4>
+                    <div className="space-y-4">
+                      <div className="p-5 bg-white rounded-3xl border border-gray-100">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cadastrado em</p>
+                        <p className="text-sm font-black text-gray-700">{selectedCliente.createdAt ? new Date(selectedCliente.createdAt).toLocaleDateString('pt-BR') : '-'}</p>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" checked={selectedCliente.status === 'Ativo'} onChange={() => toggleInativar(selectedCliente)} className="sr-only peer" />
-                        <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                      </label>
+                      <div className="flex items-center justify-between p-5 bg-white rounded-3xl border border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                          <span className="text-sm font-black text-gray-700">Status Ativo</span>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" checked={selectedCliente.status === 'Ativo'} onChange={() => toggleInativar(selectedCliente)} className="sr-only peer" />
+                          <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -443,6 +441,27 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                           placeholder={pessoa.tipo === 'PJ' ? "00.000.000/0000-00" : "000.000.000-00"}
                         />
 
+                        <FormInput
+                          label="Telefone"
+                          value={pessoa.telefone}
+                          onChange={e => {
+                            const newPessoas = [...(formData.pessoas || [])];
+                            newPessoas[idx] = { ...pessoa, telefone: e.target.value };
+                            setFormData({ ...formData, pessoas: newPessoas });
+                          }}
+                          placeholder="(00) 00000-0000"
+                        />
+                        <FormInput
+                          label="E-mail"
+                          value={pessoa.email}
+                          onChange={e => {
+                            const newPessoas = [...(formData.pessoas || [])];
+                            newPessoas[idx] = { ...pessoa, email: e.target.value };
+                            setFormData({ ...formData, pessoas: newPessoas });
+                          }}
+                          placeholder="exemplo@email.com"
+                        />
+
                         {pessoa.tipo === 'PF' && (
                           <>
                             <FormInput
@@ -474,26 +493,6 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                                 setFormData({ ...formData, pessoas: newPessoas });
                               }}
                               placeholder="Ex: Advogado"
-                            />
-                            <FormInput
-                              label="Telefone"
-                              value={pessoa.telefone}
-                              onChange={e => {
-                                const newPessoas = [...(formData.pessoas || [])];
-                                newPessoas[idx] = { ...pessoa, telefone: e.target.value };
-                                setFormData({ ...formData, pessoas: newPessoas });
-                              }}
-                              placeholder="(00) 00000-0000"
-                            />
-                            <FormInput
-                              label="E-mail"
-                              value={pessoa.email}
-                              onChange={e => {
-                                const newPessoas = [...(formData.pessoas || [])];
-                                newPessoas[idx] = { ...pessoa, email: e.target.value };
-                                setFormData({ ...formData, pessoas: newPessoas });
-                              }}
-                              placeholder="exemplo@email.com"
                             />
                           </>
                         )}
