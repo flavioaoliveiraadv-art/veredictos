@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
         <img
           src="/logo_oliveira_lins.png"
           alt="Logo Oliveira & Lins"
-          className="w-full max-w-[200px] h-auto object-contain"
+          className="w-full max-w-[140px] h-auto object-contain"
         />
         <div className="text-center">
           <span className="block text-white font-bold text-xl leading-tight tracking-wide">
