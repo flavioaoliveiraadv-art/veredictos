@@ -15,7 +15,8 @@ import {
   Users as UsersIcon,
   MessageSquare,
   Activity as ActivityIcon,
-  CheckSquare
+  CheckSquare,
+  Briefcase
 } from 'lucide-react';
 import { GavelWithBase } from '../components/CustomIcons';
 import {
@@ -91,10 +92,10 @@ const AgendaPage: React.FC<AgendaPageProps> = ({
     switch (tipo) {
       case TipoPrazo.AUDIENCIA: return <GavelWithBase className={className} />;
       case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
-      case TipoPrazo.DILIGENCIA: return <AlertTriangle className={className} />;
+      case TipoPrazo.DILIGENCIA: return <Briefcase className={className} />;
       case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
       case TipoPrazo.ATENDIMENTO: return <MessageSquare className={className} />;
-      case TipoPrazo.ADMINISTRATIVO: return <ActivityIcon className={className} />;
+      case TipoPrazo.ADMINISTRATIVO: return <CheckSquare className={className} />;
       default: return <CheckSquare className={className} />;
     }
   };

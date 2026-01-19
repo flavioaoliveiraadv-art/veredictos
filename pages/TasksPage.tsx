@@ -23,9 +23,9 @@ import {
   MessageSquare,
   FileMinus,
   ScrollText,
-  Gavel,
   FilePenLine,
-  Users as UsersIcon
+  Users as UsersIcon,
+  Briefcase
 } from 'lucide-react';
 import { FormInput, FormSelect, FormTextArea } from '../components/FormComponents';
 import {
@@ -322,12 +322,12 @@ const TasksPage: React.FC<TasksPageProps> = ({
     switch (tipo) {
       case TipoPrazo.AUDIENCIA: return <GavelWithBase className={className} />;
       case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
-      case TipoPrazo.DILIGENCIA: return <AlertTriangle className={className} />;
+      case TipoPrazo.DILIGENCIA: return <Briefcase className={className} />;
       case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
       case TipoPrazo.ATENDIMENTO: return <MessageSquare className={className} />;
-      case TipoPrazo.ADMINISTRATIVO: return <Activity className={className} />;
+      case TipoPrazo.ADMINISTRATIVO: return <CheckSquare className={className} />;
       case TipoPrazo.PROTOCOLO: return <ScrollText className={className} />;
-      case TipoPrazo.OUTROS: return <Activity className={className} />;
+      case TipoPrazo.OUTROS: return <MessageSquare className={className} />;
       default: return <CheckSquare className={className} />;
     }
   };

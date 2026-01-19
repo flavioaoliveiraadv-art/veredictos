@@ -13,7 +13,9 @@ import {
   ScrollText,
   Gavel,
   FilePenLine,
-  Users as UsersIcon
+  Users as UsersIcon,
+  Briefcase,
+  MessageSquare
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Cliente, Processo, Prazo, TipoPrazo } from '../types';
@@ -95,6 +97,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
       case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
       case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
       case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
+      case TipoPrazo.OUTROS: return 'bg-indigo-50 text-indigo-600 border-indigo-100';
       default: return 'bg-indigo-50 text-indigo-600 border-indigo-100';
     }
   };
