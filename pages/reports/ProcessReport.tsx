@@ -237,39 +237,42 @@ const ProcessReport: React.FC<ProcessReportProps> = ({ clientes, processos, praz
         const andamentosList = selectedProcesso.andamentos || [];
 
         if (andamentosList.length > 0) {
-            const andRows = [...andamentosList].reverse().map(and => {
+            const andRows = [...andamentosList].sort((a, b) => {
+                const dateA = a.data.split('/').reverse().join('-');
+                const dateB = b.data.split('/').reverse().join('-');
+                return dateB.localeCompare(dateA);
+            }).map(and => {
                 let displayContent = and.conteudo;
                 if (and.tipo === TipoAndamento.ACORDAO && and.acordao) {
-                    displayContent = `[ACÓRDÃO] ${and.acordao.resultado} - ${and.acordao.tribunal} (${and.acordao.orgaoJulgador})\nRelator: ${and.acordao.relator}\nTese: ${and.acordao.resumoTeseVencedora || and.conteudo}`;
+                    displayContent = `[ACÓRDÃO] ${and.acordao.resultado}\nTribunal: ${and.acordao.tribunal} (${and.acordao.orgaoJulgador})\nRelator: ${and.acordao.relator}\nTese: ${and.acordao.resumoTeseVencedora || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.SENTENCA && and.sentenca) {
-                    displayContent = `[SENTENÇA] ${and.sentenca.resultado} (${and.sentenca.instancia})\nResumo: ${and.sentenca.resumoDecisao || and.conteudo}`;
+                    displayContent = `[SENTENÇA] ${and.sentenca.resultado} (${and.sentenca.instancia})\nMagistrado: ${and.sentenca.magistrado}\nResumo: ${and.sentenca.resumoDecisao || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria) {
                     displayContent = `[DECISÃO INTERLOCUTÓRIA] ${and.decisaoInterlocutoria.resultado} (${and.decisaoInterlocutoria.instancia})\nResumo: ${and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica) {
                     displayContent = `[DECISÃO MONOCRÁTICA] ${and.decisaoMonocratica.resultado} (${and.decisaoMonocratica.instancia})\nRelator: ${and.decisaoMonocratica.relator}\nResumo: ${and.decisaoMonocratica.resumoDecisao || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.ALVARA && and.alvara) {
-                    displayContent = `[ALVARÁ] ${and.alvara.tipoAlvara} - ${and.alvara.dataExpedicao}\nValor: ${and.alvara.valorAutorizado ? formatCurrency(and.alvara.valorAutorizado) : 'N/A'} (${and.alvara.origemValor || 'N/C'})\nResumo: ${and.alvara.resumoObjetivo || and.conteudo}`;
+                    displayContent = `[ALVARÁ] ${and.alvara.tipoAlvara}\nValor: ${and.alvara.valorAutorizado ? formatCurrency(and.alvara.valorAutorizado) : 'N/A'}\nResumo: ${and.alvara.resumoObjetivo || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.CERTIDAO && and.certidao) {
-                    displayContent = `[CERTIDÃO] ${and.certidao.tipoCertidao} - ${and.certidao.dataPublicacao}\nResumo: ${and.certidao.resumoObjetivo || and.conteudo}`;
+                    displayContent = `[CERTIDÃO] ${and.certidao.tipoCertidao}\nResumo: ${and.certidao.resumoObjetivo || and.conteudo}`;
                 } else if (and.tipo === TipoAndamento.DESPACHO && and.despacho) {
-                    displayContent = `[DESPACHO] ${and.despacho.tipoDespacho} (${and.despacho.instancia})\nData Publicação: ${and.despacho.dataPublicacao}\nResumo: ${and.despacho.resumoObjetivo || and.conteudo}`;
+                    displayContent = `[DESPACHO] ${and.despacho.tipoDespacho} (${and.despacho.instancia})\nResumo: ${and.despacho.resumoObjetivo || and.conteudo}`;
                 }
                 return [
                     and.data,
                     and.tipo,
-                    displayContent,
-                    and.geraPrazo ? 'Sim' : 'Não'
+                    displayContent
                 ];
             });
 
             autoTable(doc, {
                 startY: yPos,
-                head: [['Data', 'Tipo', 'Conteúdo / Providência', 'Prazo?']],
+                head: [['Data', 'Tipo', 'Detalhamento do Andamento']],
                 body: andRows,
                 theme: 'grid',
                 headStyles: { fillColor: [79, 70, 229] },
                 columnStyles: {
-                    2: { cellWidth: 100 }
+                    2: { cellWidth: 120 }
                 }
             });
         } else {

@@ -54,36 +54,58 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
         doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 105, yPos, { align: 'center' });
         yPos += 15;
 
-        // 1. DADOS CADASTRAIS
+        // 1. DADOS DO CLIENTE E INTEGRANTES
         doc.setFillColor(241, 245, 249);
         doc.rect(14, yPos, 182, 8, 'F');
         doc.setFontSize(12);
         doc.setTextColor(0);
         doc.setFont('helvetica', 'bold');
-        doc.text('1. DADOS CADASTRAIS', 16, yPos + 6);
-        yPos += 15;
+        doc.text('1. DADOS DO CLIENTE E INTEGRANTES', 16, yPos + 6);
+        yPos += 12;
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
+        doc.text(`Status: ${selectedCliente.status}`, 16, yPos);
+        doc.text(`Cadastrado em: ${new Date(selectedCliente.createdAt).toLocaleDateString('pt-BR')}`, 110, yPos);
+        yPos += 8;
 
-        const clientData = [
-            [`Nome: ${selectedCliente.nome}`, `Tipo: ${selectedCliente.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}`],
-            [`Documento: ${selectedCliente.documento}`, `Status: ${selectedCliente.status}`],
-            [`Email: ${selectedCliente.email}`, `Telefone: ${selectedCliente.telefone}`],
-            [`Endereço: ${selectedCliente.endereco || '-'}`, `Cadastro: ${new Date(selectedCliente.createdAt).toLocaleDateString('pt-BR')}`]
-        ];
+        (selectedCliente.pessoas || []).forEach((pessoa, idx) => {
+            if (yPos > 250) { doc.addPage(); yPos = 20; }
 
-        clientData.forEach(row => {
-            doc.text(row[0], 16, yPos);
-            doc.text(row[1], 110, yPos);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${idx === 0 ? 'Pessoa Principal' : `Pessoa Adicional ${idx}`}: ${pessoa.nome}`, 16, yPos);
             yPos += 6;
+
+            doc.setFont('helvetica', 'normal');
+            const pData = [
+                [`Documento: ${pessoa.documento || '-'}`, `Tipo: ${pessoa.tipo === 'PF' ? 'Pessoa Física' : 'Pessoa Jurídica'}`],
+                [`E-mail: ${pessoa.email || '-'}`, `Telefone: ${pessoa.telefone || '-'}`]
+            ];
+
+            if (pessoa.tipo === 'PF') {
+                pData.push([`RG: ${pessoa.rg || '-'}`, `Estado Civil: ${pessoa.estadoCivil || '-'}`]);
+                pData.push([`Profissão: ${pessoa.profissao || '-'}`, '']);
+            }
+
+            if (pessoa.representanteLegal) {
+                pData.push([`Representante Legal: ${pessoa.representanteLegal}`, '']);
+            }
+
+            pData.forEach(row => {
+                doc.text(row[0], 20, yPos);
+                if (row[1]) doc.text(row[1], 110, yPos);
+                yPos += 6;
+            });
+            yPos += 4;
         });
 
-        if (selectedCliente.representanteLegal) {
-            doc.text(`Representante Legal: ${selectedCliente.representanteLegal}`, 16, yPos);
-            yPos += 6;
+        if (selectedCliente.endereco) {
+            doc.setFont('helvetica', 'bold');
+            doc.text('Localização:', 16, yPos);
+            doc.setFont('helvetica', 'normal');
+            doc.text(selectedCliente.endereco, 40, yPos);
+            yPos += 10;
         }
-        yPos += 5;
 
         // 2. PROCESSOS VINCULADOS
         doc.setFillColor(241, 245, 249);
@@ -97,7 +119,7 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
 
         if (linkedProcesses.length > 0) {
             const procRows = linkedProcesses.map(p => [
-                p.numero,
+                p.numeros?.[0] || 'Sem número',
                 p.objeto,
                 `${p.tribunal || '-'} / ${p.localTramitacao || '-'}`,
                 p.status
@@ -176,8 +198,12 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
         yPos += 10;
 
         const allAndamentos = linkedProcesses.flatMap(p =>
-            (p.andamentos || []).map(a => ({ ...a, procNum: p.numero }))
-        ).sort((a, b) => b.data.localeCompare(a.data));
+            (p.andamentos || []).map(a => ({ ...a, procNum: p.numeros?.[0] || 'Sem número' }))
+        ).sort((a, b) => {
+            const dateA = a.data.split('/').reverse().join('-');
+            const dateB = b.data.split('/').reverse().join('-');
+            return dateB.localeCompare(dateA);
+        });
 
         if (allAndamentos.length > 0) {
             const andRows = allAndamentos.map(and => [
@@ -414,20 +440,24 @@ const ClientReport: React.FC<ClientReportProps> = ({ clientes, processos, financ
                                 <div className="space-y-4">
                                     {processos.filter(p => p.clienteId === selectedCliente.id && (p.andamentos || []).length > 0).length > 0 ? (
                                         processos.filter(p => p.clienteId === selectedCliente.id).flatMap(p =>
-                                            (p.andamentos || []).map(and => (
-                                                <div key={and.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative">
-                                                    <div className="flex items-center justify-between mb-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PROCESSO: {p.numero}</span>
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                                                            <span className="text-xs font-black text-slate-800">{and.data}</span>
-                                                        </div>
-                                                        <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{and.tipo}</span>
+                                            (p.andamentos || []).map(and => ({ ...and, procNum: p.numeros?.[0] || 'Sem número' }))
+                                        ).sort((a, b) => {
+                                            const dateA = a.data.split('/').reverse().join('-');
+                                            const dateB = b.data.split('/').reverse().join('-');
+                                            return dateB.localeCompare(dateA);
+                                        }).map(and => (
+                                            <div key={and.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative">
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PROCESSO: {and.procNum}</span>
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                                                        <span className="text-xs font-black text-slate-800">{and.data}</span>
                                                     </div>
-                                                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                                    <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">{and.tipo}</span>
                                                 </div>
-                                            ))
-                                        ).sort((a, b) => b.props.children[0].props.children[0].props.children[2].props.children.localeCompare(a.props.children[0].props.children[0].props.children[2].props.children)) // simplified sort by date if possible
+                                                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
+                                            </div>
+                                        ))
                                     ) : (
                                         <p className="text-slate-400 italic text-sm">Nenhum andamento registrado para os processos deste cliente.</p>
                                     )}

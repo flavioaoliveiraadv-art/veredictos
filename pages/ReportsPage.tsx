@@ -75,7 +75,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ clientes, processos, prazos, 
             <Route index element={<ReportsLanding />} />
             <Route path="processos" element={<ProcessReport clientes={clientes} processos={processos} prazos={prazos} financeiro={financeiro} recursos={recursos} />} />
             <Route path="clientes" element={<ClientReport clientes={clientes} processos={processos} financeiro={financeiro} />} />
-            <Route path="geral" element={<GeneralReport clientes={clientes} processos={processos} prazos={prazos} />} />
+            <Route path="geral" element={<GeneralReport clientes={clientes} processos={processos} prazos={prazos} financeiro={financeiro} />} />
         </Routes>
     );
 };

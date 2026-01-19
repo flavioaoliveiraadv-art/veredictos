@@ -9,6 +9,7 @@ interface GeneralReportProps {
     clientes: Cliente[];
     processos: Processo[];
     prazos: Prazo[];
+    financeiro: Financeiro[];
 }
 
 const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, prazos }) => {
@@ -18,8 +19,17 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
         processosArquivados: processos.filter(p => p.status === 'Arquivado').length,
         prazosPendentes: prazos.filter(p => !p.concluido).length,
         prazosConcluidos: prazos.filter(p => p.concluido).length,
-        totalAndamentos: processos.reduce((acc, p) => acc + (p.andamentos?.length || 0), 0)
+        totalAndamentos: processos.reduce((acc, p) => acc + (p.andamentos?.length || 0), 0),
+        financeiroReceitas: financeiro?.filter(f => f.tipo === 'Receita').reduce((acc, curr) => acc + (curr.valor || 0), 0) || 0,
+        financeiroDespesas: financeiro?.filter(f => f.tipo === 'Despesa').reduce((acc, curr) => acc + (curr.valor || 0), 0) || 0,
+        financeiroSaldo: (financeiro?.filter(f => f.tipo === 'Receita').reduce((acc, curr) => acc + (curr.valor || 0), 0) || 0) -
+            (financeiro?.filter(f => f.tipo === 'Despesa').reduce((acc, curr) => acc + (curr.valor || 0), 0) || 0)
     };
+
+    const areasCount = processos.reduce((acc: any, p) => {
+        acc[p.areaAtuacao] = (acc[p.areaAtuacao] || 0) + 1;
+        return acc;
+    }, {});
 
     const exportPDF = () => {
         const doc = new jsPDF();
@@ -96,9 +106,34 @@ const GeneralReport: React.FC<GeneralReportProps> = ({ clientes, processos, praz
                 </div>
             </div>
 
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center py-20">
-                <LayoutDashboard className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                <p className="text-slate-500">Mais indicadores podem ser adicionados aqui conforme necessidade.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <p className="text-sm text-slate-500 font-medium">Faturamento Total</p>
+                    <p className="text-3xl font-bold text-emerald-600 mt-2">R$ {stats.financeiroReceitas.toLocaleString('pt-BR')}</p>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <p className="text-sm text-slate-500 font-medium">Despesas Totais</p>
+                    <p className="text-3xl font-bold text-rose-600 mt-2">R$ {stats.financeiroDespesas.toLocaleString('pt-BR')}</p>
+                </div>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <p className="text-sm text-slate-500 font-medium">Saldo Operacional</p>
+                    <p className={`text-3xl font-bold mt-2 ${stats.financeiroSaldo >= 0 ? 'text-blue-600' : 'text-rose-600'}`}>R$ {stats.financeiroSaldo.toLocaleString('pt-BR')}</p>
+                </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <LayoutDashboard className="w-5 h-5 text-indigo-500" />
+                    Distribuição por Áreas
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {Object.entries(areasCount).map(([area, count]: [string, any]) => (
+                        <div key={area} className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{area}</p>
+                            <p className="text-xl font-bold text-slate-800 mt-1">{count}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
