@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { getTaskIcon, getTaskStyle, getTaskTextColor } from '../components/TaskIcon';
+import { GavelWithBase } from '../components/CustomIcons';
 import {
   CheckCircle2,
   Plus,
@@ -290,9 +290,47 @@ const TasksPage: React.FC<TasksPageProps> = ({
     return <span className="text-indigo-600">Em {diff} {diff === 1 ? 'dia' : 'dias'}</span>;
   };
 
-  const getTypeStyle = (tipo: TipoPrazo) => getTaskStyle(tipo);
-  const getTypeTextColor = (tipo: TipoPrazo) => getTaskTextColor(tipo);
-  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => getTaskIcon(tipo, className);
+  const getTypeStyle = (tipo: TipoPrazo) => {
+    switch (tipo) {
+      case TipoPrazo.PRAZO: return 'bg-blue-50 text-blue-600 border-blue-100';
+      case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
+      case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
+      case TipoPrazo.REUNIAO: return 'bg-rose-50 text-rose-600 border-rose-100';
+      case TipoPrazo.ATENDIMENTO: return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';
+      case TipoPrazo.PROTOCOLO: return 'bg-slate-50 text-slate-400 border-slate-100';
+      case TipoPrazo.OUTROS: return 'bg-slate-100 text-slate-950 border-slate-200';
+      default: return 'bg-gray-50 text-gray-600 border-gray-100';
+    }
+  };
+
+  const getTypeTextColor = (tipo: TipoPrazo) => {
+    switch (tipo) {
+      case TipoPrazo.PRAZO: return 'text-blue-600';
+      case TipoPrazo.AUDIENCIA: return 'text-orange-600';
+      case TipoPrazo.DILIGENCIA: return 'text-fuchsia-600';
+      case TipoPrazo.REUNIAO: return 'text-rose-600';
+      case TipoPrazo.ATENDIMENTO: return 'text-emerald-600';
+      case TipoPrazo.ADMINISTRATIVO: return 'text-[#5d4037]';
+      case TipoPrazo.PROTOCOLO: return 'text-slate-400';
+      case TipoPrazo.OUTROS: return 'text-slate-950';
+      default: return 'text-gray-400';
+    }
+  };
+
+  const getActivityIcon = (tipo: TipoPrazo, className = "w-6 h-6") => {
+    switch (tipo) {
+      case TipoPrazo.AUDIENCIA: return <GavelWithBase className={className} />;
+      case TipoPrazo.PRAZO: return <FilePenLine className={className} />;
+      case TipoPrazo.DILIGENCIA: return <Briefcase className={className} />;
+      case TipoPrazo.REUNIAO: return <UsersIcon className={className} />;
+      case TipoPrazo.ATENDIMENTO: return <MessageSquare className={className} />;
+      case TipoPrazo.ADMINISTRATIVO: return <CheckSquare className={className} />;
+      case TipoPrazo.PROTOCOLO: return <ScrollText className={className} />;
+      case TipoPrazo.OUTROS: return <MessageSquare className={className} />;
+      default: return <CheckSquare className={className} />;
+    }
+  };
 
   const linkedFinances = useMemo(() => {
     if (!selectedPrazo) return [];
@@ -414,15 +452,14 @@ const TasksPage: React.FC<TasksPageProps> = ({
             </div>
             <div className="p-8 grid grid-cols-2 md:grid-cols-3 gap-4">
               {[
-                { tipo: TipoPrazo.PRAZO, label: 'Prazo', desc: 'Prazos processuais' },
-                { tipo: TipoPrazo.AUDIENCIA, label: 'Audiência', desc: 'Audiências judiciais' },
-                { tipo: TipoPrazo.DILIGENCIA, label: 'Diligência', desc: 'Diligências externas' },
-                { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas' },
-                { tipo: TipoPrazo.DESPACHO, label: 'Despacho', desc: 'Despachos recebidos' },
-                { tipo: TipoPrazo.REUNIAO, label: 'Reunião', desc: 'Reuniões e encontros' },
-                { tipo: TipoPrazo.ATENDIMENTO, label: 'Atendimento', desc: 'Atendimento ao cliente' },
-                { tipo: TipoPrazo.PROTOCOLO, label: 'Protocolo', desc: 'Protocolos de petições' },
-                { tipo: TipoPrazo.OUTROS, label: 'Outros', desc: 'Casos não previstos' },
+                { tipo: TipoPrazo.PRAZO, label: 'Prazo', desc: 'Prazos processuais', icon: <FilePenLine className="w-6 h-6" />, color: 'bg-blue-50 text-blue-600 border-blue-100 hover:border-blue-400' },
+                { tipo: TipoPrazo.AUDIENCIA, label: 'Audiência', desc: 'Audiências judiciais', icon: <GavelWithBase className="w-6 h-6" />, color: 'bg-orange-50 text-orange-600 border-orange-100 hover:border-orange-400' },
+                { tipo: TipoPrazo.DILIGENCIA, label: 'Diligência', desc: 'Diligências externas', icon: <AlertTriangle className="w-6 h-6" />, color: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100 hover:border-fuchsia-400' },
+                { tipo: TipoPrazo.ADMINISTRATIVO, label: 'Administrativo', desc: 'Tarefas internas', icon: <Activity className="w-6 h-6" />, color: 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8] hover:border-[#a1887f]' },
+                { tipo: TipoPrazo.REUNIAO, label: 'Reunião', desc: 'Reuniões e encontros', icon: <UsersIcon className="w-6 h-6" />, color: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-400' },
+                { tipo: TipoPrazo.ATENDIMENTO, label: 'Atendimento', desc: 'Atendimento ao cliente', icon: <MessageSquare className="w-6 h-6" />, color: 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:border-emerald-400' },
+                { tipo: TipoPrazo.PROTOCOLO, label: 'Protocolo', desc: 'Protocolos de petições', icon: <ScrollText className="w-6 h-6" />, color: 'bg-slate-50 text-slate-400 border-slate-100 hover:border-slate-300' },
+                { tipo: TipoPrazo.OUTROS, label: 'Outros', desc: 'Casos não previstos', icon: <Activity className="w-6 h-6" />, color: 'bg-slate-100 text-slate-950 border-slate-200 hover:border-slate-400' },
               ].map(item => (
                 <button
                   key={item.tipo}
@@ -432,13 +469,13 @@ const TasksPage: React.FC<TasksPageProps> = ({
                     setIsTaskTypeSelectionModalOpen(false);
                     setIsFormModalOpen(true);
                   }}
-                  className={`p-5 rounded-3xl border-2 transition-all text-left hover:shadow-lg hover:-translate-y-1 ${getTaskStyle(item.tipo)}`}
+                  className={`p-5 rounded-3xl border-2 ${item.color} group transition-all text-left hover:shadow-lg hover:-translate-y-1`}
                 >
-                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 bg-white/50 shadow-sm">
-                    {getTaskIcon(item.tipo, "w-6 h-6")}
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-3 ${item.color.split(' ').slice(0, 2).join(' ')}`}>
+                    {item.icon}
                   </div>
-                  <h3 className="text-sm font-black">{item.label}</h3>
-                  <p className="text-[10px] font-bold opacity-70 mt-1">{item.desc}</p>
+                  <h3 className="text-sm font-black text-gray-800">{item.label}</h3>
+                  <p className="text-[10px] font-bold text-gray-400 mt-1">{item.desc}</p>
                 </button>
               ))}
             </div>
