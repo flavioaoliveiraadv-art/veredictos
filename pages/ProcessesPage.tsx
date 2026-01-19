@@ -682,6 +682,38 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                         <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.certidao.gerarTarefaAdministrativa ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>TAREFA: {and.certidao.gerarTarefaAdministrativa ? 'SIM' : 'NÃO'}</span>
                                       </div>
                                     </div>
+                                  ) : and.tipo === TipoAndamento.DESPACHO && and.despacho ? (
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Tipo de Despacho</p>
+                                          <p className="text-[11px] font-bold text-indigo-600">
+                                            {and.despacho.tipoDespacho.toUpperCase()}
+                                          </p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Instância</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.despacho.instancia}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Prolação</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.despacho.dataProlacao}</p>
+                                        </div>
+                                        <div>
+                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Publicação</p>
+                                          <p className="text-[11px] font-bold text-gray-700">{and.despacho.dataPublicacao}</p>
+                                        </div>
+                                      </div>
+
+                                      <div className="space-y-2">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo do Despacho</p>
+                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.despacho.resumoObjetivo || and.conteudo}</p>
+                                      </div>
+
+                                      <div className="flex flex-wrap gap-3 pt-2">
+                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.despacho.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.despacho.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
+                                      </div>
+                                    </div>
                                   ) : (
                                     <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
                                   )}

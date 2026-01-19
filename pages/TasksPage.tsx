@@ -148,6 +148,7 @@ const TasksPage: React.FC<TasksPageProps> = ({
     if (and.acordao) return and.acordao.resultado;
     if (and.decisaoInterlocutoria) return and.decisaoInterlocutoria.resultado;
     if (and.decisaoMonocratica) return and.decisaoMonocratica.resultado;
+    if (and.despacho) return and.despacho.tipoDespacho;
     return null;
   };
 
