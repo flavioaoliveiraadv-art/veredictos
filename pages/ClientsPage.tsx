@@ -250,9 +250,13 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                         <DetailField label="Nome" value={pessoa.nome} />
                         <DetailField label="Representante Legal" value={pessoa.representanteLegal || '-'} />
                         <DetailField label={pessoa.tipo === 'PJ' ? 'CNPJ' : 'CPF'} value={pessoa.documento || '-'} />
-                        <DetailField label="RG" value={pessoa.rg || '-'} />
-                        <DetailField label="Estado Civil" value={pessoa.estadoCivil || '-'} />
-                        <DetailField label="Profissão" value={pessoa.profissao || '-'} />
+                        {pessoa.tipo !== 'PJ' && (
+                          <>
+                            <DetailField label="RG" value={pessoa.rg || '-'} />
+                            <DetailField label="Estado Civil" value={pessoa.estadoCivil || '-'} />
+                            <DetailField label="Profissão" value={pessoa.profissao || '-'} />
+                          </>
+                        )}
                         <DetailField label="E-mail" value={pessoa.email || '-'} className="text-indigo-600" />
                         <DetailField label="Telefone" value={pessoa.telefone || '-'} />
                       </div>
