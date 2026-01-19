@@ -460,263 +460,31 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                   </div>
                                 </div>
                                 <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
-                                  {and.tipo === TipoAndamento.SENTENCA && and.sentenca ? (
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resultado</p>
-                                          <p className="text-[11px] font-bold text-indigo-600">{and.sentenca.resultado}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Instância</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.sentenca.instancia}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Favorável</p>
-                                          <p className={`text-[11px] font-bold ${and.sentenca.decisaoFavoravel ? 'text-emerald-600' : 'text-rose-500'}`}>{and.sentenca.decisaoFavoravel ? 'SIM' : 'NÃO'}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Gratuidade</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.sentenca.gratuidadeJustica ? 'SIM' : 'NÃO'}</p>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo da Decisão</p>
-                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.sentenca.resumoDecisao || and.conteudo}</p>
-                                      </div>
-
-                                      <div className="flex flex-wrap gap-3 pt-2">
-                                        {and.sentenca.condenacao && (
-                                          <span className="bg-rose-50 text-rose-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-rose-100">CONDENAÇÃO: {formatCurrency(and.sentenca.valorCondenacao || 0)}</span>
-                                        )}
-                                        {(and.sentenca.honorariosPercentual || and.sentenca.honorariosValorFixo) ? (
-                                          <span className="bg-emerald-50 text-emerald-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-emerald-100">
-                                            HONORÁRIOS: {and.sentenca.honorariosPercentual ? `${and.sentenca.honorariosPercentual}%` : formatCurrency(and.sentenca.honorariosValorFixo || 0)}
-                                          </span>
-                                        ) : null}
-                                        {and.sentenca.custas ? (
-                                          <span className="bg-gray-100 text-gray-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-gray-200">CUSTAS: {formatCurrency(and.sentenca.custas)}</span>
-                                        ) : null}
-                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.sentenca.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.sentenca.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
-                                      </div>
-
-                                      <div className="pt-2 flex items-center gap-4 text-[9px] font-bold text-gray-300 uppercase tracking-tighter">
-                                        <span>Magistrado: {and.sentenca.magistrado || 'N/C'}</span>
-                                        <span>Prolação: {and.sentenca.dataProlacao}</span>
-                                        <span>Publicação: {and.sentenca.dataPublicacao}</span>
-                                      </div>
+                                  {/* Renderização Simplificada Padronizada */}
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex items-center gap-4">
+                                      <span className="text-xs font-black text-gray-800 uppercase tracking-tighter">
+                                        Data de Publicação: {
+                                          (and.tipo === TipoAndamento.SENTENCA && and.sentenca?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.ACORDAO && and.acordao?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.ALVARA && and.alvara?.dataExpedicao) ||
+                                          (and.tipo === TipoAndamento.CERTIDAO && and.certidao?.dataPublicacao) ||
+                                          (and.tipo === TipoAndamento.DESPACHO && and.despacho?.dataPublicacao) ||
+                                          and.data
+                                        }
+                                      </span>
                                     </div>
-                                  ) : and.tipo === TipoAndamento.ACORDAO && and.acordao ? (
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resultado</p>
-                                          <p className="text-[11px] font-bold text-indigo-600">{and.acordao.resultado}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Tribunal</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.acordao.tribunal}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Modificação</p>
-                                          <p className={`text-[11px] font-bold ${and.acordao.modificacaoDecisao ? 'text-amber-600' : 'text-emerald-500'}`}>{and.acordao.modificacaoDecisao ? 'SIM' : 'NÃO'}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Gratuidade</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.acordao.gratuidadeJustica ? 'SIM' : 'NÃO'}</p>
-                                        </div>
-                                      </div>
 
-                                      <div className="space-y-2">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Tese Vencedora</p>
-                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.acordao.resumoTeseVencedora || and.conteudo}</p>
+                                    {and.tipo === TipoAndamento.DESPACHO && and.despacho && (
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <span className="bg-indigo-50 text-indigo-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-indigo-100 uppercase uppercase shadow-sm">
+                                          Tipo de Despacho: {and.despacho.tipoDespacho}
+                                        </span>
                                       </div>
-
-                                      <div className="flex flex-wrap gap-3 pt-2">
-                                        {and.acordao.honorarios && (
-                                          <span className="bg-emerald-50 text-emerald-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-emerald-100">HONORÁRIOS: {and.acordao.honorarios}</span>
-                                        )}
-                                        {and.acordao.custas ? (
-                                          <span className="bg-gray-100 text-gray-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-gray-200">CUSTAS: {formatCurrency(and.acordao.custas)}</span>
-                                        ) : null}
-                                        {and.acordao.multa ? (
-                                          <span className="bg-rose-50 text-rose-600 text-[9px] font-black px-3 py-1.5 rounded-xl border border-rose-100">MULTA: {formatCurrency(and.acordao.multa)}</span>
-                                        ) : null}
-                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.acordao.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.acordao.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
-                                      </div>
-
-                                      <div className="pt-2 grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-4 text-[9px] font-bold text-gray-300 uppercase tracking-tighter">
-                                        <span>Órgão: {and.acordao.orgaoJulgador || 'N/C'}</span>
-                                        <span>Relator: {and.acordao.relator || 'N/C'}</span>
-                                        <span>Recurso: {and.acordao.recursoJulgado || 'N/C'}</span>
-                                        <span>Nº Julgamento: {and.acordao.numeroJulgamento || 'N/C'}</span>
-                                        <span>Prolação: {and.acordao.dataProlacao}</span>
-                                        <span>Publicação: {and.acordao.dataPublicacao}</span>
-                                      </div>
-                                    </div>
-                                  ) : and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria ? (
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resultado</p>
-                                          <p className={`text-[11px] font-bold ${and.decisaoInterlocutoria.resultado === 'Deferido' ? 'text-emerald-500' : and.decisaoInterlocutoria.resultado === 'Indeferido' ? 'text-rose-500' : 'text-amber-600'}`}>
-                                            {and.decisaoInterlocutoria.resultado.toUpperCase()}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Instância</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoInterlocutoria.instancia}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Prolação</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoInterlocutoria.dataProlacao}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Publicação</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoInterlocutoria.dataPublicacao}</p>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo da Decisão</p>
-                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.decisaoInterlocutoria.resumoObjetivo || and.conteudo}</p>
-                                      </div>
-
-                                      <div className="flex flex-wrap gap-3 pt-2">
-                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.decisaoInterlocutoria.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
-                                      </div>
-                                    </div>
-                                  ) : and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica ? (
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Resultado</p>
-                                          <p className={`text-[11px] font-bold ${and.decisaoMonocratica.resultado.includes('Provido') ? 'text-emerald-500' : and.decisaoMonocratica.resultado.includes('Negado') ? 'text-rose-500' : 'text-amber-600'}`}>
-                                            {and.decisaoMonocratica.resultado.toUpperCase()}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Relator</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoMonocratica.relator || 'N/C'}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Prolação</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoMonocratica.dataProlacao}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Publicação</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.decisaoMonocratica.dataPublicacao}</p>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo da Decisão</p>
-                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.decisaoMonocratica.resumoDecisao || and.conteudo}</p>
-                                      </div>
-
-                                      <div className="flex flex-wrap gap-3 pt-2">
-                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.decisaoMonocratica.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.decisaoMonocratica.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
-                                        {and.decisaoMonocratica.efeitoPratico && (
-                                          <span className="text-[9px] font-black px-3 py-1.5 rounded-xl border bg-indigo-50 text-indigo-600 border-indigo-100 uppercase uppercase">{and.decisaoMonocratica.efeitoPratico}</span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ) : and.tipo === TipoAndamento.ALVARA && and.alvara ? (
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Tipo de Alvará</p>
-                                          <p className="text-[11px] font-bold text-indigo-600">
-                                            {and.alvara.tipoAlvara.toUpperCase()}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Expedição</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.alvara.dataExpedicao}</p>
-                                        </div>
-                                        {and.alvara.valorAutorizado !== undefined && (
-                                          <div>
-                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Valor Autorizado</p>
-                                            <p className="text-[11px] font-bold text-emerald-600">{formatCurrency(and.alvara.valorAutorizado)}</p>
-                                          </div>
-                                        )}
-                                        {and.alvara.origemValor && (
-                                          <div>
-                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Origem</p>
-                                            <p className="text-[11px] font-bold text-gray-700">{and.alvara.origemValor}</p>
-                                          </div>
-                                        )}
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo do Alvará</p>
-                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.alvara.resumoObjetivo || and.conteudo}</p>
-                                      </div>
-
-                                      <div className="flex flex-wrap gap-3 pt-2">
-                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.alvara.gerarTarefaAcompanhamento ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>TAREFA: {and.alvara.gerarTarefaAcompanhamento ? 'SIM' : 'NÃO'}</span>
-                                      </div>
-                                    </div>
-                                  ) : and.tipo === TipoAndamento.CERTIDAO && and.certidao ? (
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 gap-4 pb-4 border-b border-gray-100">
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Tipo de Certidão</p>
-                                          <p className="text-[11px] font-bold text-indigo-600">
-                                            {and.certidao.tipoCertidao.toUpperCase()}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Data da Publicação</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.certidao.dataPublicacao}</p>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo da Certidão</p>
-                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.certidao.resumoObjetivo || and.conteudo}</p>
-                                      </div>
-
-                                      <div className="flex flex-wrap gap-3 pt-2">
-                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.certidao.gerarTarefaAdministrativa ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>TAREFA: {and.certidao.gerarTarefaAdministrativa ? 'SIM' : 'NÃO'}</span>
-                                      </div>
-                                    </div>
-                                  ) : and.tipo === TipoAndamento.DESPACHO && and.despacho ? (
-                                    <div className="space-y-4">
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4 border-b border-gray-100">
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Tipo de Despacho</p>
-                                          <p className="text-[11px] font-bold text-indigo-600">
-                                            {and.despacho.tipoDespacho.toUpperCase()}
-                                          </p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Instância</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.despacho.instancia}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Prolação</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.despacho.dataProlacao}</p>
-                                        </div>
-                                        <div>
-                                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Publicação</p>
-                                          <p className="text-[11px] font-bold text-gray-700">{and.despacho.dataPublicacao}</p>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-2">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Resumo do Despacho</p>
-                                        <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.despacho.resumoObjetivo || and.conteudo}</p>
-                                      </div>
-
-                                      <div className="flex flex-wrap gap-3 pt-2">
-                                        <span className={`text-[9px] font-black px-3 py-1.5 rounded-xl border ${and.despacho.gerarPrazoTarefaAdm ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>PRAZO: {and.despacho.gerarPrazoTarefaAdm ? 'SIM' : 'NÃO'}</span>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <p className="text-sm font-medium text-gray-600 leading-relaxed whitespace-pre-wrap">{and.conteudo}</p>
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
