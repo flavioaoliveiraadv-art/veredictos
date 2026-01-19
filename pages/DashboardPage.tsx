@@ -48,6 +48,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
     [TipoPrazo.TAREFA, TipoPrazo.DILIGENCIA, TipoPrazo.REUNIAO, TipoPrazo.ATENDIMENTO, TipoPrazo.ADMINISTRATIVO].includes(t)
   ), [prazos, todayBR]);
   const statsAudiencias = useMemo(() => getStatsForType(t => t === TipoPrazo.AUDIENCIA), [prazos, todayBR]);
+  const statsProtocolos = useMemo(() => getStatsForType(t => t === TipoPrazo.PROTOCOLO), [prazos, todayBR]);
 
   // --- Eventos Prioritários ---
   const priorityEvents = useMemo(() => {
@@ -113,7 +114,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
       </div>
 
       {/* Primary Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Prazos"
           icon={<FilePenLine className="w-5 h-5" />}
@@ -127,6 +128,13 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
           iconColor="text-blue-500 bg-blue-50"
           stats={statsTarefas}
           isFeminine={true}
+          onClick={() => navigate('/tarefas')}
+        />
+        <StatCard
+          title="Protocolos"
+          icon={<ScrollText className="w-5 h-5" />}
+          iconColor="text-indigo-500 bg-indigo-50"
+          stats={statsProtocolos}
           onClick={() => navigate('/tarefas')}
         />
         <StatCard
