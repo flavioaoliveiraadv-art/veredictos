@@ -547,20 +547,20 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                         </button>
                       </div>
 
-                      <div className="space-y-4">
+                      <div className="space-y-2">
                         {selectedProcess.andamentos && selectedProcess.andamentos.length > 0 ? (
                           [...selectedProcess.andamentos].reverse().map((and, idx) => (
                             <div key={and.id} className="relative pl-10">
-                              <div className="absolute left-0 top-2 w-7 h-7 rounded-full border-4 border-white shadow bg-indigo-100 flex items-center justify-center z-10 text-indigo-600">
+                              <div className="absolute left-0 top-1.5 w-7 h-7 rounded-full border-4 border-white shadow bg-indigo-100 flex items-center justify-center z-10 text-indigo-600">
                                 <Activity className="w-3 h-3" />
                               </div>
-                              {idx !== selectedProcess.andamentos!.length - 1 && <div className="absolute left-3.5 top-8 bottom-[-24px] w-0.5 bg-indigo-50"></div>}
+                              {idx !== selectedProcess.andamentos!.length - 1 && <div className="absolute left-3.5 top-6 bottom-[-16px] w-0.5 bg-indigo-50"></div>}
 
                               <div
                                 onClick={() => { setSelectedAndamento(and); setIsAndamentoDetailModalOpen(true); }}
-                                className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all cursor-pointer group/and"
+                                className="bg-white p-3 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all cursor-pointer group/and"
                               >
-                                <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-start justify-between mb-1">
                                   <div>
                                     <div className="flex items-center gap-3 mb-1">
                                       <span className="text-xs font-black text-gray-800">
@@ -594,7 +594,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                                     </button>
                                   </div>
                                 </div>
-                                <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
+                                <div className="p-2 bg-gray-50/50 rounded-xl border border-gray-50">
                                   {/* Renderização Simplificada Padronizada */}
                                   <div className="flex flex-col gap-2">
                                     {and.tipo === TipoAndamento.DESPACHO && and.despacho && (
