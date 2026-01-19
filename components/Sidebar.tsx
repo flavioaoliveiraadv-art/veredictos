@@ -31,19 +31,19 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   return (
     <aside className="w-64 bg-[#0b1726] text-white flex flex-col h-full shadow-2xl transition-all duration-300">
       {/* Brand - Oliveira & Lins Advocacia */}
-      <div className="p-8 flex items-center gap-4 border-b border-white/5 mb-2">
-        <div className="flex-shrink-0 bg-white/5 p-2 rounded-2xl border border-white/10 shadow-inner">
+      <div className="p-6 pt-8 pb-6 flex flex-col items-center gap-4 border-b border-white/5 mb-2">
+        <div className="bg-white/5 p-3 rounded-2xl border border-white/10 shadow-inner">
           <img
             src="/logo_oliveira_lins.png"
             alt="Logo Oliveira & Lins"
-            className="w-10 h-10 object-contain"
+            className="w-20 h-20 object-contain"
           />
         </div>
-        <div className="flex flex-col">
-          <span className="text-white font-black text-base leading-tight tracking-tighter uppercase">
+        <div className="text-center">
+          <span className="block text-white font-black text-base leading-tight tracking-tight">
             Oliveira & Lins
           </span>
-          <span className="text-indigo-400 font-bold text-[9px] uppercase tracking-[0.2em] opacity-90">
+          <span className="block text-indigo-400 font-bold text-[10px] uppercase tracking-[0.25em] mt-1">
             Advocacia
           </span>
         </div>
