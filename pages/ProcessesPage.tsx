@@ -229,12 +229,21 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     if (!selectedAndamento) return null;
     const and = selectedAndamento;
 
+    const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
+      <div className="space-y-4 pt-4 border-t border-gray-50 first:pt-0 first:border-0">
+        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">{title}</h4>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+          {children}
+        </div>
+      </div>
+    );
+
     return (
       <div className="fixed inset-0 bg-[#0b1726]/40 backdrop-blur-[2px] z-[100] flex items-center justify-center p-4">
-        <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="bg-white w-full max-w-3xl rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-200">
           <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
             <div>
-              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Detalhes do Andamento</p>
+              <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Visualização de Andamento</p>
               <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">{and.tipo}</h3>
             </div>
             <button onClick={() => setIsAndamentoDetailModalOpen(false)} className="p-3 hover:bg-white rounded-2xl transition-all shadow-sm group">
@@ -242,59 +251,185 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             </button>
           </div>
 
-          <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scroll">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-              <DetailField label="Data de Registro" value={and.data} icon={<Calendar className="w-3 h-3" />} />
-              <DetailField label="Providência" value={and.providencia} icon={<Activity className="w-3 h-3" />} />
+          <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto custom-scroll">
+            {/* Campos Comuns (Data de Registro e Providência) */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
+              <DetailField label="Data de Registro" value={and.data} icon={<Calendar className="w-3.5 h-3.5" />} />
+              <DetailField label="Providência" value={and.providencia} icon={<Activity className="w-3.5 h-3.5" />} />
+            </div>
 
-              {and.tipo === TipoAndamento.DESPACHO && and.despacho && (
-                <>
-                  <DetailField label="Tipo de Despacho" value={and.despacho.tipoDespacho} className="text-indigo-600" />
-                  <DetailField label="Instância" value={and.despacho.instancia} />
-                  <DetailField label="Publicação" value={and.despacho.dataPublicacao} />
-                  <DetailField label="Prolação" value={and.despacho.dataProlacao} />
-                </>
-              )}
-
-              {and.tipo === TipoAndamento.SENTENCA && and.sentenca && (
-                <>
-                  <DetailField label="Resultado" value={and.sentenca.resultado} className="text-indigo-600" />
+            {and.tipo === TipoAndamento.SENTENCA && and.sentenca && (
+              <>
+                <Section title="Identificação da Sentença">
+                  <DetailField label="Data da Prolação" value={and.sentenca.dataProlacao} />
+                  <DetailField label="Data da Publicação" value={and.sentenca.dataPublicacao} />
                   <DetailField label="Instância" value={and.sentenca.instancia} />
-                  <DetailField label="Publicação" value={and.sentenca.dataPublicacao} />
-                  <DetailField label="Magistrado" value={and.sentenca.magistrado || 'N/C'} />
-                </>
-              )}
-
-              {and.tipo === TipoAndamento.ACORDAO && and.acordao && (
-                <>
-                  <DetailField label="Resultado" value={and.acordao.resultado} className="text-indigo-600" />
-                  <DetailField label="Tribunal" value={and.acordao.tribunal} />
-                  <DetailField label="Publicação" value={and.acordao.dataPublicacao} />
-                  <DetailField label="Relator" value={and.acordao.relator || 'N/C'} />
-                </>
-              )}
-
-              {and.tipo === TipoAndamento.ALVARA && and.alvara && (
-                <>
-                  <DetailField label="Tipo de Alvará" value={and.alvara.tipoAlvara} className="text-indigo-600" />
-                  <DetailField label="Expedição" value={and.alvara.dataExpedicao} />
-                  {and.alvara.valorAutorizado && (
-                    <DetailField label="Valor" value={formatCurrency(and.alvara.valorAutorizado)} className="text-emerald-600" />
+                  <DetailField label="Magistrado" value={and.sentenca.magistrado || '-'} />
+                </Section>
+                <Section title="Resultado da Sentença">
+                  <DetailField label="Resultado" value={and.sentenca.resultado} className="text-indigo-600" />
+                  <DetailField label="Decisão Favorável?" value={and.sentenca.decisaoFavoravel ? 'Sim' : 'Não'} />
+                  <DetailField label="Houve Condenação?" value={and.sentenca.condenacao ? 'Sim' : 'Não'} />
+                  {and.sentenca.condenacao && (
+                    <DetailField label="Valor da Condenação" value={formatCurrency(and.sentenca.valorCondenacao || 0)} className="text-emerald-600" />
                   )}
-                </>
-              )}
-            </div>
+                  <DetailField label="Obrigação de Fazer/Não Fazer?" value={and.sentenca.obrigacaoFazerNaoFazer ? 'Sim' : 'Não'} />
+                </Section>
+                <Section title="Honorários e Custas">
+                  <DetailField label="Honorários Advocatícios" value={and.sentenca.honorariosAdvocaticios || '-'} />
+                  <DetailField label="Custas" value={and.sentenca.custas || '-'} />
+                  <DetailField label="Gratuidade de Justiça?" value={and.sentenca.gratuidadeJustica ? 'Sim' : 'Não'} />
+                </Section>
+                <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Resumo da Decisão</p>
+                  <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">{and.sentenca.resumoDecisao || 'Sem resumo detalhado.'}</p>
+                </div>
+              </>
+            )}
 
-            <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3 h-3" /> Observações estratégicas</p>
-              <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {and.conteudo || (and.tipo === TipoAndamento.DESPACHO ? and.despacho?.resumoObjetivo : and.tipo === TipoAndamento.SENTENCA ? and.sentenca?.resumoDecisao : 'Sem conteúdo detalhado.')}
-              </p>
-            </div>
+            {and.tipo === TipoAndamento.ACORDAO && and.acordao && (
+              <>
+                <Section title="Identificação do Acórdão">
+                  <DetailField label="Tribunal" value={and.acordao.tribunal} />
+                  <DetailField label="Órgão Julgador" value={and.acordao.orgaoJulgador} />
+                  <DetailField label="Relator" value={and.acordao.relator} />
+                  <DetailField label="Recurso Julgado" value={and.acordao.recursoJulgado} />
+                  <DetailField label="Parte Recorrente" value={and.acordao.parteRecorrente} />
+                  <DetailField label="Número do Julgamento" value={and.acordao.numeroJulgamento} />
+                </Section>
+                <Section title="Julgamento e Resultado">
+                  <DetailField label="Data da Prolação" value={and.acordao.dataProlacao} />
+                  <DetailField label="Data da Publicação" value={and.acordao.dataPublicacao} />
+                  <DetailField label="Resultado" value={and.acordao.resultado} className="text-indigo-600" />
+                  <DetailField label="Modificação da decisão?" value={and.acordao.modificacaoDecisao ? 'Sim' : 'Não'} />
+                </Section>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Tese Vencedora</p>
+                    <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">{and.acordao.resumoTeseVencedora || '-'}</p>
+                  </div>
+                  <div className="space-y-3 bg-indigo-50/30 p-6 rounded-3xl border border-indigo-100/30">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5"><History className="w-3.5 h-3.5" /> Notas Estratégicas</p>
+                    <p className="text-sm font-medium text-indigo-900/70 leading-relaxed whitespace-pre-wrap">{and.acordao.observacoesEstrategicas || '-'}</p>
+                  </div>
+                </div>
+                <Section title="Aspectos Financeiros e Custas">
+                  <DetailField label="Honorários" value={and.acordao.honorarios || '-'} />
+                  <DetailField label="Gratuidade de Justiça?" value={and.acordao.gratuidadeJustica ? 'Sim' : 'Não'} />
+                  <DetailField label="Custas Judiciais" value={formatCurrency(and.acordao.custas || 0)} />
+                  <DetailField label="Multas Aplicadas" value={formatCurrency(and.acordao.multa || 0)} />
+                </Section>
+              </>
+            )}
 
-            <div className="flex items-center gap-4">
+            {and.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA && and.decisaoInterlocutoria && (
+              <>
+                <Section title="Identificação da Decisão">
+                  <DetailField label="Instância" value={and.decisaoInterlocutoria.instancia} />
+                  <DetailField label="Resultado" value={and.decisaoInterlocutoria.resultado} className="text-indigo-600" />
+                  <DetailField label="Data da Prolação" value={and.decisaoInterlocutoria.dataProlacao} />
+                  <DetailField label="Data da Publicação" value={and.decisaoInterlocutoria.dataPublicacao} />
+                </Section>
+                <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Resumo Objetivo</p>
+                  <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">{and.decisaoInterlocutoria.resumoObjetivo || '-'}</p>
+                </div>
+              </>
+            )}
+
+            {and.tipo === TipoAndamento.DECISAO_MONOCRATICA && and.decisaoMonocratica && (
+              <>
+                <Section title="Identificação do Julgamento">
+                  <DetailField label="Recurso analisado" value={and.decisaoMonocratica.recursoAnalisado} />
+                  <DetailField label="Tribunal" value={and.decisaoMonocratica.tribunal} />
+                  <DetailField label="Órgão julgador" value={and.decisaoMonocratica.orgaoJulgador} />
+                  <DetailField label="Relator" value={and.decisaoMonocratica.relator} />
+                  <DetailField label="Parte recorrente" value={and.decisaoMonocratica.parteRecorrente} />
+                  <DetailField label="Instância" value={and.decisaoMonocratica.instancia} />
+                  <DetailField label="Número do julgamento" value={and.decisaoMonocratica.numeroJulgamento} />
+                </Section>
+                <Section title="Datas e Resultado">
+                  <DetailField label="Data da Prolação" value={and.decisaoMonocratica.dataProlacao} />
+                  <DetailField label="Data da Publicação" value={and.decisaoMonocratica.dataPublicacao} />
+                  <DetailField label="Resultado" value={and.decisaoMonocratica.resultado} className="text-indigo-600" />
+                  <DetailField label="Efeito prático" value={and.decisaoMonocratica.efeitoPratico} />
+                </Section>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Resumo da Decisão</p>
+                    <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">{and.decisaoMonocratica.resumoDecisao || '-'}</p>
+                  </div>
+                  <div className="space-y-3 bg-indigo-50/30 p-6 rounded-3xl border border-indigo-100/30">
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5"><History className="w-3.5 h-3.5" /> Notas Estratégicas</p>
+                    <p className="text-sm font-medium text-indigo-900/70 leading-relaxed whitespace-pre-wrap">{and.decisaoMonocratica.observacoesEstrategicas || '-'}</p>
+                  </div>
+                </div>
+                <Section title="Aspectos Financeiros">
+                  <DetailField label="Honorários" value={and.decisaoMonocratica.honorarios || '-'} />
+                  <DetailField label="Gratuidade de Justiça?" value={and.decisaoMonocratica.gratuidadeJustica} />
+                  <DetailField label="Custas Judiciais" value={formatCurrency(and.decisaoMonocratica.custas || 0)} />
+                  <DetailField label="Multas Aplicadas" value={formatCurrency(and.decisaoMonocratica.multa || 0)} />
+                </Section>
+              </>
+            )}
+
+            {and.tipo === TipoAndamento.ALVARA && and.alvara && (
+              <>
+                <Section title="Identificação do Alvará">
+                  <DetailField label="Data da Expedição" value={and.alvara.dataExpedicao} />
+                  <DetailField label="Tipo de Alvará" value={and.alvara.tipoAlvara} className="text-indigo-600" />
+                </Section>
+                <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Resumo Objetivo</p>
+                  <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">{and.alvara.resumoObjetivo || '-'}</p>
+                </div>
+                <Section title="Aspectos Financeiros">
+                  <DetailField label="Origem do Valor" value={and.alvara.origemValor} />
+                  <DetailField label="Valor Autorizado" value={formatCurrency(and.alvara.valorAutorizado || 0)} className="text-emerald-600 font-bold" />
+                </Section>
+              </>
+            )}
+
+            {and.tipo === TipoAndamento.CERTIDAO && and.certidao && (
+              <>
+                <Section title="Identificação da Certidão">
+                  <DetailField label="Data da Publicação" value={and.certidao.dataPublicacao} />
+                  <DetailField label="Tipo de Certidão" value={and.certidao.tipoCertidao} className="text-indigo-600" />
+                </Section>
+                <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Resumo Objetivo</p>
+                  <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">{and.certidao.resumoObjetivo || '-'}</p>
+                </div>
+              </>
+            )}
+
+            {and.tipo === TipoAndamento.DESPACHO && and.despacho && (
+              <>
+                <Section title="Identificação do Ato">
+                  <DetailField label="Instância" value={and.despacho.instancia} />
+                  <DetailField label="Data da Prolação" value={and.despacho.dataProlacao} />
+                  <DetailField label="Data da Publicação" value={and.despacho.dataPublicacao} />
+                  <DetailField label="Tipo de Despacho" value={and.despacho.tipoDespacho} className="text-indigo-600" />
+                </Section>
+                <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Resumo Objetivo</p>
+                  <p className="text-sm font-medium text-gray-700 leading-relaxed whitespace-pre-wrap">{and.despacho.resumoObjetivo || '-'}</p>
+                </div>
+              </>
+            )}
+
+            {/* Observações Estratégicas Gerais (Sempre apresentadas ao final se não houver campo específico) */}
+            {!([TipoAndamento.SENTENCA, TipoAndamento.ACORDAO, TipoAndamento.DECISAO_MONOCRATICA].includes(and.tipo as any)) && (
+              <div className="space-y-3 bg-indigo-50/30 p-6 rounded-3xl border border-indigo-100/30">
+                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1.5"><History className="w-3.5 h-3.5" /> Observações Estratégicas</p>
+                <p className="text-sm font-medium text-indigo-900/70 leading-relaxed whitespace-pre-wrap">{and.conteudo || 'Nenhuma observação interna registrada.'}</p>
+              </div>
+            )}
+
+            {/* Controle de Prazo */}
+            <div className="flex items-center gap-4 pt-6 border-t border-gray-50">
               <span className={`text-[10px] font-black px-4 py-2 rounded-xl border ${and.geraPrazo ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
-                {and.geraPrazo ? 'GERA PRAZO: SIM' : 'GERA PRAZO: NÃO'}
+                {and.geraPrazo ? 'ESTE ANDAMENTO GEROU UM PRAZO JUDICIAL' : 'SEM GERAÇÃO DE PRAZO/TAREFA AUTOMÁTICA'}
               </span>
             </div>
           </div>
@@ -304,7 +439,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
               onClick={() => setIsAndamentoDetailModalOpen(false)}
               className="bg-white border border-gray-200 text-gray-700 px-8 py-3 rounded-2xl font-bold hover:bg-gray-50 transition-all shadow-sm"
             >
-              Fechar
+              Fechar Visualização
             </button>
           </div>
         </div>
