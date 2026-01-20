@@ -258,6 +258,21 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                   <button onClick={() => setIsHistoryModalOpen(true)} className="p-3 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-2xl transition-all"><History className="w-6 h-6" /></button>
                   <button onClick={() => {
                     const state = { ...selectedCliente };
+
+                    // Se o cliente não tem o novo formato de pessoas, cria a partir dos dados legados
+                    if (!state.pessoas || state.pessoas.length === 0) {
+                      const p = INITIAL_PERSON_STATE(state.tipo || 'PF');
+                      p.nome = state.nome;
+                      p.documento = state.documento || '';
+                      p.rg = state.rg || '';
+                      p.email = state.email || '';
+                      p.telefone = state.telefone || '';
+                      p.estadoCivil = state.estadoCivil || '';
+                      p.profissao = state.profissao || '';
+                      p.representanteLegal = state.representanteLegal || '';
+                      state.pessoas = [p];
+                    }
+
                     setFormData(state);
                     setInitialFormValue(JSON.stringify(state));
                     setIsEditMode(true);
@@ -270,24 +285,37 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-12">
-                  {(selectedCliente.pessoas || []).map((pessoa, idx) => (
+                  {((selectedCliente.pessoas && selectedCliente.pessoas.length > 0) ? selectedCliente.pessoas : [
+                    {
+                      id: 'legacy',
+                      nome: selectedCliente.nome,
+                      documento: selectedCliente.documento,
+                      rg: selectedCliente.rg,
+                      email: selectedCliente.email,
+                      telefone: selectedCliente.telefone,
+                      tipo: selectedCliente.tipo || 'PF',
+                      estadoCivil: selectedCliente.estadoCivil,
+                      profissao: selectedCliente.profissao,
+                      representanteLegal: selectedCliente.representanteLegal
+                    } as Pessoa
+                  ]).map((pessoa, idx) => (
                     <section key={pessoa.id} className="bg-gray-50/30 p-8 rounded-[32px] border border-gray-100">
                       <h3 className="text-xs font-black text-indigo-600 uppercase tracking-widest mb-6 border-b-2 border-indigo-50 pb-3">
                         {idx === 0 ? 'Pessoa Principal' : `Pessoa Adicional ${idx}`}
                       </h3>
                       <div className="grid grid-cols-2 gap-y-8 gap-x-12">
-                        <DetailField label="Nome" value={pessoa.nome} />
-                        <DetailField label="Representante Legal" value={pessoa.representanteLegal || '-'} />
-                        <DetailField label={pessoa.tipo === 'PJ' ? 'CNPJ' : 'CPF'} value={pessoa.documento || '-'} />
+                        <DetailField label="Nome" value={pessoa.nome || selectedCliente.nome} />
+                        <DetailField label="Representante Legal" value={pessoa.representanteLegal || (idx === 0 ? selectedCliente.representanteLegal : '') || '-'} />
+                        <DetailField label={pessoa.tipo === 'PJ' ? 'CNPJ' : 'CPF'} value={pessoa.documento || (idx === 0 ? selectedCliente.documento : '') || '-'} />
                         {pessoa.tipo !== 'PJ' && (
                           <>
-                            <DetailField label="RG" value={pessoa.rg || '-'} />
-                            <DetailField label="Estado Civil" value={pessoa.estadoCivil || '-'} />
-                            <DetailField label="Profissão" value={pessoa.profissao || '-'} />
+                            <DetailField label="RG" value={pessoa.rg || (idx === 0 ? selectedCliente.rg : '') || '-'} />
+                            <DetailField label="Estado Civil" value={pessoa.estadoCivil || (idx === 0 ? selectedCliente.estadoCivil : '') || '-'} />
+                            <DetailField label="Profissão" value={pessoa.profissao || (idx === 0 ? selectedCliente.profissao : '') || '-'} />
                           </>
                         )}
-                        <DetailField label="E-mail" value={pessoa.email || '-'} className="text-indigo-600" />
-                        <DetailField label="Telefone" value={pessoa.telefone || '-'} />
+                        <DetailField label="E-mail" value={pessoa.email || (idx === 0 ? selectedCliente.email : '') || '-'} className="text-indigo-600" />
+                        <DetailField label="Telefone" value={pessoa.telefone || (idx === 0 ? selectedCliente.telefone : '') || '-'} />
                       </div>
                     </section>
                   ))}
