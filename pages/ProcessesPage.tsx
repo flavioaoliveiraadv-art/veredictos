@@ -522,7 +522,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                 {getTaskIcon(p.tipo, "w-6 h-6")}
               </div>
               <div>
-                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Detalhes da Atividade</p>
+                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Detalhes da Tarefa</p>
                 <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">{p.descricao}</h3>
               </div>
             </div>
@@ -539,6 +539,42 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
               <DetailItem label="Data Fatal" value={`${p.dataFatal || '-'}${p.horaFatal ? ` às ${p.horaFatal}` : ''}`} icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} />
               <DetailItem label="Cliente" value={cli?.nome || '-'} icon={<User className="w-4 h-4" />} />
               <DetailItem label="Processo" value={proc?.numeros[0] || '-'} icon={<Briefcase className="w-4 h-4" />} />
+
+              <div className="col-span-2 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-500 shadow-sm border border-indigo-100">
+                    <History className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none mb-1.5">Andamento de Origem</p>
+                    {(() => {
+                      const originAndamento = proc?.andamentos?.find(a => a.id === p.andamentoId);
+                      if (originAndamento) {
+                        const getAndamentoDate = (a: any) => {
+                          if (a.tipo === TipoAndamento.SENTENCA) return a.sentenca?.dataProlacao;
+                          if (a.tipo === TipoAndamento.ACORDAO) return a.acordao?.dataProlacao;
+                          if (a.tipo === TipoAndamento.DECISAO_INTERLOCUTORIA) return a.decisaoInterlocutoria?.dataProlacao;
+                          if (a.tipo === TipoAndamento.DECISAO_MONOCRATICA) return a.decisaoMonocratica?.dataProlacao;
+                          if (a.tipo === TipoAndamento.ALVARA) return a.alvara?.dataExpedicao;
+                          if (a.tipo === TipoAndamento.CERTIDAO) return a.certidao?.dataPublicacao;
+                          if (a.tipo === TipoAndamento.DESPACHO) return a.despacho?.dataProlacao;
+                          return a.data;
+                        };
+                        return (
+                          <p className="text-sm font-black text-gray-800 uppercase">
+                            {getAndamentoDate(originAndamento)} – {originAndamento.tipo}
+                          </p>
+                        );
+                      }
+                      return (
+                        <p className="text-sm font-bold text-gray-400 italic">
+                          Tarefa manual (sem vínculo com andamento)
+                        </p>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
 
               <div className="col-span-2">
                 <DetailItem label="Observações" value={p.observacao || 'Nenhuma observação registrada.'} icon={<FileText className="w-4 h-4" />} />
