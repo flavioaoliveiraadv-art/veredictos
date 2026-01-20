@@ -189,9 +189,11 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
               </div>
               <div className="min-w-0">
                 <h3 className="text-xs font-black text-gray-800 truncate mb-0.5">{cliente.nome}</h3>
-                <p className="text-[10px] font-bold text-gray-400 truncate mb-1 uppercase h-[15px]">
-                  {cliente.representanteLegal ? `Rep: ${cliente.representanteLegal}` : ''}
-                </p>
+                {(cliente.representanteLegal || (cliente.pessoas && cliente.pessoas[0]?.representanteLegal)) && (
+                  <p className="text-[10px] font-bold text-gray-400 truncate mb-1 uppercase">
+                    <span className="text-[#4f46e5]">Representante legal:</span> {cliente.representanteLegal || cliente.pessoas[0].representanteLegal}
+                  </p>
+                )}
                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${cliente.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
                   {cliente.status}
                 </span>
