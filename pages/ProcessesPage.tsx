@@ -75,6 +75,10 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
   const [quickPrazoData, setQuickPrazoData] = useState<Partial<Prazo>>({});
   const [pendingAndamentoId, setPendingAndamentoId] = useState<string | null>(null);
 
+  // Prazo Detail States (Aba Tarefas e Prazos)
+  const [selectedPrazoDetail, setSelectedPrazoDetail] = useState<Prazo | null>(null);
+  const [isPrazoDetailModalOpen, setIsPrazoDetailModalOpen] = useState(false);
+
   const addHistorico = (idReferencia: string, descricao: string) => {
     const entry: HistoricoAlteracao = {
       id: `h-${Date.now()}`,
@@ -308,10 +312,106 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
     );
   };
 
+  // Janela de Detalhes Completos do Prazo na Ficha do Processo
+  const PrazoDetailModal = () => {
+    if (!selectedPrazoDetail) return null;
+    const p = selectedPrazoDetail;
+    const cli = clientes.find(c => c.id === p.clienteId);
+    const proc = processos.find(proc => proc.id === p.processoId);
+
+    const getDayLabel = (date: string) => {
+      const todayBR = getTodayBR();
+      const diff = compareDatesBR(date, todayBR);
+      if (diff < 0) return { label: 'Atrasado', color: 'bg-rose-100 text-rose-600' };
+      if (diff === 0) return { label: 'Para Hoje', color: 'bg-amber-100 text-amber-600' };
+      if (diff <= 3) return { label: 'Próximo', color: 'bg-indigo-100 text-indigo-600' };
+      return { label: 'Em Dia', color: 'bg-emerald-100 text-emerald-600' };
+    };
+
+    const statusLabel = getDayLabel(p.dataVencimento);
+
+    const DetailItem = ({ label, value, icon }: any) => (
+      <div className="flex items-start gap-3">
+        {icon && <div className="mt-1 text-gray-400">{icon}</div>}
+        <div>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
+          <p className="text-sm font-black text-gray-800">{value}</p>
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="fixed inset-0 bg-[#0b1726]/40 backdrop-blur-[2px] z-[110] flex items-center justify-center p-4" onClick={() => setIsPrazoDetailModalOpen(false)}>
+        <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl border border-gray-100 overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+          <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border shadow-sm ${p.tipo === TipoPrazo.PRAZO ? 'bg-blue-50 text-blue-600 border-blue-100' : getTaskStyle(p.tipo)}`}>
+                {getTaskIcon(p.tipo, "w-6 h-6")}
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">Detalhes da Atividade</p>
+                <h3 className="text-xl font-black text-gray-800 uppercase tracking-tighter">{p.descricao}</h3>
+              </div>
+            </div>
+            <button onClick={() => setIsPrazoDetailModalOpen(false)} className="p-3 hover:bg-white rounded-2xl transition-all shadow-sm group">
+              <X className="w-5 h-5 text-gray-400 group-hover:text-rose-500" />
+            </button>
+          </div>
+
+          <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto custom-scroll">
+            <div className="grid grid-cols-2 gap-y-8 gap-x-12">
+              <DetailItem label="Tipo" value={p.tipo} icon={<Scale className="w-4 h-4" />} />
+              <DetailItem label="Responsável" value={p.responsavel} icon={<User className="w-4 h-4" />} />
+              <DetailItem label="Data Interna" value={`${p.dataVencimento}${p.horaVencimento ? ` às ${p.horaVencimento}` : ''}`} icon={<Clock className="w-4 h-4" />} />
+              <DetailItem label="Data Fatal" value={`${p.dataFatal || '-'}${p.horaFatal ? ` às ${p.horaFatal}` : ''}`} icon={<AlertTriangle className="w-4 h-4 text-rose-500" />} />
+              <DetailItem label="Cliente" value={cli?.nome || '-'} icon={<User className="w-4 h-4" />} />
+              <DetailItem label="Processo" value={proc?.numeros[0] || '-'} icon={<Briefcase className="w-4 h-4" />} />
+
+              <div className="col-span-2">
+                <DetailItem label="Observações" value={p.observacao || 'Nenhuma observação registrada.'} icon={<FileText className="w-4 h-4" />} />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-gray-50">
+              <span className={`text-[10px] font-black px-4 py-2 rounded-xl border ${p.concluido ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : p.cancelado ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-amber-50 text-amber-600 border-amber-100'}`}>
+                STATUS: {p.concluido ? 'REALIZADO' : p.cancelado ? 'CANCELADO' : 'PENDENTE'}
+              </span>
+              {p.critico && (
+                <span className="bg-rose-100 text-rose-600 text-[10px] font-black px-4 py-2 rounded-xl border border-rose-200 uppercase tracking-widest">
+                  URGENTE / CRÍTICO
+                </span>
+              )}
+              {p.dataConclusao && (
+                <span className="text-[10px] font-bold text-gray-400">Finalizado em: {p.dataConclusao}</span>
+              )}
+            </div>
+
+            {(p.observacoesRealizacao || p.justificativaCancelamento) && (
+              <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nota de Conclusão/Cancelamento</p>
+                <p className="text-sm font-medium text-gray-700 italic">"{p.observacoesRealizacao || p.justificativaCancelamento}"</p>
+              </div>
+            )}
+          </div>
+
+          <div className="p-8 bg-gray-50/50 border-t border-gray-50 flex justify-end">
+            <button
+              onClick={() => setIsPrazoDetailModalOpen(false)}
+              className="bg-white border border-gray-200 text-gray-700 px-8 py-3 rounded-2xl font-bold hover:bg-gray-50 transition-all shadow-sm"
+            >
+              Fechar Detalhes
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         {isAndamentoDetailModalOpen && <AndamentoDetailModal />}
+        {isPrazoDetailModalOpen && <PrazoDetailModal />}
         <div>
           <h1 className="text-3xl font-bold text-[#0b1726]">Processos e Recursos</h1>
           <p className="text-gray-500 font-medium">Gestão unificada de acervo judicial e recursos de 2º grau.</p>
@@ -503,22 +603,28 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                       <div className="space-y-3">
                         {prazos.filter(p => p.processoId === selectedProcess.id).length > 0 ? (
                           prazos.filter(p => p.processoId === selectedProcess.id).map(p => (
-                            <div key={p.id} className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-indigo-200 transition-all">
+                            <div key={p.id}
+                              onClick={() => { setSelectedPrazoDetail(p); setIsPrazoDetailModalOpen(true); }}
+                              className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-indigo-200 hover:shadow-md transition-all cursor-pointer group/prazo"
+                            >
                               <div className="flex items-center gap-4">
                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm ${p.tipo === TipoPrazo.PRAZO ? 'bg-blue-50 text-blue-600 border-blue-100' : getTaskStyle(p.tipo)}`}>
                                   {getTaskIcon(p.tipo, "w-5 h-5")}
                                 </div>
                                 <div>
-                                  <p className="text-sm font-black text-gray-800">{p.descricao}</p>
+                                  <p className="text-sm font-black text-gray-800 group-hover/prazo:text-indigo-600 transition-colors">{p.descricao}</p>
                                   <div className="flex items-center gap-3 mt-0.5">
                                     <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1"><Calendar className="w-3 h-3" /> Vence em: {p.dataVencimento}</span>
                                     {p.critico && <span className="bg-rose-100 text-rose-600 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter">CRÍTICO</span>}
                                   </div>
                                 </div>
                               </div>
-                              <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${p.concluido ? 'bg-emerald-100 text-emerald-600' : p.cancelado ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'}`}>
-                                {p.concluido ? 'Realizado' : p.cancelado ? 'Cancelado' : 'Pendente'}
-                              </span>
+                              <div className="flex items-center gap-3">
+                                <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest ${p.concluido ? 'bg-emerald-100 text-emerald-600' : p.cancelado ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'}`}>
+                                  {p.concluido ? 'Realizado' : p.cancelado ? 'Cancelado' : 'Pendente'}
+                                </span>
+                                <ChevronRight className="w-4 h-4 text-gray-200 group-hover/prazo:text-indigo-400 group-hover/prazo:translate-x-1 transition-all" />
+                              </div>
                             </div>
                           ))
                         ) : (
