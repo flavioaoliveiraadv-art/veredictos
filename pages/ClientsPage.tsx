@@ -67,11 +67,26 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
   };
 
   const filteredClientes = useMemo(() => {
+    const searchLower = searchTerm.toLowerCase().trim();
+
     return clientes.filter(c => {
       const matchesTab = c.status === (activeTab === 'ATIVO' ? 'Ativo' : 'Inativo');
-      const matchesSearch = c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.documento.includes(searchTerm);
-      return matchesTab && matchesSearch;
+
+      if (!searchTerm) return matchesTab;
+
+      // Busca no nome do registro de exibição
+      const matchesName = (c.nome || '').toLowerCase().includes(searchLower);
+
+      // Busca no documento legado (se existir)
+      const matchesDocLegacy = (c.documento || '').includes(searchTerm);
+
+      // Busca profunda em todas as pessoas vinculadas ao cliente (Litisconsórcio/Sócios)
+      const matchesPessoas = (c.pessoas || []).some(p =>
+        (p.nome || '').toLowerCase().includes(searchLower) ||
+        (p.documento || '').replace(/\D/g, '').includes(searchTerm.replace(/\D/g, ''))
+      );
+
+      return matchesTab && (matchesName || matchesDocLegacy || matchesPessoas);
     });
   }, [clientes, activeTab, searchTerm]);
 
@@ -181,29 +196,41 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredClientes.map(cliente => (
-          <div key={cliente.id} onClick={() => setSelectedCliente(cliente)} className="bg-white p-4 rounded-[32px] border border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/5 transition-all cursor-pointer group">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-lg group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
-                {cliente.nome.charAt(0)}
+        {filteredClientes.length > 0 ? (
+          filteredClientes.map(cliente => (
+            <div key={cliente.id} onClick={() => setSelectedCliente(cliente)} className="bg-white p-4 rounded-[32px] border border-gray-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-50/5 transition-all cursor-pointer group">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-lg group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
+                  {cliente.nome?.trim().charAt(0) || <User className="w-5 h-5" />}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-xs font-black text-gray-800 truncate mb-0.5">{cliente.nome || 'SEM NOME'}</h3>
+                  {(cliente.representanteLegal || (cliente.pessoas && cliente.pessoas[0]?.representanteLegal)) && (
+                    <p className="text-[10px] font-bold text-gray-400 truncate mb-1 uppercase">
+                      <span className="text-[#4f46e5]">Representante legal:</span> {cliente.representanteLegal || cliente.pessoas[0]?.representanteLegal}
+                    </p>
+                  )}
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${cliente.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
+                    {cliente.status}
+                  </span>
+                </div>
               </div>
-              <div className="min-w-0">
-                <h3 className="text-xs font-black text-gray-800 truncate mb-0.5">{cliente.nome}</h3>
-                {(cliente.representanteLegal || (cliente.pessoas && cliente.pessoas[0]?.representanteLegal)) && (
-                  <p className="text-[10px] font-bold text-gray-400 truncate mb-1 uppercase">
-                    <span className="text-[#4f46e5]">Representante legal:</span> {cliente.representanteLegal || cliente.pessoas[0].representanteLegal}
-                  </p>
-                )}
-                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${cliente.status === 'Ativo' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
-                  {cliente.status}
-                </span>
+              <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-indigo-600 font-black text-[9px] uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+                Ver Ficha Completa <ChevronRight className="w-3.5 h-3.5" />
               </div>
             </div>
-            <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-indigo-600 font-black text-[9px] uppercase tracking-widest group-hover:translate-x-1 transition-transform">
-              Ver Ficha Completa <ChevronRight className="w-3.5 h-3.5" />
+          ))
+        ) : (
+          <div className="col-span-full py-20 bg-white rounded-[40px] border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-center px-4">
+            <div className="w-20 h-20 rounded-3xl bg-gray-50 flex items-center justify-center mb-6">
+              <Search className="w-10 h-10 text-gray-300" />
             </div>
+            <h3 className="text-xl font-black text-gray-800 mb-2">Nenhum cliente encontrado</h3>
+            <p className="text-gray-500 font-medium max-w-sm">
+              Tente ajustar seu termo de busca ou verifique se o cliente está na aba de {activeTab === 'ATIVO' ? 'Inativos' : 'Ativos'}.
+            </p>
           </div>
-        ))}
+        )}
       </div>
 
       {/* MODAL: DETALHES DO CLIENTE */}
