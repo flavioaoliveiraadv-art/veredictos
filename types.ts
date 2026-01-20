@@ -229,6 +229,7 @@ export interface Pessoa {
   estadoCivil?: string;
   profissao?: string;
   representanteLegal?: string;
+  endereco?: string;
 }
 
 export interface Cliente {

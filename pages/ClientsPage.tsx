@@ -29,14 +29,14 @@ const INITIAL_PERSON_STATE = (tipo: 'PF' | 'PJ'): Pessoa => ({
   tipo,
   estadoCivil: '',
   profissao: '',
-  representanteLegal: ''
+  representanteLegal: '',
+  endereco: ''
 });
 
 const INITIAL_FORM_STATE: Partial<Cliente> = {
   nome: '',
   pessoas: [],
   status: 'Ativo',
-  endereco: '', // Mantido no nível do cliente para o cadastro único
 };
 
 // Fixed: Corrected typo 'procesos' to 'processos' in props destructuring
@@ -270,6 +270,7 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                       p.estadoCivil = state.estadoCivil || '';
                       p.profissao = state.profissao || '';
                       p.representanteLegal = state.representanteLegal || '';
+                      p.endereco = state.endereco || '';
                       state.pessoas = [p];
                     }
 
@@ -296,7 +297,8 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                       tipo: selectedCliente.tipo || 'PF',
                       estadoCivil: selectedCliente.estadoCivil,
                       profissao: selectedCliente.profissao,
-                      representanteLegal: selectedCliente.representanteLegal
+                      representanteLegal: selectedCliente.representanteLegal,
+                      endereco: selectedCliente.endereco
                     } as Pessoa
                   ]).map((pessoa, idx) => (
                     <section key={pessoa.id} className="bg-gray-50/30 p-8 rounded-[32px] border border-gray-100">
@@ -316,15 +318,13 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                         )}
                         <DetailField label="E-mail" value={pessoa.email || (idx === 0 ? selectedCliente.email : '') || '-'} className="text-indigo-600" />
                         <DetailField label="Telefone" value={pessoa.telefone || (idx === 0 ? selectedCliente.telefone : '') || '-'} />
+                        <div className="col-span-2">
+                          <DetailField label="Endereço Completo" value={pessoa.endereco || (idx === 0 ? selectedCliente.endereco : '') || '-'} />
+                        </div>
                       </div>
                     </section>
                   ))}
-                  <section>
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 border-b-2 border-gray-50 pb-3">Localização Única do Cadastro</h3>
-                    <div className="grid grid-cols-1 gap-y-8 gap-x-12">
-                      <DetailField label="Endereço com CEP" value={selectedCliente.endereco || '-'} />
-                    </div>
-                  </section>
+                  {/* Seção de Endereço Único Removida para suportar endereços por pessoa */}
                 </div>
                 <div className="space-y-6">
                   <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100">
@@ -557,6 +557,18 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                             />
                           </>
                         )}
+                        <div className="md:col-span-3">
+                          <FormInput
+                            label="Endereço Completo com CEP"
+                            value={pessoa.endereco}
+                            onChange={e => {
+                              const newPessoas = [...(formData.pessoas || [])];
+                              newPessoas[idx] = { ...pessoa, endereco: e.target.value };
+                              setFormData({ ...formData, pessoas: newPessoas });
+                            }}
+                            placeholder="Rua, Número, Bairro, Cidade, Estado - CEP"
+                          />
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -571,23 +583,11 @@ const ClientsPage: React.FC<ClientsPageProps> = ({
                     }}
                     className="w-full py-4 border-2 border-dashed border-gray-200 rounded-[32px] text-gray-400 font-black uppercase tracking-widest text-[10px] hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all flex items-center justify-center gap-2"
                   >
-                    <Plus className="w-5 h-5" /> Adicionar Outra Pessoa (Litisconsórcio/Cônjuge)
+                    <Plus className="w-5 h-5" /> Adicionar Outra Pessoa
                   </button>
                 </div>
 
-                <div className="pt-8 border-t border-gray-100">
-                  <div className="space-y-4">
-                    <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                      Endereço do Cadastro
-                    </h3>
-                    <FormInput
-                      label="Endereço Completo com CEP"
-                      value={formData.endereco}
-                      onChange={e => setFormData({ ...formData, endereco: e.target.value })}
-                      placeholder="Rua, Número, Bairro, Cidade, Estado - CEP"
-                    />
-                  </div>
-                </div>
+                {/* Seção de Endereço Global Removida */}
               </form>
             </div>
             <div className="p-8 border-t border-gray-100 flex gap-4 bg-gray-50/50">
