@@ -1,0 +1,37 @@
+{
+    "files.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/out": true,
+        "**/__pycache__": true,
+        "**/.venv": true,
+        "**/.git": true,
+        "**/.cache": true,
+        "**/*.log": true,
+        "**/*.tmp": true,
+        "**/*.pyc": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/out": true,
+        "**/__pycache__": true,
+        "**/.venv": true,
+        "**/.git": true,
+        "**/.cache": true
+    },
+    "typescript.tsserver.exclude": [
+        "**/node_modules",
+        "**/dist",
+        "**/build",
+        "**/out"
+    ],
+    "javascript.tsserver.exclude": [
+        "**/node_modules",
+        "**/dist",
+        "**/build",
+        "**/out"
+    ]
+}
