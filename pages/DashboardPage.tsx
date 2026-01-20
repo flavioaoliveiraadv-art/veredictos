@@ -113,7 +113,7 @@ const DashboardPage: React.FC<DashboardProps> = ({ processos, prazos, financeiro
         <StatCard
           title="Prazos"
           icon={getTaskIcon(TipoPrazo.PRAZO, "w-5 h-5")}
-          iconColor="text-rose-500 bg-rose-50"
+          iconColor="text-blue-600 bg-blue-50"
           stats={statsPrazos}
           onClick={() => navigate('/tarefas')}
         />
