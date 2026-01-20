@@ -505,7 +505,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                           prazos.filter(p => p.processoId === selectedProcess.id).map(p => (
                             <div key={p.id} className="p-5 bg-white rounded-3xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-indigo-200 transition-all">
                               <div className="flex items-center gap-4">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm ${getTaskStyle(p.tipo)}`}>
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm ${p.tipo === TipoPrazo.PRAZO ? 'bg-blue-50 text-blue-600 border-blue-100' : getTaskStyle(p.tipo)}`}>
                                   {getTaskIcon(p.tipo, "w-5 h-5")}
                                 </div>
                                 <div>
