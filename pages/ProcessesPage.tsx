@@ -2338,9 +2338,8 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                     <div className="space-y-2">
                       <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Observações estratégicas</label>
                       <textarea
-                        required
                         className="w-full h-32 px-5 py-4 bg-gray-50 border border-gray-100 rounded-3xl font-medium text-sm outline-none focus:border-indigo-500 transition-all resize-none"
-                        placeholder="Descreva as observações estratégicas do andamento..."
+                        placeholder="Descreva as observações estratégicas do andamento... (opcional)"
                         value={andamentoFormData.conteudo}
                         onChange={(e) => setAndamentoFormData({ ...andamentoFormData, conteudo: e.target.value })}
                       />
