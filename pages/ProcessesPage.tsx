@@ -252,10 +252,9 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
           </div>
 
           <div className="p-8 space-y-10 max-h-[70vh] overflow-y-auto custom-scroll">
-            {/* Campos Comuns (Data de Registro e Providência) */}
+            {/* Campos Comuns (Data de Registro) */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-4">
               <DetailField label="Data de Registro" value={and.data} icon={<Calendar className="w-3.5 h-3.5" />} />
-              <DetailField label="Providência" value={and.providencia} icon={<Activity className="w-3.5 h-3.5" />} />
             </div>
 
             {and.tipo === TipoAndamento.SENTENCA && and.sentenca && (
@@ -426,11 +425,50 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
               </div>
             )}
 
-            {/* Controle de Prazo */}
-            <div className="flex items-center gap-4 pt-6 border-t border-gray-50">
-              <span className={`text-[10px] font-black px-4 py-2 rounded-xl border ${and.geraPrazo ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
-                {and.geraPrazo ? 'ESTE ANDAMENTO GEROU UM PRAZO JUDICIAL' : 'SEM GERAÇÃO DE PRAZO/TAREFA AUTOMÁTICA'}
-              </span>
+            {/* Controle de Prazo / Tarefa Vinculada */}
+            <div className="space-y-6 pt-6 border-t border-gray-50">
+              {(() => {
+                const linkedPrazo = prazos.find(p => p.andamentoId === and.id || p.id === and.prazoId);
+                if (linkedPrazo) {
+                  return (
+                    <div className="space-y-4">
+                      <h4 className="text-[10px] font-black text-amber-500 uppercase tracking-widest ml-1">Tarefa / Prazo Vinculado</h4>
+                      <div className="bg-amber-50/50 rounded-[32px] border border-amber-100 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border shadow-sm ${linkedPrazo.tipo === TipoPrazo.PRAZO ? 'bg-blue-50 text-blue-600 border-blue-100' : getTaskStyle(linkedPrazo.tipo)}`}>
+                            {getTaskIcon(linkedPrazo.tipo, "w-6 h-6")}
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-0.5">{linkedPrazo.tipo}</p>
+                            <h5 className="text-sm font-black text-gray-800">{linkedPrazo.descricao}</h5>
+                            <div className="flex items-center gap-3 mt-1">
+                              <span className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500">
+                                <Clock className="w-3 h-3" /> Vencimento: {linkedPrazo.dataVencimento}
+                              </span>
+                              {linkedPrazo.dataFatal && (
+                                <span className="flex items-center gap-1.5 text-[10px] font-black text-rose-500">
+                                  <AlertTriangle className="w-3 h-3" /> Fatal: {linkedPrazo.dataFatal}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[10px] font-black px-3 py-1.5 rounded-lg border ${linkedPrazo.concluido ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : linkedPrazo.cancelado ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-amber-100 text-amber-600 border-amber-200'}`}>
+                            {linkedPrazo.concluido ? 'REALIZADO' : linkedPrazo.cancelado ? 'CANCELADO' : 'PENDENTE'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <Info className="w-4 h-4" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">Nenhuma tarefa ou prazo foi gerado a partir deste andamento.</span>
+                  </div>
+                );
+              })()}
             </div>
           </div>
 
