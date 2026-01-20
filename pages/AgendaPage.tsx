@@ -80,7 +80,7 @@ const AgendaPage = ({ prazos, clientes, processos, financeiro }: any) => {
   const getEventColor = (event: any) => {
     if (event.eventType === 'FINANCE') return 'bg-emerald-50 text-emerald-600 border-emerald-100';
     switch (event.tipo) {
-      case TipoPrazo.PRAZO: return 'bg-rose-50 text-rose-600 border-rose-100';
+      case TipoPrazo.PRAZO: return 'bg-blue-50 text-blue-600 border-blue-100';
       case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
       case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
       case TipoPrazo.ADMINISTRATIVO: return 'bg-[#efebe9] text-[#5d4037] border-[#d7ccc8]';

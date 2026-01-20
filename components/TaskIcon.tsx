@@ -35,7 +35,7 @@ export const getTaskIcon = (tipo: TipoPrazo, className = "w-5 h-5") => {
 
 export const getTaskStyle = (tipo: TipoPrazo) => {
     switch (tipo) {
-        case TipoPrazo.PRAZO: return 'bg-rose-50 text-rose-600 border-rose-100';
+        case TipoPrazo.PRAZO: return 'bg-blue-50 text-blue-600 border-blue-100';
         case TipoPrazo.AUDIENCIA: return 'bg-orange-50 text-orange-600 border-orange-100';
         case TipoPrazo.DILIGENCIA: return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
         case TipoPrazo.REUNIAO: return 'bg-rose-50 text-rose-500 border-rose-100';
@@ -50,7 +50,7 @@ export const getTaskStyle = (tipo: TipoPrazo) => {
 
 export const getTaskTextColor = (tipo: TipoPrazo) => {
     switch (tipo) {
-        case TipoPrazo.PRAZO: return 'text-rose-600';
+        case TipoPrazo.PRAZO: return 'text-blue-600';
         case TipoPrazo.AUDIENCIA: return 'text-orange-600';
         case TipoPrazo.DILIGENCIA: return 'text-fuchsia-600';
         case TipoPrazo.REUNIAO: return 'text-rose-500';
