@@ -1295,7 +1295,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
               <div className="p-10 pb-6 flex items-center justify-between flex-shrink-0">
                 <div>
                   <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
-                    <Activity className="w-8 h-8 text-indigo-600" /> Novo Andamento
+                    <Activity className="w-8 h-8 text-indigo-600" /> {andamentoFormData.id ? 'Editar Andamento' : 'Novo Andamento'}
                   </h2>
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Tipo: {andamentoFormData.tipo || 'Não selecionado'}</p>
                 </div>
@@ -1344,23 +1344,32 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                       setAndamentoErrors(errors);
                       return;
                     }
+
+                    const isEdit = !!andamentoFormData.id;
                     const and: Andamento = {
                       ...andamentoFormData,
-                      id: `and-${Date.now()}`
+                      id: andamentoFormData.id || `and-${Date.now()}`
                     } as Andamento;
+
+                    let updatedAndamentos = [...(selectedProcess.andamentos || [])];
+                    if (isEdit) {
+                      updatedAndamentos = updatedAndamentos.map(a => a.id === and.id ? and : a);
+                    } else {
+                      updatedAndamentos.push(and);
+                    }
 
                     const updatedProcesso = {
                       ...selectedProcess,
-                      andamentos: [...(selectedProcess.andamentos || []), and],
+                      andamentos: updatedAndamentos,
                       ultimaAtualizacao: getTodayBR()
                     };
 
                     setProcessos(prev => prev.map(p => p.id === selectedProcess.id ? updatedProcesso : p));
                     setSelectedProcess(updatedProcesso);
-                    addHistorico(selectedProcess.id, `Novo andamento registrado: ${and.tipo}`);
+                    addHistorico(selectedProcess.id, isEdit ? `Andamento atualizado: ${and.tipo}` : `Novo andamento registrado: ${and.tipo}`);
                     setIsAndamentoModalOpen(false);
 
-                    if (and.geraPrazo) {
+                    if (!isEdit && and.geraPrazo) {
                       // Navegar para página de Tarefas com parâmetros para abrir modal de seleção
                       window.location.hash = `#/tarefas?novatarefa=true&processoId=${selectedProcess.id}&clienteId=${selectedProcess.clienteId}&descricao=${encodeURIComponent(`${and.providencia.toUpperCase()}: ${and.tipo}`)}`;
                     }
