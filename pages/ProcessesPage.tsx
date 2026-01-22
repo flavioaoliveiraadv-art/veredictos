@@ -4,7 +4,7 @@ import {
   Plus, Search, FileText, Scale, Clock, AlertTriangle,
   Trash2, Edit, History, X, CheckCircle2, ChevronRight, Save,
   Filter, Calendar, Activity, RotateCcw, ArrowUpRight, Briefcase,
-  User, DollarSign, CheckSquare, XCircle
+  User, DollarSign, CheckSquare, XCircle, Info
 } from 'lucide-react';
 import { FormInput, FormSelect, FormTextArea, FormCheckbox } from '../components/FormComponents';
 import {
@@ -260,24 +260,24 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
             {and.tipo === TipoAndamento.SENTENCA && and.sentenca && (
               <>
                 <Section title="Identificação da Sentença">
-                  <DetailField label="Data da Prolação" value={and.sentenca.dataProlacao} />
-                  <DetailField label="Data da Publicação" value={and.sentenca.dataPublicacao} />
-                  <DetailField label="Instância" value={and.sentenca.instancia} />
-                  <DetailField label="Magistrado" value={and.sentenca.magistrado || '-'} />
+                  <DetailField label="Data da Prolação" value={and.sentenca?.dataProlacao || '-'} />
+                  <DetailField label="Data da Publicação" value={and.sentenca?.dataPublicacao || '-'} />
+                  <DetailField label="Instância" value={and.sentenca?.instancia || '-'} />
+                  <DetailField label="Magistrado" value={and.sentenca?.magistrado || '-'} />
                 </Section>
                 <Section title="Resultado da Sentença">
-                  <DetailField label="Resultado" value={and.sentenca.resultado} className="text-indigo-600" />
-                  <DetailField label="Decisão Favorável?" value={and.sentenca.decisaoFavoravel ? 'Sim' : 'Não'} />
-                  <DetailField label="Houve Condenação?" value={and.sentenca.condenacao ? 'Sim' : 'Não'} />
-                  {and.sentenca.condenacao && (
-                    <DetailField label="Valor da Condenação" value={formatCurrency(and.sentenca.valorCondenacao || 0)} className="text-emerald-600" />
+                  <DetailField label="Resultado" value={and.sentenca?.resultado || '-'} className="text-indigo-600" />
+                  <DetailField label="Decisão Favorável?" value={and.sentenca?.decisaoFavoravel ? 'Sim' : 'Não'} />
+                  <DetailField label="Houve Condenação?" value={and.sentenca?.condenacao ? 'Sim' : 'Não'} />
+                  {and.sentenca?.condenacao && (
+                    <DetailField label="Valor da Condenação" value={formatCurrency(and.sentenca?.valorCondenacao || 0)} className="text-emerald-600" />
                   )}
-                  <DetailField label="Obrigação de Fazer/Não Fazer?" value={and.sentenca.obrigacaoFazerNaoFazer ? 'Sim' : 'Não'} />
+                  <DetailField label="Obrigação de Fazer/Não Fazer?" value={and.sentenca?.obrigacaoFazerNaoFazer ? 'Sim' : 'Não'} />
                 </Section>
                 <Section title="Honorários e Custas">
-                  <DetailField label="Honorários Advocatícios" value={and.sentenca.honorariosAdvocaticios || '-'} />
-                  <DetailField label="Custas" value={and.sentenca.custas || '-'} />
-                  <DetailField label="Gratuidade de Justiça?" value={and.sentenca.gratuidadeJustica ? 'Sim' : 'Não'} />
+                  <DetailField label="Honorários Advocatícios" value={and.sentenca?.honorariosAdvocaticios || '-'} />
+                  <DetailField label="Custas" value={and.sentenca?.custas || '-'} />
+                  <DetailField label="Gratuidade de Justiça?" value={and.sentenca?.gratuidadeJustica ? 'Sim' : 'Não'} />
                 </Section>
                 <div className="space-y-3 bg-gray-50 p-6 rounded-3xl border border-gray-100">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" /> Resumo da Decisão</p>
