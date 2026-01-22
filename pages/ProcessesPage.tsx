@@ -1442,6 +1442,7 @@ const ProcessesPage: React.FC<ProcessesPageProps> = ({
                             <option value="Parcialmente procedente">Parcialmente procedente</option>
                             <option value="Improcedente">Improcedente</option>
                             <option value="Extinção sem resolução do mérito">Extinção sem resolução do mérito</option>
+                            <option value="Homologação de acordo">Homologação de acordo</option>
                           </FormSelect>
                           <FormSelect
                             label="Decisão Favorável?"

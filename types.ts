@@ -90,7 +90,7 @@ export interface SentencaData {
   dataPublicacao: string;
   instancia: '1º grau' | '2º grau' | 'Tribunal Superior';
   magistrado: string;
-  resultado: 'Procedente' | 'Parcialmente procedente' | 'Improcedente' | 'Extinção sem resolução do mérito';
+  resultado: 'Procedente' | 'Parcialmente procedente' | 'Improcedente' | 'Extinção sem resolução do mérito' | 'Homologação de acordo';
   decisaoFavoravel: boolean;
   condenacao: boolean;
   valorCondenacao?: number;
