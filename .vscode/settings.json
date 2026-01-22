@@ -4,6 +4,8 @@
         "**/dist": true,
         "**/build": true,
         "**/out": true,
+        "**/.next": true,
+        "**/coverage": true,
         "**/__pycache__": true,
         "**/.venv": true,
         "**/.git": true,
@@ -17,6 +19,8 @@
         "**/dist": true,
         "**/build": true,
         "**/out": true,
+        "**/.next": true,
+        "**/coverage": true,
         "**/__pycache__": true,
         "**/.venv": true,
         "**/.git": true,
@@ -26,12 +30,16 @@
         "**/node_modules",
         "**/dist",
         "**/build",
-        "**/out"
+        "**/out",
+        "**/.next",
+        "**/coverage"
     ],
     "javascript.tsserver.exclude": [
         "**/node_modules",
         "**/dist",
         "**/build",
-        "**/out"
+        "**/out",
+        "**/.next",
+        "**/coverage"
     ]
 }
