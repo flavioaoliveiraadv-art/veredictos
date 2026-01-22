@@ -136,8 +136,11 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
       status: StatusFinanceiro.PENDENTE,
       processoId: '',
       clienteId: '',
-      tarefaVinculadaId: ''
+      tarefaVinculadaId: '',
+      comprovante: undefined,
+      comprovanteNome: undefined
     });
+    setPaymentReceipt(null);
   };
 
   // Função de Exclusão Corrigida
@@ -533,6 +536,68 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
 
                   <FormInput label="Vencimento" type="date" required value={toISODate(formData.dataVencimento || '')} onChange={e => setFormData({ ...formData, dataVencimento: toBRDate(e.target.value) })} />
 
+                  <FormSelect
+                    label="Status"
+                    value={formData.status}
+                    onChange={(e: any) => setFormData({ ...formData, status: e.target.value as StatusFinanceiro })}
+                  >
+                    <option value={StatusFinanceiro.PENDENTE}>Pendente</option>
+                    <option value={StatusFinanceiro.PAGO}>Pago</option>
+                  </FormSelect>
+
+                  {formData.status === StatusFinanceiro.PAGO && (
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Comprovante de pagamento</p>
+                      <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 transition-all">
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+                            if (!allowedTypes.includes(file.type)) {
+                              alert('Tipo de arquivo não permitido. Use PDF, JPG ou PNG.');
+                              return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                              setFormData(prev => ({
+                                ...prev,
+                                comprovante: reader.result as string,
+                                comprovanteNome: file.name
+                              }));
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="hidden"
+                        />
+                        {formData.comprovante ? (
+                          <div className="flex items-center gap-3">
+                            <Paperclip className="w-5 h-5 text-indigo-600" />
+                            <span className="text-sm font-black text-indigo-600 truncate max-w-[200px]">{formData.comprovanteNome}</span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setFormData(prev => ({ ...prev, comprovante: undefined, comprovanteNome: undefined }));
+                              }}
+                              className="text-rose-500 hover:text-rose-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 text-gray-300 mb-2" />
+                            <span className="text-xs font-black text-gray-400 text-center">Clique para anexar o Comprovante de Pagamento<br /><span className="font-medium opacity-60">(PDF, JPG ou PNG)</span></span>
+                          </>
+                        )}
+                      </label>
+                    </div>
+                  )}
+
                   <FormSelect label="Vínculo com Tarefa" value={formData.tarefaVinculadaId} onChange={e => setFormData({ ...formData, tarefaVinculadaId: e.target.value })}>
                     <option value="">Nenhuma tarefa vinculada</option>
                     {prazos.map(t => <option key={t.id} value={t.id}>{t.descricao}</option>)}
@@ -662,7 +727,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Anexar Comprovante (Opcional)</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Comprovante de pagamento</p>
                 <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 transition-all">
                   <input
                     type="file"
@@ -685,7 +750,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                   ) : (
                     <>
                       <Upload className="w-8 h-8 text-gray-300 mb-2" />
-                      <span className="text-xs font-black text-gray-400">Clique para anexar PDF, JPG ou PNG</span>
+                      <span className="text-xs font-black text-gray-400 text-center">Clique para anexar o Comprovante de Pagamento<br /><span className="font-medium opacity-60">(PDF, JPG ou PNG)</span></span>
                     </>
                   )}
                 </label>
