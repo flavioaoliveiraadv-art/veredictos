@@ -143,6 +143,17 @@ const TasksPage: React.FC<TasksPageProps> = ({
     return [...proc.andamentos].sort((a, b) => compareDatesBR(b.data, a.data));
   }, [formData.processoId, processos]);
 
+  const getAndamentoDateToDisplay = (and: any) => {
+    if (and.sentenca) return and.sentenca.dataProlacao;
+    if (and.acordao) return and.acordao.dataProlacao;
+    if (and.decisaoInterlocutoria) return and.decisaoInterlocutoria.dataProlacao;
+    if (and.decisaoMonocratica) return and.decisaoMonocratica.dataProlacao;
+    if (and.despacho) return and.despacho.dataProlacao;
+    if (and.alvara) return and.alvara.dataExpedicao;
+    if (and.certidao) return and.certidao.dataPublicacao;
+    return and.data;
+  };
+
   const getAndamentoResultado = (and: any) => {
     if (and.sentenca) return and.sentenca.resultado;
     if (and.acordao) return and.acordao.resultado;
@@ -567,9 +578,10 @@ const TasksPage: React.FC<TasksPageProps> = ({
                               <option value="">Selecione o andamento correspondente...</option>
                               {availableAndamentos.map(and => {
                                 const resultado = getAndamentoResultado(and);
+                                const dateToDisplay = getAndamentoDateToDisplay(and);
                                 return (
                                   <option key={and.id} value={and.id}>
-                                    {and.data} – {and.tipo}{resultado ? ` – ${resultado}` : ''}
+                                    {dateToDisplay} – {and.tipo}{resultado ? ` – ${resultado}` : ''}
                                   </option>
                                 );
                               })}
@@ -691,7 +703,8 @@ const TasksPage: React.FC<TasksPageProps> = ({
                             const and = proc?.andamentos?.find(a => a.id === selectedPrazo.andamentoId);
                             if (!and) return 'Andamento não encontrado';
                             const res = getAndamentoResultado(and);
-                            return `${and.data} – ${and.tipo}${res ? ` – ${res}` : ''}`;
+                            const dateToDisplay = getAndamentoDateToDisplay(and);
+                            return `${dateToDisplay} – ${and.tipo}${res ? ` – ${res}` : ''}`;
                           })()}
                           icon={<Activity className="w-4 h-4" />}
                         />
