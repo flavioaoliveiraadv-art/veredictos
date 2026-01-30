@@ -336,37 +336,6 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
             <StatCard label="Saldo Projetado Total" value={formatCurrency(totalProjetado)} icon={<DollarSign className="w-6 h-6" />} color="indigo" />
           </div>
 
-          <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-            <div className="p-8 border-b border-gray-50">
-              <h3 className="font-black text-gray-800 text-sm uppercase tracking-widest">Movimentações do Mês</h3>
-            </div>
-            <div className="divide-y divide-gray-50">
-              {monthlyStats.monthData.length > 0 ? monthlyStats.monthData.map(f => (
-                <div key={f.id} onClick={() => { setSelectedEntry(f); setIsDetailModalOpen(true); }} className="p-6 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
-                      {f.tipo === 'Receita' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-gray-800">{f.descricao}</p>
-                      <p className="text-[10px] font-bold text-gray-400">
-                        Venc: {f.dataVencimento}
-                        {f.parcela && f.parcela !== '1/1' && (
-                          <span className="ml-2 text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded">Parcela {f.parcela}</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>{f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}</p>
-                    <span className="text-[10px] font-black uppercase text-gray-400">{f.status}</span>
-                  </div>
-                </div>
-              )) : (
-                <div className="p-20 text-center text-gray-300 font-black uppercase tracking-widest text-xs">Nenhum lançamento registrado neste período.</div>
-              )}
-            </div>
-          </div>
         </div>
       )}
 
