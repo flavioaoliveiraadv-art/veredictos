@@ -520,7 +520,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     }))}
                     margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
                     barGap={12}
-                    barCategoryGap="20%"
+                    barCategoryGap="15%"
                     onClick={(data: any) => {
                       if (data && data.activePayload && data.activePayload.length > 0) {
                         const group = data.activePayload[0].payload.fullGroup;
@@ -534,8 +534,35 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                       dataKey="name"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
                       dy={10}
+                      tick={(props: any) => {
+                        const { x, y, payload } = props;
+                        return (
+                          <g transform={`translate(${x},${y})`}>
+                            <text
+                              x={0}
+                              y={0}
+                              dy={16}
+                              textAnchor="middle"
+                              fill="#6366f1"
+                              className="text-[11px] font-black cursor-pointer hover:fill-indigo-800 transition-all"
+                              onClick={() => {
+                                const chartData = [...groupedCashFlow].reverse().map(g => ({
+                                  name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
+                                  fullGroup: g
+                                }));
+                                const group = chartData.find(d => d.name === payload.value)?.fullGroup;
+                                if (group) {
+                                  setSelectedFluxoMonth(group);
+                                  setIsFluxoModalOpen(true);
+                                }
+                              }}
+                            >
+                              {payload.value}
+                            </text>
+                          </g>
+                        );
+                      }}
                     />
                     <YAxis
                       axisLine={false}
