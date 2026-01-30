@@ -527,7 +527,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     fill="url(#colorSaldo)"
                   />
                 </AreaChart>
-              </獣esponsiveContainer>
+              </ResponsiveContainer>
             </div>
           </div>
 
@@ -541,8 +541,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                   <div
                     onClick={() => toggleMonth(monthKey)}
                     className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-[32px] border cursor-pointer transition-all duration-300 ${isExpanded
-                        ? 'bg-white border-indigo-200 shadow-lg -translate-y-1'
-                        : 'bg-gray-50 border-gray-100 hover:bg-white hover:border-gray-200 hover:shadow-md'
+                      ? 'bg-white border-indigo-200 shadow-lg -translate-y-1'
+                      : 'bg-gray-50 border-gray-100 hover:bg-white hover:border-gray-200 hover:shadow-md'
                       }`}
                   >
                     <div className="flex items-center gap-4">
