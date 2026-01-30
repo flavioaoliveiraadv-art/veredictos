@@ -520,7 +520,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     }))}
                     margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
                     barGap={12}
-                    barCategoryGap="30%"
+                    barCategoryGap="20%"
                     onClick={(data: any) => {
                       if (data && data.activePayload && data.activePayload.length > 0) {
                         const group = data.activePayload[0].payload.fullGroup;
@@ -659,6 +659,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                       <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Data</th>
                       <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descrição</th>
                       <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor</th>
+                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Tipo</th>
+                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
                       <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Acumulado</th>
                     </tr>
                   </thead>
@@ -669,6 +671,20 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                         <td className="px-8 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
                         <td className={`px-8 py-5 text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
                           {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
+                        </td>
+                        <td className="px-8 py-5">
+                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'}`}>
+                            {f.tipo}
+                          </span>
+                        </td>
+                        <td className="px-8 py-5">
+                          {f.status === StatusFinanceiro.PAGO ? (
+                            <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest">Pago</span>
+                          ) : compareDatesBR(f.dataVencimento, todayStr) < 0 ? (
+                            <span className="px-3 py-1 bg-rose-50 text-rose-500 rounded-full text-[9px] font-black uppercase tracking-widest">Atrasado</span>
+                          ) : (
+                            <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-widest">Pendente</span>
+                          )}
                         </td>
                         <td className={`px-8 py-5 text-sm font-black text-right ${f.saldoAcumulado !== undefined && f.saldoAcumulado >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
                           {formatCurrency(f.saldoAcumulado)}
