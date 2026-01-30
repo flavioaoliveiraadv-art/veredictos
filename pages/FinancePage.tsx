@@ -367,6 +367,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                 <thead>
                   <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50">
                     <th className="px-10 py-5">Descrição</th>
+                    <th className="px-10 py-5">Parcela</th>
                     <th className="px-10 py-5">Cliente / Processo</th>
                     <th className="px-10 py-5">Vencimento</th>
                     <th className="px-10 py-5">Valor</th>
@@ -386,6 +387,9 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                             <p className={`text-[10px] font-black uppercase tracking-widest ${entry.tipo === 'Receita' ? 'text-emerald-500' : 'text-rose-500'}`}>{entry.tipo}</p>
                           </div>
                         </div>
+                      </td>
+                      <td className="px-10 py-6">
+                        <p className="text-xs font-black text-gray-700">{entry.parcela && entry.parcela !== '1/1' ? `Parcela ${entry.parcela}` : 'Parcela única'}</p>
                       </td>
                       <td className="px-10 py-6">
                         <p className="text-xs font-black text-gray-700">{clientes.find(c => c.id === entry.clienteId)?.nome || '-'}</p>
