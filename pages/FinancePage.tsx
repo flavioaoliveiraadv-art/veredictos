@@ -47,7 +47,7 @@ import { Financeiro, StatusFinanceiro, Cliente, Processo, Prazo, HistoricoAltera
 import { FormInput, FormSelect } from '../components/FormComponents';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
 
-const StatCard: React.FC<{ label: string, value: string, icon: React.ReactNode, color: 'emerald' | 'rose' | 'blue' | 'indigo' }> = ({ label, value, icon, color }) => {
+const StatCard: React.FC<{ label: string, value: string, icon: React.ReactNode, color: 'emerald' | 'rose' | 'blue' | 'indigo', onClick?: () => void }> = ({ label, value, icon, color, onClick }) => {
   const themes = {
     emerald: 'bg-emerald-50 text-emerald-500 border-emerald-100',
     rose: 'bg-rose-50 text-rose-500 border-rose-100',
@@ -55,7 +55,10 @@ const StatCard: React.FC<{ label: string, value: string, icon: React.ReactNode, 
     indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100'
   };
   return (
-    <div className={`p-8 bg-white rounded-[32px] border border-gray-100 shadow-sm flex items-center gap-5 transition-all hover:shadow-md hover:-translate-y-1`}>
+    <div
+      onClick={onClick}
+      className={`p-8 bg-white rounded-[32px] border border-gray-100 shadow-sm flex items-center gap-5 transition-all hover:shadow-md hover:-translate-y-1 ${onClick ? 'cursor-pointer active:scale-95' : ''}`}
+    >
       <div className={`p-4 rounded-2xl ${themes[color].split(' ').slice(0, 2).join(' ')}`}>
         {icon}
       </div>
@@ -92,6 +95,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
   const [selectedFluxoMonth, setSelectedFluxoMonth] = useState<any>(null);
   const [isFluxoModalOpen, setIsFluxoModalOpen] = useState(false);
+  const [isFilteredModalOpen, setIsFilteredModalOpen] = useState(false);
+  const [filteredType, setFilteredType] = useState<'Receita' | 'Despesa' | null>(null);
 
   const toggleMonth = (monthKey: string) => {
     setExpandedMonths(prev =>
@@ -417,8 +422,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard label="Entradas do Mês" value={formatCurrency(monthlyStats.entradas)} icon={<TrendingUp className="w-6 h-6" />} color="emerald" />
-            <StatCard label="Saídas do Mês" value={formatCurrency(monthlyStats.saidas)} icon={<TrendingDown className="w-6 h-6" />} color="rose" />
+            <StatCard label="Entradas do Mês" value={formatCurrency(monthlyStats.entradas)} icon={<TrendingUp className="w-6 h-6" />} color="emerald" onClick={() => { setFilteredType('Receita'); setIsFilteredModalOpen(true); }} />
+            <StatCard label="Saídas do Mês" value={formatCurrency(monthlyStats.saidas)} icon={<TrendingDown className="w-6 h-6" />} color="rose" onClick={() => { setFilteredType('Despesa'); setIsFilteredModalOpen(true); }} />
             <StatCard label="Saldo do Mês" value={formatCurrency(monthlyStats.saldo)} icon={<Wallet className="w-6 h-6" />} color="blue" />
             <StatCard label="Saldo Projetado Total" value={formatCurrency(totalProjetado)} icon={<DollarSign className="w-6 h-6" />} color="indigo" />
           </div>
@@ -719,6 +724,66 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {isFilteredModalOpen && filteredType && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 cursor-default" onClick={() => setIsFilteredModalOpen(false)}>
+          <div className="bg-white rounded-[40px] w-full max-w-4xl shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="p-10 pb-6 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className={`p-4 ${filteredType === 'Receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'} rounded-2xl`}>
+                  {filteredType === 'Receita' ? <TrendingUp className="w-8 h-8" /> : <TrendingDown className="w-8 h-8" />}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-gray-800">Detalhamento de {filteredType === 'Receita' ? 'Entradas' : 'Saídas'}</h2>
+                  <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{monthsBr[viewMonth]} de {viewYear}</p>
+                </div>
+              </div>
+              <button onClick={() => setIsFilteredModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X className="w-10 h-10" /></button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scroll p-10 space-y-10">
+              <div className="bg-white rounded-[32px] border border-gray-100 overflow-hidden">
+                <div className="overflow-x-auto custom-scroll">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50/50 border-b border-gray-50">
+                        <th className="px-4 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Data</th>
+                        <th className="px-4 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descrição</th>
+                        <th className="px-4 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor</th>
+                        <th className="px-4 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Tipo</th>
+                        <th className="px-4 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {monthlyStats.monthData
+                        .filter(f => f.tipo === filteredType)
+                        .sort((a, b) => compareDatesBR(b.dataVencimento, a.dataVencimento))
+                        .map((f: any) => (
+                          <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-4 py-5 text-sm font-bold text-gray-500">{f.dataVencimento}</td>
+                            <td className="px-4 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
+                            <td className="px-4 py-5 text-sm font-black text-black">
+                              {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
+                            </td>
+                            <td className="px-4 py-5">
+                              <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'}`}>
+                                {f.tipo}
+                              </span>
+                            </td>
+                            <td className="px-4 py-5">
+                              <span className="text-[10px] font-black text-black uppercase tracking-widest">
+                                {f.status === StatusFinanceiro.PAGO ? 'Pago' : compareDatesBR(f.dataVencimento, todayStr) < 0 ? 'Atrasado' : 'Pendente'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
