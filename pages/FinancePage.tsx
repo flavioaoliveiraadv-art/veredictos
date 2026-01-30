@@ -34,10 +34,13 @@ import {
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend,
   ResponsiveContainer
 } from 'recharts';
 import { Financeiro, StatusFinanceiro, Cliente, Processo, Prazo, HistoricoAlteracao } from '../types';
@@ -471,63 +474,117 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
       )}
 
       {activeTab === 'FLUXO' && (
-        <div className="space-y-10 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-12 animate-in slide-in-from-bottom-4 duration-500">
           <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-black text-[#0b1726]">Evolução do Fluxo de Caixa</h2>
-            <p className="text-gray-500 font-medium">Análise mensal consolidada e evolução histórica do saldo.</p>
+            <h2 className="text-2xl font-black text-[#0b1726]">Fluxo de Caixa Analítico</h2>
+            <p className="text-gray-500 font-medium">Demonstração mensal comparativa e evolução do saldo acumulado.</p>
           </div>
 
-          {/* Infográfico de Evolução */}
-          <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm overflow-hidden h-[400px]">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-indigo-500" />
-                Evolução do Saldo Acumulado
-              </h3>
+          <div className="grid grid-cols-1 gap-10">
+            {/* Infográfico de Barras Comparativo */}
+            <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm overflow-hidden h-[500px]">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-indigo-500" />
+                  Demonstração Mensal Comparativa
+                </h3>
+              </div>
+              <div className="w-full h-full pb-16">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={[...groupedCashFlow].reverse().map(g => ({
+                      name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
+                      Entradas: g.totals.entradas,
+                      Saídas: g.totals.saidas,
+                      Saldo: g.totals.saldo
+                    }))}
+                    margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                    barGap={8}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                      tickFormatter={(value) => `R$ ${value / 1000}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                      cursor={{ fill: '#f8fafc' }}
+                    />
+                    <Legend
+                      verticalAlign="top"
+                      align="right"
+                      iconType="circle"
+                      wrapperStyle={{ paddingBottom: '20px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}
+                    />
+                    <Bar dataKey="Entradas" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Saídas" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Saldo" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="w-full h-full pb-10">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={[...groupedCashFlow].reverse().map(g => ({
-                    name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
-                    saldo: g.totals.saldoFinalAcumulado
-                  }))}
-                  margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-                >
-                  <defs>
-                    <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
-                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                    tickFormatter={(value) => `R$ ${value / 1000}k`}
-                  />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
-                    formatter={(value: any) => [formatCurrency(value), 'Saldo Acumulado']}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="saldo"
-                    stroke="#4f46e5"
-                    strokeWidth={4}
-                    fillOpacity={1}
-                    fill="url(#colorSaldo)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+
+            {/* Infográfico de Evolução (Reposicionado) */}
+            <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm overflow-hidden h-[400px]">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-indigo-500" />
+                  Evolução do Saldo Acumulado
+                </h3>
+              </div>
+              <div className="w-full h-full pb-10">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={[...groupedCashFlow].reverse().map(g => ({
+                      name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
+                      saldo: g.totals.saldoFinalAcumulado
+                    }))}
+                    margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
+                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                      tickFormatter={(value) => `R$ ${value / 1000}k`}
+                    />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                      formatter={(value: any) => [formatCurrency(value), 'Saldo Acumulado']}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="saldo"
+                      stroke="#4f46e5"
+                      strokeWidth={4}
+                      fillOpacity={1}
+                      fill="url(#colorSaldo)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
