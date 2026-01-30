@@ -541,7 +541,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                       tickLine={false}
                       dy={10}
                       tick={(props: any) => {
-                        const { x, y, payload } = props;
+                        const { x, y, payload, index } = props;
                         if (!payload || payload.value === undefined) return null;
 
                         return (
@@ -553,8 +553,9 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                               textAnchor="middle"
                               fill="#6366f1"
                               className="text-[11px] font-black cursor-pointer hover:fill-indigo-800 transition-all"
-                              onClick={() => {
-                                const group = fluxoChartData[payload.index]?.fullGroup;
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const group = fluxoChartData[index]?.fullGroup;
                                 if (group) {
                                   setSelectedFluxoMonth(group);
                                   setIsFluxoModalOpen(true);
@@ -695,7 +696,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {selectedFluxoMonth.entries.sort((a: any, b: any) => compareDatesBR(b.dataVencimento, a.dataVencimento)).map((f: any) => (
+                    {[...(selectedFluxoMonth?.entries || [])].sort((a: any, b: any) => compareDatesBR(b.dataVencimento, a.dataVencimento)).map((f: any) => (
                       <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="px-8 py-5 text-sm font-bold text-gray-500">{f.dataVencimento}</td>
                         <td className="px-8 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
