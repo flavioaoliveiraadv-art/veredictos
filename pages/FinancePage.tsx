@@ -253,6 +253,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
 
   const todayStr = getTodayBR();
 
+  const monthsBr = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
   const monthlyStats = useMemo(() => {
     const monthData = financeiro.filter(f => {
       const [d, m, y] = f.dataVencimento.split('/').map(Number);
@@ -309,6 +311,15 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
     });
   }, [financeiro]);
 
+  const fluxoChartData = useMemo(() => {
+    return [...groupedCashFlow].reverse().map(g => ({
+      name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
+      Entradas: g.totals.entradas,
+      Saídas: g.totals.saidas,
+      fullGroup: g
+    }));
+  }, [groupedCashFlow, monthsBr]);
+
   const filteredLançamentos = useMemo(() => {
     let base = financeiro;
 
@@ -358,7 +369,6 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
     return receitas - despesas;
   }, [financeiro]);
 
-  const monthsBr = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
   const changeMonth = (delta: number) => {
     let newMonth = viewMonth + delta;
@@ -512,12 +522,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
               <div className="w-full h-full pb-16">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={[...groupedCashFlow].reverse().map(g => ({
-                      name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
-                      Entradas: g.totals.entradas,
-                      Saídas: g.totals.saidas,
-                      fullGroup: g
-                    }))}
+                    data={fluxoChartData}
                     margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
                     barGap={12}
                     barCategoryGap="15%"
@@ -537,6 +542,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                       dy={10}
                       tick={(props: any) => {
                         const { x, y, payload } = props;
+                        if (!payload || payload.value === undefined) return null;
+
                         return (
                           <g transform={`translate(${x},${y})`}>
                             <text
@@ -547,11 +554,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                               fill="#6366f1"
                               className="text-[11px] font-black cursor-pointer hover:fill-indigo-800 transition-all"
                               onClick={() => {
-                                const chartData = [...groupedCashFlow].reverse().map(g => ({
-                                  name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
-                                  fullGroup: g
-                                }));
-                                const group = chartData.find(d => d.name === payload.value)?.fullGroup;
+                                const group = fluxoChartData[payload.index]?.fullGroup;
                                 if (group) {
                                   setSelectedFluxoMonth(group);
                                   setIsFluxoModalOpen(true);
