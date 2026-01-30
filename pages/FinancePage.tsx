@@ -24,8 +24,22 @@ import {
   ArrowDownLeft,
   Paperclip,
   Download,
-  Upload
+  Upload,
+  LayoutDashboard,
+  BarChart3,
+  ChevronDown,
+  ChevronUp,
+  Maximize2
 } from 'lucide-react';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 import { Financeiro, StatusFinanceiro, Cliente, Processo, Prazo, HistoricoAlteracao } from '../types';
 import { FormInput, FormSelect } from '../components/FormComponents';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
@@ -52,6 +66,13 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
+
+  const toggleMonth = (monthKey: string) => {
+    setExpandedMonths(prev =>
+      prev.includes(monthKey) ? prev.filter(m => m !== monthKey) : [...prev, monthKey]
+    );
+  };
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   const [isPaymentConfirmModalOpen, setIsPaymentConfirmModalOpen] = useState(false);
   const [paymentReceipt, setPaymentReceipt] = useState<{ file: string; name: string } | null>(null);
@@ -453,68 +474,137 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
         <div className="space-y-10 animate-in slide-in-from-bottom-4 duration-500">
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-black text-[#0b1726]">Evolução do Fluxo de Caixa</h2>
-            <p className="text-gray-500 font-medium">Análise mensal consolidada do desempenho financeiro.</p>
+            <p className="text-gray-500 font-medium">Análise mensal consolidada e evolução histórica do saldo.</p>
           </div>
 
-          <div className="space-y-12">
-            {groupedCashFlow.length > 0 ? groupedCashFlow.map((group) => (
-              <div key={`${group.month}-${group.year}`} className="space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-50 p-6 rounded-[32px] border border-gray-100">
-                  <div>
-                    <h3 className="text-xl font-black text-gray-800">{monthsBr[group.month]} / {group.year}</h3>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Consolidado do Período</p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <div className="bg-white px-5 py-3 rounded-2xl border border-gray-200">
-                      <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">Entradas</p>
-                      <p className="text-sm font-black text-gray-800">+{formatCurrency(group.totals.entradas)}</p>
-                    </div>
-                    <div className="bg-white px-5 py-3 rounded-2xl border border-gray-200">
-                      <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-0.5">Saídas</p>
-                      <p className="text-sm font-black text-gray-800">-{formatCurrency(group.totals.saidas)}</p>
-                    </div>
-                    <div className="bg-white px-5 py-3 rounded-2xl border border-gray-200">
-                      <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-0.5">Saldo Mensal</p>
-                      <p className="text-sm font-black text-gray-800">{formatCurrency(group.totals.saldo)}</p>
-                    </div>
-                    <div className="bg-[#4f46e5]/5 px-5 py-3 rounded-2xl border border-[#4f46e5]/10">
-                      <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mb-0.5">Saldo Acumulado</p>
-                      <p className="text-sm font-black text-indigo-600">{formatCurrency(group.totals.saldoFinalAcumulado)}</p>
-                    </div>
-                  </div>
-                </div>
+          {/* Infográfico de Evolução */}
+          <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm overflow-hidden h-[400px]">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-indigo-500" />
+                Evolução do Saldo Acumulado
+              </h3>
+            </div>
+            <div className="w-full h-full pb-10">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={[...groupedCashFlow].reverse().map(g => ({
+                    name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
+                    saldo: g.totals.saldoFinalAcumulado
+                  }))}
+                  margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorSaldo" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                    dy={10}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                    tickFormatter={(value) => `R$ ${value / 1000}k`}
+                  />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
+                    formatter={(value: any) => [formatCurrency(value), 'Saldo Acumulado']}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="saldo"
+                    stroke="#4f46e5"
+                    strokeWidth={4}
+                    fillOpacity={1}
+                    fill="url(#colorSaldo)"
+                  />
+                </AreaChart>
+              </獣esponsiveContainer>
+            </div>
+          </div>
 
-                <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 bg-gray-50/20">
-                          <th className="px-10 py-5">Data</th>
-                          <th className="px-10 py-5">Movimentação</th>
-                          <th className="px-10 py-5">Valor</th>
-                          <th className="px-10 py-5 text-right">Saldo Acumulado</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-50">
-                        {group.entries.sort((a, b) => compareDatesBR(b.dataVencimento, a.dataVencimento)).map((f) => (
-                          <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
-                            <td className="px-10 py-5 text-xs font-black text-gray-500">{f.dataVencimento}</td>
-                            <td className="px-10 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
-                            <td className={`px-10 py-5 text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                              {f.tipo === 'Receita' ? <TrendingUp className="inline w-4 h-4 mr-1 text-emerald-500" /> : <TrendingDown className="inline w-4 h-4 mr-1 text-rose-500" />}
-                              {formatCurrency(f.valor)}
-                            </td>
-                            <td className={`px-10 py-5 text-right font-black text-sm ${f.saldoAcumulado >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
-                              {formatCurrency(f.saldoAcumulado)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+          <div className="space-y-6">
+            {groupedCashFlow.length > 0 ? groupedCashFlow.map((group) => {
+              const monthKey = `${group.month}-${group.year}`;
+              const isExpanded = expandedMonths.includes(monthKey);
+
+              return (
+                <div key={monthKey} className="group/month transition-all duration-300">
+                  <div
+                    onClick={() => toggleMonth(monthKey)}
+                    className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-[32px] border cursor-pointer transition-all duration-300 ${isExpanded
+                        ? 'bg-white border-indigo-200 shadow-lg -translate-y-1'
+                        : 'bg-gray-50 border-gray-100 hover:bg-white hover:border-gray-200 hover:shadow-md'
+                      }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${isExpanded ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400'}`}>
+                        {isExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-gray-800">{monthsBr[group.month]} / {group.year}</h3>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Clique para ver detalhes</p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className={`px-5 py-3 rounded-2xl border transition-colors ${isExpanded ? 'bg-indigo-50/30 border-indigo-100' : 'bg-white border-gray-200'}`}>
+                        <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">Entradas</p>
+                        <p className="text-sm font-black text-gray-800">+{formatCurrency(group.totals.entradas)}</p>
+                      </div>
+                      <div className={`px-5 py-3 rounded-2xl border transition-colors ${isExpanded ? 'bg-indigo-50/30 border-indigo-100' : 'bg-white border-gray-200'}`}>
+                        <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-0.5">Saídas</p>
+                        <p className="text-sm font-black text-gray-800">-{formatCurrency(group.totals.saidas)}</p>
+                      </div>
+                      <div className={`px-5 py-3 rounded-2xl border transition-colors ${isExpanded ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white border-gray-200'}`}>
+                        <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 ${isExpanded ? 'text-indigo-100' : 'text-blue-500'}`}>Saldo Mensal</p>
+                        <p className="text-sm font-black">{formatCurrency(group.totals.saldo)}</p>
+                      </div>
+                    </div>
                   </div>
+
+                  {isExpanded && (
+                    <div className="mt-4 bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 bg-gray-50/20">
+                              <th className="px-10 py-5">Data</th>
+                              <th className="px-10 py-5">Movimentação</th>
+                              <th className="px-10 py-5">Valor</th>
+                              <th className="px-10 py-5 text-right">Saldo Acumulado</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-50">
+                            {[...group.entries].sort((a, b) => compareDatesBR(b.dataVencimento, a.dataVencimento)).map((f) => (
+                              <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="px-10 py-5 text-xs font-black text-gray-500">{f.dataVencimento}</td>
+                                <td className="px-10 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
+                                <td className={`px-10 py-5 text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                  {f.tipo === 'Receita' ? <TrendingUp className="inline w-4 h-4 mr-1 text-emerald-500" /> : <TrendingDown className="inline w-4 h-4 mr-1 text-rose-500" />}
+                                  {formatCurrency(f.valor)}
+                                </td>
+                                <td className={`px-10 py-5 text-right font-black text-sm ${f.saldoAcumulado >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
+                                  {formatCurrency(f.saldoAcumulado)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )) : (
+              );
+            }) : (
               <div className="bg-white rounded-[40px] border border-gray-100 p-20 text-center text-gray-300 font-black uppercase tracking-widest text-xs">
                 Nenhuma movimentação para exibir no fluxo de caixa.
               </div>
