@@ -684,46 +684,44 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
               </div>
 
               <div className="bg-white rounded-[32px] border border-gray-100 overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50/50 border-b border-gray-50">
-                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Data</th>
-                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descrição</th>
-                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor</th>
-                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Tipo</th>
-                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Acumulado</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {[...(selectedFluxoMonth?.entries || [])].sort((a: any, b: any) => compareDatesBR(b.dataVencimento, a.dataVencimento)).map((f: any) => (
-                      <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-8 py-5 text-sm font-bold text-gray-500">{f.dataVencimento}</td>
-                        <td className="px-8 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
-                        <td className={`px-8 py-5 text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                          {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
-                        </td>
-                        <td className="px-8 py-5">
-                          <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'}`}>
-                            {f.tipo}
-                          </span>
-                        </td>
-                        <td className="px-8 py-5">
-                          {f.status === StatusFinanceiro.PAGO ? (
-                            <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest">Pago</span>
-                          ) : compareDatesBR(f.dataVencimento, todayStr) < 0 ? (
-                            <span className="px-3 py-1 bg-rose-50 text-rose-500 rounded-full text-[9px] font-black uppercase tracking-widest">Atrasado</span>
-                          ) : (
-                            <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[9px] font-black uppercase tracking-widest">Pendente</span>
-                          )}
-                        </td>
-                        <td className={`px-8 py-5 text-sm font-black text-right ${f.saldoAcumulado !== undefined && f.saldoAcumulado >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
-                          {formatCurrency(f.saldoAcumulado)}
-                        </td>
+                <div className="overflow-x-auto custom-scroll">
+                  <table className="w-full text-left border-collapse min-w-[800px]">
+                    <thead>
+                      <tr className="bg-gray-50/50 border-b border-gray-50">
+                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Data</th>
+                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descrição</th>
+                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor</th>
+                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Tipo</th>
+                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                        <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Acumulado</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {[...(selectedFluxoMonth?.entries || [])].sort((a: any, b: any) => compareDatesBR(b.dataVencimento, a.dataVencimento)).map((f: any) => (
+                        <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-8 py-5 text-sm font-bold text-gray-500">{f.dataVencimento}</td>
+                          <td className="px-8 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
+                          <td className="px-8 py-5 text-sm font-black text-gray-800">
+                            {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
+                          </td>
+                          <td className="px-8 py-5">
+                            <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${f.tipo === 'Receita' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'}`}>
+                              {f.tipo}
+                            </span>
+                          </td>
+                          <td className="px-8 py-5">
+                            <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+                              {f.status === StatusFinanceiro.PAGO ? 'Pago' : compareDatesBR(f.dataVencimento, todayStr) < 0 ? 'Atrasado' : 'Pendente'}
+                            </span>
+                          </td>
+                          <td className="px-8 py-5 text-sm font-black text-right text-gray-800">
+                            {formatCurrency(f.saldoAcumulado)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
