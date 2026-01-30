@@ -47,6 +47,26 @@ import { Financeiro, StatusFinanceiro, Cliente, Processo, Prazo, HistoricoAltera
 import { FormInput, FormSelect } from '../components/FormComponents';
 import { formatCurrency, maskCurrency, parseCurrency, maskDate, getTodayBR, compareDatesBR, toBRDate, toISODate } from '../utils/formatters';
 
+const StatCard: React.FC<{ label: string, value: string, icon: React.ReactNode, color: 'emerald' | 'rose' | 'blue' | 'indigo' }> = ({ label, value, icon, color }) => {
+  const themes = {
+    emerald: 'bg-emerald-50 text-emerald-500 border-emerald-100',
+    rose: 'bg-rose-50 text-rose-500 border-rose-100',
+    blue: 'bg-blue-50 text-blue-500 border-blue-100',
+    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100'
+  };
+  return (
+    <div className={`p-8 bg-white rounded-[32px] border border-gray-100 shadow-sm flex items-center gap-5 transition-all hover:shadow-md hover:-translate-y-1`}>
+      <div className={`p-4 rounded-2xl ${themes[color].split(' ').slice(0, 2).join(' ')}`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-2xl font-black text-gray-800">{value}</p>
+      </div>
+    </div>
+  );
+};
+
 interface FinancePageProps {
   financeiro: Financeiro[];
   setFinanceiro: React.Dispatch<React.SetStateAction<Financeiro[]>>;
@@ -70,6 +90,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
+  const [selectedFluxoMonth, setSelectedFluxoMonth] = useState<any>(null);
+  const [isFluxoModalOpen, setIsFluxoModalOpen] = useState(false);
 
   const toggleMonth = (monthKey: string) => {
     setExpandedMonths(prev =>
@@ -167,7 +189,6 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
     setPaymentReceipt(null);
   };
 
-  // Função de Exclusão Corrigida
   const handleDeleteEntry = (id: string) => {
     if (confirm("AVISO: Esta é uma exclusão definitiva. O lançamento financeiro será removido permanentemente do sistema. Deseja confirmar a exclusão?")) {
       setFinanceiro(prev => prev.filter(f => f.id !== id));
@@ -275,7 +296,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
         };
       }
 
-      groups[key].entries.push({ ...f, saldoAcumulado: accumulated });
+      groups[key].entries.push({ ...f, saldoAcumulado: accumulated } as any);
       if (f.tipo === 'Receita') groups[key].totals.entradas += f.valor;
       else groups[key].totals.saidas += f.valor;
       groups[key].totals.saldo = groups[key].totals.entradas - groups[key].totals.saidas;
@@ -391,7 +412,6 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
             <StatCard label="Saldo do Mês" value={formatCurrency(monthlyStats.saldo)} icon={<Wallet className="w-6 h-6" />} color="blue" />
             <StatCard label="Saldo Projetado Total" value={formatCurrency(totalProjetado)} icon={<DollarSign className="w-6 h-6" />} color="indigo" />
           </div>
-
         </div>
       )}
 
@@ -496,10 +516,18 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                       name: `${monthsBr[g.month].slice(0, 3)}/${g.year.toString().slice(-2)}`,
                       Entradas: g.totals.entradas,
                       Saídas: g.totals.saidas,
-                      Saldo: g.totals.saldo
+                      fullGroup: g
                     }))}
                     margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-                    barGap={8}
+                    barGap={12}
+                    barCategoryGap="30%"
+                    onClick={(data: any) => {
+                      if (data && data.activePayload && data.activePayload.length > 0) {
+                        const group = data.activePayload[0].payload.fullGroup;
+                        setSelectedFluxoMonth(group);
+                        setIsFluxoModalOpen(true);
+                      }
+                    }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                     <XAxis
@@ -513,11 +541,13 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                       axisLine={false}
                       tickLine={false}
                       tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
-                      tickFormatter={(value) => `R$ ${value / 1000}k`}
+                      tickFormatter={(value) => formatCurrency(value)}
+                      width={100}
                     />
                     <Tooltip
                       contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', padding: '12px' }}
                       cursor={{ fill: '#f8fafc' }}
+                      formatter={(value: number) => [formatCurrency(value), '']}
                     />
                     <Legend
                       verticalAlign="top"
@@ -525,9 +555,8 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                       iconType="circle"
                       wrapperStyle={{ paddingBottom: '20px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}
                     />
-                    <Bar dataKey="Entradas" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Saídas" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Saldo" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Entradas" fill="#10b981" radius={[4, 4, 0, 0]} cursor="pointer" />
+                    <Bar dataKey="Saídas" fill="#ef4444" radius={[4, 4, 0, 0]} cursor="pointer" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -587,85 +616,69 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
               </div>
             </div>
           </div>
+        </div>
+      )}
 
-          <div className="space-y-6">
-            {groupedCashFlow.length > 0 ? groupedCashFlow.map((group) => {
-              const monthKey = `${group.month}-${group.year}`;
-              const isExpanded = expandedMonths.includes(monthKey);
-
-              return (
-                <div key={monthKey} className="group/month transition-all duration-300">
-                  <div
-                    onClick={() => toggleMonth(monthKey)}
-                    className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-[32px] border cursor-pointer transition-all duration-300 ${isExpanded
-                      ? 'bg-white border-indigo-200 shadow-lg -translate-y-1'
-                      : 'bg-gray-50 border-gray-100 hover:bg-white hover:border-gray-200 hover:shadow-md'
-                      }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${isExpanded ? 'bg-indigo-600 text-white' : 'bg-white text-gray-400'}`}>
-                        {isExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-black text-gray-800">{monthsBr[group.month]} / {group.year}</h3>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Clique para ver detalhes</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4">
-                      <div className={`px-5 py-3 rounded-2xl border transition-colors ${isExpanded ? 'bg-indigo-50/30 border-indigo-100' : 'bg-white border-gray-200'}`}>
-                        <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-0.5">Entradas</p>
-                        <p className="text-sm font-black text-gray-800">+{formatCurrency(group.totals.entradas)}</p>
-                      </div>
-                      <div className={`px-5 py-3 rounded-2xl border transition-colors ${isExpanded ? 'bg-indigo-50/30 border-indigo-100' : 'bg-white border-gray-200'}`}>
-                        <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-0.5">Saídas</p>
-                        <p className="text-sm font-black text-gray-800">-{formatCurrency(group.totals.saidas)}</p>
-                      </div>
-                      <div className={`px-5 py-3 rounded-2xl border transition-colors ${isExpanded ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-white border-gray-200'}`}>
-                        <p className={`text-[9px] font-black uppercase tracking-widest mb-0.5 ${isExpanded ? 'text-indigo-100' : 'text-blue-500'}`}>Saldo Mensal</p>
-                        <p className="text-sm font-black">{formatCurrency(group.totals.saldo)}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="mt-4 bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead>
-                            <tr className="text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 bg-gray-50/20">
-                              <th className="px-10 py-5">Data</th>
-                              <th className="px-10 py-5">Movimentação</th>
-                              <th className="px-10 py-5">Valor</th>
-                              <th className="px-10 py-5 text-right">Saldo Acumulado</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-gray-50">
-                            {[...group.entries].sort((a, b) => compareDatesBR(b.dataVencimento, a.dataVencimento)).map((f) => (
-                              <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
-                                <td className="px-10 py-5 text-xs font-black text-gray-500">{f.dataVencimento}</td>
-                                <td className="px-10 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
-                                <td className={`px-10 py-5 text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
-                                  {f.tipo === 'Receita' ? <TrendingUp className="inline w-4 h-4 mr-1 text-emerald-500" /> : <TrendingDown className="inline w-4 h-4 mr-1 text-rose-500" />}
-                                  {formatCurrency(f.valor)}
-                                </td>
-                                <td className={`px-10 py-5 text-right font-black text-sm ${f.saldoAcumulado >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
-                                  {formatCurrency(f.saldoAcumulado)}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
+      {/* MODALS */}
+      {isFluxoModalOpen && selectedFluxoMonth && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4 cursor-default" onClick={() => setIsFluxoModalOpen(false)}>
+          <div className="bg-white rounded-[40px] w-full max-w-4xl shadow-2xl animate-in zoom-in duration-300 flex flex-col overflow-hidden max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="p-10 pb-6 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
+                  <BarChart3 className="w-8 h-8" />
                 </div>
-              );
-            }) : (
-              <div className="bg-white rounded-[40px] border border-gray-100 p-20 text-center text-gray-300 font-black uppercase tracking-widest text-xs">
-                Nenhuma movimentação para exibir no fluxo de caixa.
+                <div>
+                  <h2 className="text-2xl font-black text-gray-800">Detalhamento Financeiro</h2>
+                  <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{monthsBr[selectedFluxoMonth.month]} / {selectedFluxoMonth.year}</p>
+                </div>
               </div>
-            )}
+              <button onClick={() => setIsFluxoModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors"><X className="w-10 h-10" /></button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scroll p-10 space-y-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
+                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Entradas</p>
+                  <p className="text-2xl font-black text-emerald-700">+{formatCurrency(selectedFluxoMonth.totals.entradas)}</p>
+                </div>
+                <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100">
+                  <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Saídas</p>
+                  <p className="text-2xl font-black text-rose-700">-{formatCurrency(selectedFluxoMonth.totals.saidas)}</p>
+                </div>
+                <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100">
+                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Saldo do Mês</p>
+                  <p className="text-2xl font-black text-blue-700">{formatCurrency(selectedFluxoMonth.totals.saldo)}</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-[32px] border border-gray-100 overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50/50 border-b border-gray-50">
+                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Data</th>
+                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Descrição</th>
+                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Valor</th>
+                      <th className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Acumulado</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {selectedFluxoMonth.entries.sort((a: any, b: any) => compareDatesBR(b.dataVencimento, a.dataVencimento)).map((f: any) => (
+                      <tr key={f.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-8 py-5 text-sm font-bold text-gray-500">{f.dataVencimento}</td>
+                        <td className="px-8 py-5"><p className="text-sm font-black text-gray-800">{f.descricao}</p></td>
+                        <td className={`px-8 py-5 text-sm font-black ${f.tipo === 'Receita' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                          {f.tipo === 'Receita' ? '+' : '-'} {formatCurrency(f.valor)}
+                        </td>
+                        <td className={`px-8 py-5 text-sm font-black text-right ${f.saldoAcumulado !== undefined && f.saldoAcumulado >= 0 ? 'text-gray-800' : 'text-rose-600'}`}>
+                          {formatCurrency(f.saldoAcumulado)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -693,7 +706,6 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
 
                 <div className="space-y-4">
                   <FormInput label="Descrição" required placeholder="Ex: Honorários Sucumbenciais" value={formData.descricao} onChange={e => setFormData({ ...formData, descricao: e.target.value.toUpperCase() })} />
-
                   <FormSelect label="Número do Processo" value={formData.processoId} onChange={e => setFormData({ ...formData, processoId: e.target.value })}>
                     <option value="">Não relacionado a processo</option>
                     {sortedProcessos.map(p => {
@@ -705,12 +717,10 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                       );
                     })}
                   </FormSelect>
-
                   <div className="grid grid-cols-2 gap-4">
                     <FormInput label="Valor" required placeholder="R$ 0,00" value={formatCurrency(formData.valor || 0)} onChange={(e: any) => setFormData({ ...formData, valor: parseCurrency(e.target.value) })} />
                     <FormInput label="Parcela" placeholder="1/1" value={formData.parcela} onChange={e => setFormData({ ...formData, parcela: e.target.value })} />
                   </div>
-
                   <FormSelect
                     label="Cliente / Fornecedor"
                     disabled={!!formData.processoId && formData.processoId !== ''}
@@ -721,9 +731,7 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
                     <option value="">Nome do cliente ou fornecedor</option>
                     {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                   </FormSelect>
-
                   <FormInput label="Vencimento" type="date" required value={toISODate(formData.dataVencimento || '')} onChange={e => setFormData({ ...formData, dataVencimento: toBRDate(e.target.value) })} />
-
                   <FormSelect
                     label="Status"
                     value={formData.status}
@@ -896,7 +904,6 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
         </div>
       )}
 
-      {/* Modal de Confirmação de Pagamento */}
       {isPaymentConfirmModalOpen && selectedEntry && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4 cursor-default" onClick={() => setIsPaymentConfirmModalOpen(false)}>
           <div className="bg-white rounded-[40px] w-full max-w-md shadow-2xl animate-in zoom-in duration-300" onClick={e => e.stopPropagation()}>
@@ -985,26 +992,6 @@ const FinancePage: React.FC<FinancePageProps> = ({ financeiro, setFinanceiro, cl
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-const StatCard: React.FC<{ label: string, value: string, icon: React.ReactNode, color: 'emerald' | 'rose' | 'blue' | 'indigo' }> = ({ label, value, icon, color }) => {
-  const themes = {
-    emerald: 'bg-emerald-50 text-emerald-500 border-emerald-100',
-    rose: 'bg-rose-50 text-rose-500 border-rose-100',
-    blue: 'bg-blue-50 text-blue-500 border-blue-100',
-    indigo: 'bg-indigo-50 text-indigo-600 border-indigo-100'
-  };
-  return (
-    <div className={`p-8 bg-white rounded-[32px] border border-gray-100 shadow-sm flex items-center gap-5 transition-all hover:shadow-md hover:-translate-y-1`}>
-      <div className={`p-4 rounded-2xl ${themes[color].split(' ').slice(0, 2).join(' ')}`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</p>
-        <p className="text-2xl font-black text-gray-800">{value}</p>
-      </div>
     </div>
   );
 };
